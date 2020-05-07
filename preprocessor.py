@@ -94,6 +94,7 @@ def getMinimalSAD(trace1,trace2):
   return (minimalSADIndex,minimalSAD)
 
 CFG_GLOBALS = {}
+CFG_OPTIONAL_WARNINGS = []
 
 def requireTokens(tokens):
   global CFG_GLOBALS
@@ -103,9 +104,11 @@ def requireTokens(tokens):
   return True
 
 def getOptionalVariable(varname, default):
-  global CFG_GLOBALS
+  global CFG_GLOBALS, CFG_OPTIONAL_WARNINGS
   if varname not in CFG_GLOBALS.keys():
-    print("Could not retrieve variable '%s'" % varname)
+    if varname not in CFG_OPTIONAL_WARNINGS:
+      print("Could not retrieve variable '%s'" % varname)
+      CFG_OPTIONAL_WARNINGS.append(varname)
     return default
   else:
     return CFG_GLOBALS[varname]
@@ -125,7 +128,45 @@ def getLowpass():
   else:
     return CFG_GLOBALS["lowpass"]
 
-def doSAD(tm_in,CONFIG_WRITEFILE):
+def doCORR(tm_in):
+  numTraces = tm_in.traceCount
+  sampleCnt = tm_in.numPoints
+  traces = zeros((numTraces,sampleCnt),float32)
+  data = zeros((numTraces,16),uint8)
+  data_out = zeros((numTraces,16),uint8)
+  CONFIG_REFTRACE = getVariable("ref")
+  CONFIG_LOWPASS = getLowpass()
+  CONFIG_MCF_CUTOFF = getVariable("corr_cutoff")
+  CONFIG_WINDOW_SLIDE = getVariable("window_slide")
+  CONFIG_WRITEFILE = getVariable("writefile")
+  savedDataIndex = 0
+  if CONFIG_LOWPASS is not None:
+    (CONFIG_CUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER) = getLowpass()
+    ref = butter_lowpass_filter(tm_in.getSingleTrace(CONFIG_REFTRACE),CONFIG_CUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER)
+  else:
+    ref = tm_in.getSingleTrace(CONFIG_REFTRACE)
+  for i in range(0,numTraces):
+    x = tm_in.getSingleTrace(i)
+    if CONFIG_LOWPASS is not None:
+      r2 = butter_lowpass_filter(x,CONFIG_CUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER)
+    else:
+      r2 = x
+    (msv,msi) = getMaxCorrCoeff(r2,ref)
+    if msv > CONFIG_MCF_CUTOFF:
+      if msi == -CONFIG_WINDOW_SLIDE or msi == CONFIG_WINDOW_SLIDE - 1:
+        print(("Index %d, discarding (edge Max Coeff Index = not found, mcf is %f)" % (i,msv)))
+      else:
+        print(("Index %d, Max Corr Coeff Slide %d Samples, Max CF Value %f" % (i,msi,msv)))
+        traces[savedDataIndex,:] = roll(x,-msi)
+        data[savedDataIndex,:] = df['data'][i]
+        data_out[savedDataIndex,:] = df['data_out'][i]
+        savedDataIndex += 1
+    else:
+      print(("Index %d, discarding (correlation is %f, index is %d)" % (i,msv,msi)))
+  print("Saving...")
+  support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+
+def doSAD(tm_in):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
   traces = zeros((numTraces,sampleCnt),float32)
@@ -134,6 +175,7 @@ def doSAD(tm_in,CONFIG_WRITEFILE):
   CONFIG_REFTRACE = getVariable("ref")
   CONFIG_LOWPASS = getLowpass()
   CONFIG_SAD_CUTOFF = getVariable("sad_cutoff")
+  CONFIG_WRITEFILE = getVariable("writefile")
   CONFIG_WINDOW_SLIDE = getVariable("window_slide")
   savedDataIndex = 0
   if CONFIG_LOWPASS is not None:
@@ -164,18 +206,20 @@ def doSAD(tm_in,CONFIG_WRITEFILE):
   print("Saving...")
   support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
-def dispatchAlign(tm_in,CONFIG_WRITEFILE):
+def dispatchAlign(tm_in):
   global CFG_GLOBALS
-  if CFG_GLOBALS["strategy"] in ("sad","SAD"):
+  CONFIG_STRATEGY = getVariable("strategy")
+  if CONFIG_STRATEGY in ("sad","SAD"):
     print("Using strategy: SAD")
-    doSAD(tm_in,CONFIG_WRITEFILE)
-  elif CFG_GLOBALS["strategy"] in ("corr","CORR"):
-    print("Using strategy: Correlation (not implemented)")
+    doSAD(tm_in)
+  elif CONFIG_STRATEGY in ("corr","CORR"):
+    print("Using strategy: CORR")
+    doCORR(tm_in)
   else:
     print("Strategy must be one of SAD, CORR")
     return
 
-def doSingleCommand(cmd,tm_in,CONFIG_WRITEFILE):
+def doSingleCommand(cmd,tm_in):
   tokens = cmd.split(" ")
   if tokens[0] == "set" and len(tokens) >= 2:
     tx = " ".join(tokens[1:])
@@ -185,43 +229,44 @@ def doSingleCommand(cmd,tm_in,CONFIG_WRITEFILE):
     for k in CFG_GLOBALS.keys():
       print("%s=%s" % (k,CFG_GLOBALS[k]))
   elif tokens[0] in ("r","run"):
-    dispatchAlign(tm_in,CONFIG_WRITEFILE)
+    dispatchAlign(tm_in)
   elif tokens[0] in ("q","quit"):
     print("Bye!")
     sys.exit(0)
+  elif len(cmd) == 0:
+    pass
   else:
     print("Unknown / invalid command")
 
-def doCommands(CONFIG_READFILE,CONFIG_WRITEFILE,CONFIG_CMDFILE):
+def doCommands(CONFIG_READFILE,CONFIG_CMDFILE):
   global CFG_GLOBALS
   tm_in = support.filemanager.TraceManager(CONFIG_READFILE)
   if CONFIG_CMDFILE is not None:
     f = open(CONFIG_CMDFILE)
     cmds = [d.rstrip() for d in f.readlines()]
     for i in range(0,len(cmds)):
-      doSingleCommand(cmds[i],tm_in,CONFIG_WRITEFILE)
+      doSingleCommand(cmds[i],tm_in)
   while True:
     cmd = input(" > ").lstrip().rstrip()
-    doSingleCommand(cmd,tm_in,CONFIG_WRITEFILE)
+    doSingleCommand(cmd,tm_in)
 
 if __name__ == "__main__":
   CONFIG_READFILE = None
-  CONFIG_WRITEFILE = None
   CONFIG_CMDFILE = None
   args, opts = getopt.getopt(sys.argv[1:],"f:w:c:",["infile=","writefile=","cmdfile="])
   for arg,opt in args:
     if arg in ("-f","--infile"):
       CONFIG_READFILE = opt
     elif arg in ("-w","--writefile"):
-      CONFIG_WRITEFILE = opt
+      CFG_GLOBALS["writefile"] = opt
     elif arg in ("-c","--cmdfile"):
       CONFIG_CMDFILE = opt
-  if CONFIG_READFILE is None or CONFIG_WRITEFILE is None:
-    print("You must specify both -r and -w")
+  if CONFIG_READFILE is None:
+    print("You must specify an input file with -r")
     sys.exit(0)
   if os.path.isfile(CONFIG_READFILE) is False:
     print("Source file %s not valid" % CONFIG_READFILE)
     sys.exit(0)
-  doCommands(CONFIG_READFILE,CONFIG_WRITEFILE,CONFIG_CMDFILE)
+  doCommands(CONFIG_READFILE,CONFIG_CMDFILE)
 
 sys.exit(0)
