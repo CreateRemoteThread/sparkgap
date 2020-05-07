@@ -1,2 +1,3 @@
 # sparkgap
-combined side channel / fault injection framework
+
+Sparkgap is a major refactor of my previous side channel and fault injection frameworks. 
