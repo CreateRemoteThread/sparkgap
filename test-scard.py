@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+    
 
 from smartcard.CardType import AnyCardType
 from smartcard.CardRequest import CardRequest
@@ -19,7 +20,7 @@ class SIMController:
 
   def do_auth(self,debug=True):
     if self.t:
-      t = 0
+      t.disarm()
     self.cardrequest = CardRequest(timeout=5,cardType=AnyCardType())
     self.cardservice = self.cardrequest.waitforcard()
     if debug:
@@ -35,6 +36,7 @@ class SIMController:
     str_rand = "".join(["%02x" % _ for _ in next_rand])
     str_autn = "".join(["%02x" % _ for _ in next_autn])
     print("%s:%s" % (str_rand,str_autn))
+    # self.t.arm()
     r,sw1,sw2 = self._umts_auth(next_rand,next_autn)
     # if sw1 == 0x61:
     #   self._get_response(sw2)
@@ -45,6 +47,9 @@ class SIMController:
     cmd += rand
     cmd.append(len(autn))
     cmd += autn
+    dx = triggerbuddy.edgeCount(cmd)
+    self.t.processCommand("io %d" % dx)
+    self.t.arm()
     r,sw1,sw2 = self.c.transmit(cmd)
     return (r,sw1,sw2)
 
@@ -74,13 +79,18 @@ class SIMController:
 
 if __name__ == "__main__":
   t = triggerbuddy.TriggerBuddy()
+  print("Trigger OK")
   sc = SIMController(t)
-  sys.exit(0)
+  print ("SIM Up")
+  # sys.exit(0)
   t.disarm()
-  t.processCommand("io 1")
-  t.processCommand("clk 48000") # nextg
+  t.processCommand("io 10")
+  t.processCommand("clk 1")
+  # t.processCommand("clk 78000") # nextg
   t.processCommand("ns 1") # next
   print(" >> YOU MUST MANUALLY CAPTURE ON YOUR SCOPE <<") 
   print(" >> NO SCOPE AUTOMATION ON C = 1 <<") 
+  # t.arm()
   sc.do_auth()
+  t.disarm()
   sys.exit(0)

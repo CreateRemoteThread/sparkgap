@@ -20,15 +20,23 @@ RESP_NACK = b'0xFF'
 def squish(b1,b2):
   return bytes( [(ord(b1) << 4) + b2] )
 
+def edgeCount(data):
+  fc = ""
+  for i in range(0,len(data)):
+    fc += "0"
+    fc += bin(data[i])
+    fc += "1"
+  return fc.count("01")
+
 class TriggerBuddy():
   def __init__(self,port="/dev/ttyUSB1"):
     self.ser = serial.Serial(port,115200)
-    self.ser.write(CMD_PING)
-    b = self.ser.read(1)
-    if b != b'\xAA':
-      print("TriggerBuddy: CMD_PING failed, inconsistent state detected")
-      self.ser.close()
-      sys.exit(0)
+    # self.ser.write(CMD_PING)
+    # b = self.ser.read(1)
+    # if b != b'\xAA':
+    #   print("TriggerBuddy: CMD_PING failed, inconsistent state detected")
+    #   self.ser.close()
+    #   sys.exit(0)
 
   def readIoEdges(self):
     a = 0
