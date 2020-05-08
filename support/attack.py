@@ -368,6 +368,7 @@ def usage():
   print(" - AES_TTableOut_HW")
   print(" - AES_XorOut_HW")
   print(" - DES_SboxOut_HW")
+  print(" - Plaintext")
   print("")
 
 def fetchModel(modeltype):

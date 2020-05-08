@@ -249,9 +249,9 @@ if __name__ == "__main__":
         k = arange(n)
         T = n / FFT_BASEFREQ
         frq = k / T
-        frq = frq[list(range(n/2))]
+        frq = frq[list(range(n // 2))]
         Y = fft.fft(d)/n
-        Y = Y[list(range(n/2))]
+        Y = Y[list(range(n //  2))]
         plt.plot(frq,abs(Y),'r') 
       elif SPECGRAM_EN:
         fig, (ax1, ax2) = plt.subplots(nrows=2)

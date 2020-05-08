@@ -13,12 +13,13 @@ import numpy as np
 import random
 
 class SIMController:
-  def __init__(self):
-    self.c = None      # fuck pyscard. seriously.
-    pass
+  def __init__(self,trigger=None):
+    self.c = None
+    self.t = trigger
 
-  def french_apdu(self,rand=None,autn=None,debug=False,trigger=None):
-    # trigger.disarm()
+  def do_auth(self,debug=True):
+    if self.t:
+      t = 0
     self.cardrequest = CardRequest(timeout=5,cardType=AnyCardType())
     self.cardservice = self.cardrequest.waitforcard()
     if debug:
@@ -26,80 +27,60 @@ class SIMController:
       self.cardservice.connection.addObserver(obs)
     self.cardservice.connection.connect()
     self.c = self.cardservice.connection
-    # print(" !!! USING SHORTER SSTIC2018 PAPER APDU SEQUENCE !!!")
-    r,sw1,sw2 = self.c.transmit([0x00, 0xa4, 0x08, 0x04, 0x02, 0x2f, 0x00])
-    r,sw1,sw2 = self.c.transmit([0x00,0xC0,0x00,0x00] + [sw2])
-    r,sw1,sw2 = self.c.transmit([0x00,0xB2,0x01,0x04] + [r[7]])
-    r,sw1,sw2 = self.c.transmit([0x00,0xA4,0x04,0x04] + list(r[3:4 + r[3]]))
-    r,sw1,sw2 = self.c.transmit([0x00,0xC0,0x00,0x00] + [sw2])
-    if rand is None and autn is None:
-      authcmd = [0x00, 0x88, 0x00, 0x81, 0x22, 0x10] + [0xaa] * 16 + [0x10] + [0xbb] * 16
-    else:
-      authcmd = [0x00, 0x88, 0x00, 0x81, 0x22, 0x10] + rand + [0x10] + autn
-    # trigger.arm()
-    r,sw1,sw2 = self.c.transmit(authcmd)
+    print("ATR : %s" % self.cardservice.connection.getATR())
+    r,sw1,sw2 = self._select_file(file_id=0x3F00)                 # SCARD_FILE_MF
+    r,sw1,sw2 = self._select_file(aid=[0xa0,0x00,0x00,0x00,0x87]) # default 3G file
+    next_rand = [random.randint(0,255) for _ in range(16)]
+    next_autn = [random.randint(0,255) for _ in range(16)]
+    str_rand = "".join(["%02x" % _ for _ in next_rand])
+    str_autn = "".join(["%02x" % _ for _ in next_autn])
+    print("%s:%s" % (str_rand,str_autn))
+    r,sw1,sw2 = self._umts_auth(next_rand,next_autn)
+    # if sw1 == 0x61:
+    #   self._get_response(sw2)
 
-  def nextg_apdu(self,rand=None,autn=None,debug=False,trigger=None):
-    trigger.disarm()
-    self.cardrequest = CardRequest(timeout=5,cardType=AnyCardType())
-    self.cardservice = self.cardrequest.waitforcard()
-    if debug:
-      obs = ConsoleCardConnectionObserver()
-      self.cardservice.connection.addObserver(obs)
-    self.cardservice.connection.connect()
-    self.c = self.cardservice.connection
-    # print("ATR... : %s" % self.cardservice.connection.getATR())
-    r,sw1,sw2 = self.c.transmit([0x00, 0xa4, 0x08, 0x04, 0x02, 0x2f, 0x00])
-    r,sw1,sw2 = self.c.transmit([0x00, 0xc0, 0x00, 0x00, sw2])
-    r,sw1,sw2 = self.c.transmit([0x00, 0xb2, 0x01, 0x04, r[7]])
-    r,sw1,sw2 = self.c.transmit([0x00,0xA4,0x04,0x04] + list(r[3:4 + r[3]]))
-    r,sw1,sw2 = self.c.transmit([0x00,0xC0,0x00,0x00] + [sw2])
-    r,sw1,sw2 = self.c.transmit([0x00,0xA4,0x00,0x04,0x02,0x6F,0x07])
-    r,sw1,sw2 = self.c.transmit([0x00, 0xc0, 0x00, 0x00, sw2])
-    # r,sw1,sw2 = self.c.transmit([0x00, 0xb0, 0x00, 0x00, r[7]])
-    # r,sw1,sw2 = 
-    # r,sw1,sw2 = self.c.transmit([0x00, 0xb2, 0x01, 0x04, r[7]])
-    if rand is None and autn is None:
-      authcmd = [0x00, 0x88, 0x00, 0x81, 0x22, 0x10] + [0xaa] * 16 + [0x10] + [0xbb] * 16
-    else:
-      authcmd = [0x00, 0x88, 0x00, 0x81, 0x22, 0x10] + rand + [0x10] + autn
-    trigger.arm()
-    print("Arming")
-    r,sw1,sw2 = self.c.transmit(authcmd)
+  def _umts_auth(self,rand,autn):
+    cmd = [0x00, 0x88, 0x00, 0x81, 0x22]
+    cmd.append(len(rand))
+    cmd += rand
+    cmd.append(len(autn))
+    cmd += autn
+    r,sw1,sw2 = self.c.transmit(cmd)
+    return (r,sw1,sw2)
 
-  def fuzzFile(self,observer=False):
-    self.cardrequest = CardRequest(timeout=5,cardType=AnyCardType())
-    self.cardservice = self.cardrequest.waitforcard()
-    if observer:
-      obs = ConsoleCardConnectionObserver()
-      self.cardservice.connection.addObserver(obs)
-    self.cardservice.connection.connect()
-    self.c = self.cardservice.connection
-    print("ATR... : %s" % self.cardservice.connection.getATR())
-    print("Brute forcing...")
-    out = ""
-    for i in range(0,0xFF):
-      for x in range(0,0xFF):
-        response, sw1, sw2 = self.cardservice.connection.transmit([0x00,0xA4,0x08,0x04,0x02, i,x])
-        if sw1 == 0x61:
-          out += "Valid APDU from MF: %02x::%02x\n" % (i,x)
-    return out
+  def _get_response(self,resp_length):
+    USIM_CLA = 0x00
+    get_resp = [0xa0, 0xc0, 0x00, 0x00]
+    get_resp[0] = USIM_CLA
+    get_resp.append(resp_length)
+    r,sw1,sw2 = self.c.transmit(get_resp)
+    return r,sw1,sw2
+
+  def _select_file(self,file_id=None,aid=[]):
+    cmd = [0xa0, 0xa4, 0x00, 0x00, 0x02]
+    USIM_CLA = 0x00
+    cmd[0] = USIM_CLA
+    cmd[3] = 0x04
+    if len(aid) != 0:
+      cmd[2] = 0x04
+      cmd[4] = len(aid)
+      cmd += aid
+    else:
+      b1 = (file_id >> 8) & 0xFF
+      b2 = file_id & 0xFF
+      cmd += [b1,b2]
+    r,sw1,sw2 = self.c.transmit(cmd)
+    return (r,sw1,sw2)
 
 if __name__ == "__main__":
-  sc = SIMController()
   t = triggerbuddy.TriggerBuddy()
-  # t.processCommand("io 1")
+  sc = SIMController(t)
+  sys.exit(0)
+  t.disarm()
   t.processCommand("io 1")
   t.processCommand("clk 48000") # nextg
-  t.processCommand("ns 1") # nextg
-  # t.processCommand("clk 48000") # purple
+  t.processCommand("ns 1") # next
   print(" >> YOU MUST MANUALLY CAPTURE ON YOUR SCOPE <<") 
   print(" >> NO SCOPE AUTOMATION ON C = 1 <<") 
-  next_rand = [random.randint(0,255) for _ in range(16)]
-  next_autn = [random.randint(0,255) for _ in range(16)]
-  str_rand = "".join(["%02x" % _ for _ in next_rand])
-  str_autn = "".join(["%02x" % _ for _ in next_autn])
-  print("%s:%s" % (str_rand,str_autn))
-  # sc.french_apdu(next_rand,next_autn,debug=True,trigger=None)
-  sc.nextg_apdu(next_rand,next_autn,debug=True,trigger=t)
+  sc.do_auth()
   sys.exit(0)
