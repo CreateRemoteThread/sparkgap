@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-    
 
 from smartcard.CardType import AnyCardType
 from smartcard.CardRequest import CardRequest
@@ -49,8 +48,8 @@ class SIMController:
     cmd.append(len(autn))
     cmd += autn
     dx = triggerbuddy.edgeCount(cmd)
-    self.t.processCommand("io %d" % dx)
-    self.t.arm()
+    # self.t.processCommand("io %d" % dx)
+    # self.t.arm()
     r,sw1,sw2 = self.c.transmit(cmd)
     return (r,sw1,sw2)
 
@@ -90,7 +89,7 @@ class SIMController2:
     self.ser.write(bytes([len(apdu)]))
     self.ser.write(apdu)
 
-  def _select_file(self,file_id=None,aid=[]):
+  def _select_file(self,file_id=None,aid=[],extra_delay=None):
     cmd = [0xa0, 0xa4, 0x00, 0x00, 0x02]
     USIM_CLA = 0x00
     cmd[0] = USIM_CLA
@@ -108,20 +107,37 @@ class SIMController2:
       out += "%02x " % c
     print(out)
     self._send_apdu(cmd)
-    # r,sw1,sw2 = self.c.transmit(cmd)
-    # return (r,sw1,sw2)
+    if extra_delay is not None:
+      time.sleep(extra_delay)
+    return self._readbuf()
 
-  def _get_resp(self):
+  def _get_response(self,size):
+    cmd = [0x00,0xC0,0x00,0x00]
+    cmd += [size]
+    out = ""
+    for c in cmd:
+      out += "%02x " % c
+    print(out)
+    self._send_apdu(cmd)
+    time.sleep(0.1)
+    return self._readbuf()
+
+  def _readbuf(self):
+    time.sleep(0.1)
     self.ser.write(b'd')
     c = self.ser.read(1)
     if c != b'#':
       print("Expected #, got %02x" % ord(c))
-      return
+      # return
     respsize = ord(self.ser.read(1))
     print("RESPSIZE %d" % respsize)
     c = self.ser.read(respsize)
+    out = ""
     for cx in c:
-      print("R: %02x" % cx)
+      out += "%02x " % cx
+    print(out)
+    time.sleep(0.1)
+    return c
 
   def _umts_auth(self,rand,autn):
     cmd = [0x00, 0x88, 0x00, 0x81, 0x22]
@@ -138,16 +154,12 @@ if __name__ == "__main__":
   print(" >> YOU MUST MANUALLY CAPTURE ON YOUR SCOPE <<") 
   print(" >> NO SCOPE AUTOMATION ON C = 1 <<") 
   sc = SIMController2()
-  time.sleep(0.5)
-  # sc._select_file(file_id=0x3F00)
-  # time.sleep(1.0)
-  sc._select_file(aid=[0xa0,0x00,0x00,0x00,0x87])
-  time.sleep(0.5)
-  next_rand = [random.randint(0,255) for _ in range(16)]
-  next_autn = [random.randint(0,255) for _ in range(16)] 
-  sc._umts_auth(next_rand,next_autn)
-  time.sleep(0.5)
-  sc._get_resp()
+  r = sc._select_file(file_id=0x2F00) # EF_DIR
+  r = sc._get_response(r[1])
+  r = sc._send_apdu([0x00,0xB2,0x01,0x04,r[9]])
   time.sleep(0.1)
+  r = sc._readbuf()
+  r = sc._select_file(aid=r[6:6+r[5]],extra_delay=0.5)
+  print(r)
   sc.ser.close()
   sys.exit(0)
