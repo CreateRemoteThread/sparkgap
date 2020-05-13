@@ -172,7 +172,7 @@ if __name__ == "__main__":
   print("AUTH")
   sc._umts_auth([0xaa] * 16, [0xbb] * 16)
   time.sleep(0.5)
-  r = sc._readbuf()
+  # r = sc._readbuf()
   # r = sc._get_response(r[2])
   sc.ser.close()
   sys.exit(0)
