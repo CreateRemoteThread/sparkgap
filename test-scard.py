@@ -151,15 +151,28 @@ class SIMController2:
     
 import time
 if __name__ == "__main__":
-  print(" >> YOU MUST MANUALLY CAPTURE ON YOUR SCOPE <<") 
-  print(" >> NO SCOPE AUTOMATION ON C = 1 <<") 
   sc = SIMController2()
+  sc.ser.write(b'R')
+  sc.ser.read(1)
+  sc._readbuf()
+  time.sleep(1.0)
   r = sc._select_file(file_id=0x2F00) # EF_DIR
-  r = sc._get_response(r[1])
-  r = sc._send_apdu([0x00,0xB2,0x01,0x04,r[9]])
   time.sleep(0.1)
   r = sc._readbuf()
-  r = sc._select_file(aid=r[6:6+r[5]],extra_delay=0.5)
-  print(r)
+  r = sc._get_response(r[1])
+  # for cx in r:
+  #   print("%02x" % cx)
+  r = sc._send_apdu([0x00,0xB2,0x01,0x04,r[8]])
+  print("STOP")
+  time.sleep(0.1)
+  r = sc._readbuf()
+  r = sc._select_file(aid=r[5:5+r[4]],extra_delay=0.5) # srslte:srsue/src/stack/upper/pcsc_usim.cc
+  time.sleep(0.4)
+  # r = sc._readbuf()
+  print("AUTH")
+  sc._umts_auth([0xaa] * 16, [0xbb] * 16)
+  time.sleep(0.5)
+  r = sc._readbuf()
+  # r = sc._get_response(r[2])
   sc.ser.close()
   sys.exit(0)
