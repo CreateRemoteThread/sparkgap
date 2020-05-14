@@ -40,7 +40,7 @@ import uuid
 config = {}
 config["tracecount"] = 5
 config["samplecount"] = 15000
-config["writefile"] = "%s" % uuid.uuid4()
+config["writefile"] = None
 
 def runCaptureTask():
   global fe,drv,config
@@ -63,7 +63,13 @@ def runCaptureTask():
       traces[i:] = dataA
     data[i:] = next_rand
     data_out[i:] = next_autn
-  support.filemanager.save(config["writefile"],traces=traces,data=data,data_out=data_out)
+  if config["writefile"] is None:
+    tempfile = "/tmp/%s" % uuid.uuid4()
+    support.filemanager.save(tempfile,traces=traces,data=data,data_out=data_out)
+    print("Saved to %s" % tempfile)
+  else:
+    support.filemanager.save(config["writefile"],traces=traces,data=data,data_out=data_out)
+    
 
 trig = None
 
