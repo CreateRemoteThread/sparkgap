@@ -181,8 +181,11 @@ class TraceManager:
           (real_opt,opt_num_s) = opt.split(",")
           opt_num = int(opt_num_s)
         else:
-          real_opt = opt
-          opt_num = 0
+          if opt == "note":
+            print("NOTE: %s" % val)
+          else:
+            real_opt = opt
+            opt_num = 0
         if opt_num not in self.dataObj.keys():
           self.dataObj[opt_num] = TraceSet(opt_num)
         if real_opt == "data_in":
