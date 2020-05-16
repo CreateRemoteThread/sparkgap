@@ -34,10 +34,15 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
 
 def getSingleSAD(array1,array2):
   totalSAD = 0.0
-  return sum(abs(abs(array1) - abs(array2)))
+  return sum(abs(array1 - array2))
 
 def getMaxCorrCoeff(trace1,trace2):
   maxCf = -1.0
+  CONFIG_CLKADJUST_MAX = getOptionalVariable("clkadjust_max",0)
+  CONFIG_CLKADJUST = getOptionalVariable("clkadjust",10000)
+  CONFIG_WINDOW_OFFSET = getVariable("window_offset")
+  CONFIG_WINDOW_LENGTH = getVariable("window_length")
+  CONFIG_WINDOW_SLIDE = getVariable("window_slide")
   maxCfIndex = 0
   for cadjust in range(0,CONFIG_CLKADJUST_MAX + 1):
     if cadjust == 0:
@@ -158,8 +163,8 @@ def doCORR(tm_in):
       else:
         print(("Index %d, Max Corr Coeff Slide %d Samples, Max CF Value %f" % (i,msi,msv)))
         traces[savedDataIndex,:] = roll(x,-msi)
-        data[savedDataIndex,:] = df['data'][i]
-        data_out[savedDataIndex,:] = df['data_out'][i]
+        data[savedDataIndex,:] = tm_in.getSingleData(i)
+        data_out[savedDataIndex,:] = tm_in.getSingleDataOut(i)
         savedDataIndex += 1
     else:
       print(("Index %d, discarding (correlation is %f, index is %d)" % (i,msv,msi)))

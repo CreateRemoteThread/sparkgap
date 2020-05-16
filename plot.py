@@ -120,6 +120,7 @@ def configure_fft(arg):
 def configure_specgram(arg):
   global SPECGRAM_EN, TITLE, XAXIS, YAXIS, SPECGRAM_SR
   TITLE = "Spectogram View"
+  print("SPECGRAM_EN = True")
   SPECGRAM_EN = True
   SPECGRAM_SR = float(arg)
 
@@ -217,12 +218,15 @@ if __name__ == "__main__":
     sys.exit(0)
   for f in ADDITIONAL_FILES:
     tm = support.filemanager.TraceManager(f)
+    print(SPECGRAM_EN)
     for i in TRACES:
       if OFFSET == 0 and COUNT == 0:
         d = tm.getSingleTrace(i)
       else:
         d = tm.getSingleTrace(i)[OFFSET:OFFSET+COUNT]
+      print("Continuing...")
       if LOWPASS_EN: # this code is disgusting but fuck you
+        print("LOWPASS")
         d = tm.getSingleTrace(i)
         # d = df['traces'][i]
         if OFFSET == 0 and COUNT == 0:
@@ -238,6 +242,7 @@ if __name__ == "__main__":
         else:
           plt.plot(butter_lowpass_filter(d,LOWPASS_CUTOFF,LOWPASS_SR,LOWPASS_ORDER)[OFFSET:OFFSET+COUNT])
       elif BANDPASS_EN:
+        print("BANDPASS")
         d = tm.getSingleTrace(i)
         # d = df['traces'][i]
         if OFFSET == 0 and COUNT == 0:
@@ -245,6 +250,7 @@ if __name__ == "__main__":
         else:
           plt.plot(butter_bandpass_filter(d,BANDPASS_LOWCUT,BANDPASS_HIGHCUT,BANDPASS_SR,BANDPASS_ORDER)[OFFSET:OFFSET+COUNT])
       elif FFT_EN:
+        print("FFT")
         n = len(d)
         k = arange(n)
         T = n / FFT_BASEFREQ
@@ -254,6 +260,7 @@ if __name__ == "__main__":
         Y = Y[list(range(n //  2))]
         plt.plot(frq,abs(Y),'r') 
       elif SPECGRAM_EN:
+        print("Specgram enable")
         fig, (ax1, ax2) = plt.subplots(nrows=2)
         ax1.set_title("Power Trace")
         ax1.set_ylabel("Power")

@@ -102,7 +102,7 @@ class TraceManager:
         self.blockMap.append( (baseCount,baseCount + len(self.dataObj[i].traces),i) )
         baseCount += len(self.dataObj[i].traces)
 
-  def saveBlock(self,traces,data_in,data_out):
+  def saveBlock(self,traces,data_in,data_out,vars=None):
     if self.numPoints is not None:
       if len(traces[0]) != self.numPoints:
         print("TraceManager: saveBlock trying to write a trace with incorrect length. Expected %d, trying to write %d" % (self.numPoints, len(traces[0])))
@@ -128,6 +128,9 @@ class TraceManager:
       self.f.write("traces,%d=%s\n" % (i,self.dataObj[i].traces_fn))
       self.f.write("data_in,%d=%s\n" % (i,self.dataObj[i].data_fn))
       self.f.write("data_out,%d=%s\n" % (i,self.dataObj[i].data_out_fn))
+      if vars is not None:
+        for v in vars.keys():
+          self.f.write("var[%s]=%s" % (v,vars[v]))
       print("TraceManager: saveBlock refilling dataObj")
       self.dataObj[i].data = numpy.load(self.dataObj[i].data_fn,mmap_mode="r") 
       self.dataObj[i].traces = numpy.load(self.dataObj[i].traces_fn,mmap_mode="r") 

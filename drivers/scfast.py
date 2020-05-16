@@ -88,7 +88,11 @@ class DriverInterface():
     self.scope = scope
      
   def drive(self,data_in = None):
-    next_rand = [random.randint(0,255) for _ in range(16)]
+    if data_in is None:
+      next_rand = [random.randint(0,255) for _ in range(16)]
+    else:
+      print("TLVA!")
+      next_rand = data_in
     next_autn = [random.randint(0,255) for _ in range(16)]
     print("Reset")
     self.sc.ser.write(b'R')
@@ -107,7 +111,9 @@ class DriverInterface():
     self.scope.arm()
     self.sc._umts_auth([0xaa] * 16, [0xbb] * 16)
     #self.sc.nextg_apdu(next_rand,next_autn,scope=self.scope,trigger=self.config["trigger"])
+    time.sleep(0.5)
     r = self.sc._readbuf()
+    r = self.sc._get_response(r[2])
     return (next_rand,next_autn)
 
   def close(self):

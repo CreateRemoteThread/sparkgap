@@ -41,6 +41,7 @@ config = {}
 config["tracecount"] = 5
 config["samplecount"] = 15000
 config["writefile"] = None
+config["tlva"] = None
 
 def runCaptureTask():
   global fe,drv,config
@@ -52,7 +53,13 @@ def runCaptureTask():
   data_out = np.zeros((config["tracecount"],16),np.uint8)     # AUTN
   for i in range(0,config["tracecount"]):
     print("Running job: %d/%d. %d missed" % (i,config["tracecount"],missedCount))
-    (next_rand, next_autn) = drv.drive()
+    if config["tlva"] is None:
+      (next_rand, next_autn) = drv.drive(None)
+    else:
+      if random.randint(0,100) % 2 == 0:
+        (next_rand, next_autn) = drv.drive([0xAA] * 16)
+      else:
+        (next_rand, next_autn) = drv.drive(None)
     time.sleep(3.0)
     dataA = fe.capture()
     if len(dataA) == 0:
@@ -63,6 +70,7 @@ def runCaptureTask():
       traces[i:] = dataA
     data[i:] = next_rand
     data_out[i:] = next_autn
+  vars = {}
   if config["writefile"] is None:
     tempfile = "/tmp/%s" % uuid.uuid4()
     support.filemanager.save(tempfile,traces=traces,data=data,data_out=data_out)
@@ -93,6 +101,10 @@ def processCommand(c):
       tcmd = " ".join(tokens[1:])
       trig.processCommand(tcmd)
   elif cmd in ("r","run"):
+    if config["writefile"] is not None:
+      if "~" in config["writefile"]:
+        print("Sanity check failed: no path expansions allowed in writefile")
+        return
     runCaptureTask()
   elif tokens[0] == "vars":
     for i in config.keys():
