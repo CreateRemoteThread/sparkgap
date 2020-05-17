@@ -86,8 +86,11 @@ class DriverInterface():
     print("SCFast: initializing")
     self.sc = SIMController2()
     self.scope = scope
-     
+
   def drive(self,data_in = None):
+    return self.drive_efdir(data_in)
+
+  def drive_efdir(self,data_in = None):
     if data_in is None:
       next_rand = [random.randint(0,255) for _ in range(16)]
     else:
@@ -107,13 +110,30 @@ class DriverInterface():
     time.sleep(0.1)
     r = self.sc._readbuf()
     r = self.sc._select_file(aid=r[5:5+r[4]],extra_delay=0.5)
+    print("3G SELECTED")
+    time.sleep(0.1)
+    # r = self.sc._readbuf()
+    # r = self.sc._get_response(r[2]) # this does 0x61, blah
+    time.sleep(0.1)
+    r = self.sc._select_file(file_id = 0x6F07)
+    time.sleep(0.1)
+    r = self.sc._readbuf()
+    r = self.sc._get_response(r[1])
+    print("SENDING READBINARY CMD")
+    r = self.sc._send_apdu([0x00,0xB0,0x00,0x00,0x09])
+    time.sleep(0.1)
+    r = self.sc._readbuf()
+    if 0x6C in r:
+      print("READBINARY LENGHT ERROR")
+    # r = self.sc._get_response(r[1])
+    # time.sleep(0.1)
     print("AUTH")
     self.scope.arm()
     self.sc._umts_auth([0xaa] * 16, [0xbb] * 16)
     #self.sc.nextg_apdu(next_rand,next_autn,scope=self.scope,trigger=self.config["trigger"])
     time.sleep(0.5)
     r = self.sc._readbuf()
-    r = self.sc._get_response(r[2])
+    # r = self.sc._get_response(r[2])
     return (next_rand,next_autn)
 
   def close(self):
