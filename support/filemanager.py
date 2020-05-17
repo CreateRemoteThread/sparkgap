@@ -183,6 +183,8 @@ class TraceManager:
         else:
           if opt == "note":
             print("NOTE: %s" % val)
+            real_opt = "note"
+            opt_num = 0
           else:
             real_opt = opt
             opt_num = 0
