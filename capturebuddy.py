@@ -38,7 +38,7 @@ def usage():
 import uuid
 
 config = {}
-config["tracecount"] = 5
+config["tracecount"] = 1
 config["samplecount"] = 15000
 config["writefile"] = None
 config["tlva"] = None

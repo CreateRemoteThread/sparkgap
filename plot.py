@@ -218,13 +218,20 @@ if __name__ == "__main__":
     sys.exit(0)
   for f in ADDITIONAL_FILES:
     tm = support.filemanager.TraceManager(f)
-    print(SPECGRAM_EN)
+    if len(TRACES) == 0:
+      print("You must specify at least one trace with -c")
+      sys.exit(0)
+    if len(TRACES) != 1:
+      TITLE = "TRACE PLOT"
+    if ((OFFSET != 0) and (COUNT == 0)) or ((OFFSET == 0) and (COUNT != 0)):
+      print("You can't specify -o without -n")
+      sys.exit(0)
     for i in TRACES:
       if OFFSET == 0 and COUNT == 0:
         d = tm.getSingleTrace(i)
       else:
         d = tm.getSingleTrace(i)[OFFSET:OFFSET+COUNT]
-      print("Continuing...")
+      # print("Continuing...")
       if LOWPASS_EN: # this code is disgusting but fuck you
         print("LOWPASS")
         d = tm.getSingleTrace(i)
@@ -276,8 +283,9 @@ if __name__ == "__main__":
           plt.savefig(CONFIG_WRITEFILE)
         else:
           plt.show()
-      else:
-        print(d[0:50])
+          PLOT_SHOWN = True
+      else: # plot raw trace
+        # print(d[0:50])
         plt.plot(d)
   if PLOT_SHOWN is False:
     plt.title(TITLE)
