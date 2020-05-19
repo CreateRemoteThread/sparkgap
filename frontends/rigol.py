@@ -176,7 +176,7 @@ class DS1054Z(vxi11.Instrument):
         keys = 'fmt, typ, pnts, cnt, xinc, xorig, xref, yinc, yorig, yref'.split(', ')
         return dict(list(zip(keys, self.waveform_preamble)))
 
-    def get_waveform_samples(self, channel, mode='NORMal', start=1, end=None):
+    def get_waveform_samples(self, channel, mode='NORMal', start=1, end=None, setup=False):
         """
         Returns the waveform voltage samples of the specified channel.
 
@@ -211,7 +211,7 @@ class DS1054Z(vxi11.Instrument):
           print("error: end must be greater than start")
           return []
 
-        buff = self.get_waveform_bytes(channel, mode=mode, start=start, end=end)
+        buff = self.get_waveform_bytes(channel, mode=mode, start=start, end=end,setup=setup)
         fmt, typ, pnts, cnt, xinc, xorig, xref, yinc, yorig, yref = self.waveform_preamble
         samples = list(struct.unpack(str(len(buff))+'B', buff))
         samples = [(val - yorig - yref)*yinc for val in samples]
@@ -224,7 +224,7 @@ class DS1054Z(vxi11.Instrument):
                 samples = samples[:-num] + [float('nan')] * num
         return samples
 
-    def get_waveform_bytes(self, channel, mode='NORMal', start=1, end=None):
+    def get_waveform_bytes(self, channel, mode='NORMal', start=1, end=None,setup=False):
         """
         Get the waveform data for a specific channel as :py:obj:`bytes`.
         (In most cases you would want to use the higher level
@@ -252,11 +252,13 @@ class DS1054Z(vxi11.Instrument):
         """
         channel = self._interpret_channel(channel)
         if mode.upper().startswith('NORM') or (self.running and mode.upper().startswith('MAX')):
+            print("Screen")
             return self._get_waveform_bytes_screen(channel, mode=mode)
         else:
-            return self._get_waveform_bytes_internal(channel, mode=mode, start=start, end=end)
+            print("Grabbing internal memory")
+            return self._get_waveform_bytes_internal(channel, mode=mode, start=start, end=end,setup=setup)
 
-    def _get_waveform_bytes_screen(self, channel, mode='NORMal'):
+    def _get_waveform_bytes_screen(self, channel, mode='NORMal',setup=False):
         """
         This function returns the waveform bytes from the self.scope if you desire
         to read the bytes corresponding to the screen content.
@@ -304,18 +306,19 @@ class DS1054Z(vxi11.Instrument):
             self.mask_begin_num = None
         return buff
 
-    def _get_waveform_bytes_internal(self, channel, mode='RAW', start = 1, end = None):
+    def _get_waveform_bytes_internal(self, channel, mode='RAW', start = 1, end = None, setup=False):
         """
         This function returns the waveform bytes from the self.scope if you desire
         to read the bytes corresponding to the internal (deep) memory.
         """
-        channel = self._interpret_channel(channel)
+        # channel = self._interpret_channel(channel)
         assert mode.upper().startswith('MAX') or mode.upper().startswith('RAW')
         if self.running:
             self.stop()
-        self.write(":WAVeform:SOURce " + channel)
-        self.write(":WAVeform:FORMat BYTE")
-        self.write(":WAVeform:MODE " + mode)
+        if setup:
+          self.write(":WAVeform:SOURce " + channel)
+          self.write(":WAVeform:FORMat BYTE")
+          self.write(":WAVeform:MODE " + mode)
         wp = self.waveform_preamble_dict
         if end is None:
           pnts = wp['pnts'] - start - 1# to account for len(buff) < pnts later
@@ -785,6 +788,7 @@ class CaptureInterface():
     print("Using Rigol Capture Interface")
     self.config = {}
     self.config["samplecount"] = 15000
+    self.setup = True
 
   # mdepth = sameplrate * timebase * 12
   def init(self):
@@ -797,7 +801,7 @@ class CaptureInterface():
     self.scope.write(":STOP")
     self.scope.write(":CHAN1:SCAL 0.100")
     # self.scope.write(":CHAN1:OFFS -3.292") ## 3v atmel
-    # self.scope.write(":CHAN1:OFFS -1.800")
+    self.scope.write(":CHAN1:OFFS 0.150")
     self.scope.write(":CHAN2:SCAL 5.0")
     self.scope.write(":CHAN2:OFFS 0.0")
     self.scope.write(":TRIG:MODE EDGE")
@@ -817,7 +821,12 @@ class CaptureInterface():
 
   def capture(self):
     halftime = self.scope.memory_depth_curr_waveform / 2
-    return self.scope.get_waveform_samples("CHAN1",mode="RAW",start=halftime + self.START_OFFSET+1,end=halftime  +self.END_OFFSET)
+    if self.setup is True:
+      return self.scope.get_waveform_samples("CHAN1",mode="RAW",start=halftime + self.START_OFFSET+1,end=halftime  +self.END_OFFSET, setup=True)
+      self.setup = False
+    else:
+      return self.scope.get_waveform_samples("CHAN1",mode="RAW",start=halftime + self.START_OFFSET+1,end=halftime  +self.END_OFFSET, setup=False)
+
 
   def close(self):
     self.scope.close()
