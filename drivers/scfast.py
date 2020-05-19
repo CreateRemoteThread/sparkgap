@@ -131,7 +131,7 @@ class DriverInterface():
     self.scope.arm()
     self.sc._umts_auth([0xaa] * 16, [0xbb] * 16)
     #self.sc.nextg_apdu(next_rand,next_autn,scope=self.scope,trigger=self.config["trigger"])
-    time.sleep(0.5)
+    time.sleep(0.1)
     r = self.sc._readbuf()
     # r = self.sc._get_response(r[2])
     return (next_rand,next_autn)

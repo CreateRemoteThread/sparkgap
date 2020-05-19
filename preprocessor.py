@@ -233,6 +233,9 @@ def doSingleCommand(cmd,tm_in):
   elif tokens[0] == "vars":
     for k in CFG_GLOBALS.keys():
       print("%s=%s" % (k,CFG_GLOBALS[k]))
+  elif tokens[0] == "savecw":
+    print("Saving as ChipWhisperer format...")
+    support.filemanager.save_cw(tm_in)
   elif tokens[0] in ("r","run"):
     dispatchAlign(tm_in)
   elif tokens[0] in ("q","quit"):

@@ -6,7 +6,7 @@ To demonstrate this, let's review a power trace from a smartcard running a varia
 
 ./plot.py -f ~/data/example1.traces -c 1,2,3 --lowpass 600000,125000000,1 -o 50000 -n 5000:
 
-[misaligned](imgs/prs-lowpass-misaligned.png)
+![misaligned](imgs/prs-lowpass-misaligned.png)
 
 The traces are too misaligned to conduct a useful statistical attack, so let's use the preprocessor tool to clean this up. We can first implement a "coarse" max-correlation alignment, as follows:
 
@@ -16,7 +16,7 @@ You need to edit the pr-scfast-coarse.cmd to pick a "reference window" and a cor
 
 We can then implement a "fine-grained" alignment pass, using pr-scfast-fine.cmd:
 
-[fine alignment](imgs/prs-fine-align.png)
+![fine alignment](imgs/prs-fine-align.png)
 
 Now, we are (maybe, idk, not working here but WIP) ready to perform statistical analysis.
 
