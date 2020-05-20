@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import support.dessupport as dessupport
+import support.attacks.support.dessupport as dessupport
 
 class AttackModel:
   def __init__(self):
