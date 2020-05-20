@@ -26,3 +26,5 @@ class AttackModel:
   def genIValRaw(self,tnum,bnum,kguess):
     return self.desManager[tnum].generateSbox(bnum,kguess)
 
+  def distinguisher(self,tnum,bnum,kguess):
+    return self.genIValRaw(tnum,bnum,kguess) % 2 == 0

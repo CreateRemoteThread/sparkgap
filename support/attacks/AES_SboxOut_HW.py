@@ -22,3 +22,6 @@ class AttackModel:
     global DEFAULT_AES_SBOX
     return DEFAULT_AES_SBOX[self.pt[tnum,bnum]  ^ kguess]
 
+  def distinguisher(self,tnum,bnum,kguess):
+    return self.genIValRaw(tnum,bnum,kguess) % 2 == 0
+

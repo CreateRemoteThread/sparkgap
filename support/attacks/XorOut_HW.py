@@ -18,3 +18,8 @@ class AttackModel:
   def genIValRaw(self,tnum,bnum,kguess):
     return self.pt[tnum,bnum]  ^ kguess
 
+  def distinguisher(self,tnum,bnum,kguess):
+    if bin(self.genIValRaw(tnum,bnum,kguess)).count("1") >= 4:
+      return True
+    else:
+      return False

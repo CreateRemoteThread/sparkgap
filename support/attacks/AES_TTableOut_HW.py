@@ -291,3 +291,7 @@ class AttackModel:
     print("TODO: I don't know how to use a TTable out as a distinguisher...")
     sys.exit(0)
 
+  def distinguisher(self,tnum,bnum,kguess):
+    print("TODO: I don't know how to use a TTable out as a distinguisher...")
+    sys.exit(0)
+

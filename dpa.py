@@ -57,8 +57,8 @@ def deriveKey(tm):
       else:
         trace_count = TRACE_MAX
       for TRACE_NUM in range(0,trace_count):
-        hypothesis = leakmodel.genIValRaw(TRACE_NUM,BYTE_POSN,KEY_GUESS) # sbox[plaintexts[TRACE_NUM,BYTE_POSN] ^ KEY_GUESS]
-        if bin(hypothesis)[2:][-1] == "1":
+        # hypothesis = leakmodel.genIValRaw(TRACE_NUM,BYTE_POSN,KEY_GUESS) # sbox[plaintexts[TRACE_NUM,BYTE_POSN] ^ KEY_GUESS]
+        if leakmodel.distinguisher(TRACE_NUM,BYTE_POSN,KEY_GUESS): #if bin(hypothesis)[2:][-1] == "1":
           group1[:] += tm.getSingleTrace(TRACE_NUM)[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH] # )data[TRACE_NUM,TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH]
           numGroup1 += 1
         else:
