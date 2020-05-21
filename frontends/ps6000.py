@@ -5,7 +5,7 @@ import binascii
 
 ANALOG_OFFSET = -1.800
 VRANGE_PRIMARY = 0.50
-SAMPLE_RATE = 40000000
+SAMPLE_RATE = 125000000
 NUM_SAMPLES = 15000
 
 # TEST
@@ -23,14 +23,19 @@ class CaptureInterface():
     self.ps = ps6000.PS6000()
     #   print("ps6000: could not initialize scope")
     #   return
-    self.ps.setChannel('A','DC',VRange=VRANGE_PRIMARY,VOffset=ANALOG_OFFSET,enabled=True,BWLimited=False)
-    self.ps.setChannel('B','DC',VRange=7.0,VOffset=0.0,enabled=True,BWLimited=False)
+    self.ps.setChannel('A','AC',VRange=0.5,enabled=True,BWLimited=False,probeAttenuation=10.0)
+    # self.ps.setChannel('A','DC',VRange=5.0,enabled=True,BWLimited=False,probeAttenuation=10.0)
+    self.ps.setChannel('B','DC',VRange=7.0,VOffset=0.0,enabled=True,BWLimited=False, probeAttenuation = 10.0)
     nSamples = self.config["samplecount"]
     (freq,maxSamples) = self.ps.setSamplingFrequency(SAMPLE_RATE,nSamples)
     print("ps6000: got frequency %d Hz" % freq)
+    print("Executing dummy capture, please wait 1 second...")
+    self.ps.setSimpleTrigger('B',1.0,'Rising',timeout_ms=1000,enabled=True)
+    self.ps.runBlock()
+    print("Ok, continuing in AC mode")
 
   def arm(self):
-    self.ps.setSimpleTrigger('B',1.0,'Rising',timeout_ms=100,enabled=True)
+    self.ps.setSimpleTrigger('B',1.0,'Rising',timeout_ms=1000,enabled=True)
     self.ps.runBlock()
 
   def capture(self):
