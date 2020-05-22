@@ -10,27 +10,53 @@ import warnings
 import matplotlib as mpl
 import support.filemanager
 import support.attack
+import time
 
 CONFIG_FILE = None
 
-def distinguisher_fixed(data):
+lastTime = 0.0
+lastX = 0
+
+def onclick(event):
+  global lastTime, lastX
+  t = time.time()
+  if t - lastTime < 0.200:
+    print("debounce - nope")
+    return
+  elif event.xdata is None:
+    print("skip - event.xdata (click on graph) is none")
+    return
+  else:
+    lastTime = t
+    if lastX == 0:
+      lastX = int(event.xdata)
+      print("MARK: %d" % lastX)
+    else:
+      localX = int(event.xdata)
+      fromX = min(lastX,localX)
+      toX = max(lastX,localX)
+      dist = toX - fromX
+      print("FROM %d TO %d DIST %d" % (fromX,toX,dist))
+      lastX = localX
+
+def distinguisher_fixed(data,round):
   return np.array_equal(data,[0xaa] * 16)
 
-def distinguisher_even(data):
-  return data[0] % 2 == 0
+def distinguisher_even(data,round):
+  return data[round] % 2 == 0
 
-def distinguisher_random(data):
+def distinguisher_random(data,round):
   return random.randint(0,10) % 2 == 0
 
 CONFIG_DISTINGUISHER = distinguisher_fixed
 
-def do_tlva(fn,distinguisher):
+def do_tlva(fn,distinguisher,round):
   cf = [0xAA] * 16
   df = support.filemanager.load(fn)
   tlva_fixed_traces = []
   tlva_random_traces = []
   for i in range(0,len(df['traces'])):
-    if distinguisher(df['data'][i]):
+    if distinguisher(df['data'][i],round):
       tlva_fixed_traces.append(df['traces'][i])
     else:
       tlva_random_traces.append(df['traces'][i])
@@ -42,16 +68,18 @@ def do_tlva(fn,distinguisher):
   with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     ttrace = scipy.stats.ttest_ind(tlva_random_traces,tlva_fixed_traces,axis=0,equal_var=False)
-  # print(ttrace)
-  return (np.nan_to_num(ttrace[0]),np.nan_to_num(ttrace[1]))
+  return (np.nan_to_num(ttrace[0]),np.nan_to_num(ttrace[1]),len(df['traces'][0]))
 
 CONFIG_WRITEFILE = None
 
 if __name__ == "__main__":
-  optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:",["distinguisher=","writefile="])
+  optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:",["distinguisher=","writefile=","round="])
+  CONFIG_ROUND = 0
   for arg, value in optlist:
     if arg == "-f":
       CONFIG_FILE = value
+    elif arg in ("-r","--round"):
+      CONFIG_ROUND = int(value)
     elif arg in ("-d","--distinguisher"):
       if value.upper() == "EVEN":
         print("* Using EVEN distinguisher (is the first byte of plaintext even)")
@@ -70,13 +98,17 @@ if __name__ == "__main__":
   if CONFIG_WRITEFILE is not None:
     mpl.use("Agg")  
   import matplotlib.pyplot as plt
-  (tt,tp) = do_tlva(CONFIG_FILE,CONFIG_DISTINGUISHER)
+  (tt,tp,numSamples) = do_tlva(CONFIG_FILE,CONFIG_DISTINGUISHER,CONFIG_ROUND)
   fig,ax1 = plt.subplots()
+  fig.canvas.mpl_connect("button_press_event",onclick)
   fig.canvas.set_window_title("Test Vector Leakage Assessment")
   ax1.set_title("T-Value")
   ax1.set_xlabel("Sample")
   ax1.set_ylabel("T-Test Value")
   ax1.plot(tt)
+  tlen = numSamples
+  ax1.hlines(y=4.5,xmin=0,xmax=tlen,color='r')
+  ax1.hlines(y=-4.5,xmin=0,xmax=tlen,color='r')
   if CONFIG_WRITEFILE is not None:
     plt.savefig(CONFIG_WRITEFILE)
   else:

@@ -9,6 +9,7 @@ import sys
 import support.filemanager
 import numpy as np
 import matplotlib.pyplot as plt
+import pywt
 
 def butter_bandpass(lowcut,highcut,fs,order=5):
   nyq = 0.5 * fs
@@ -133,6 +134,13 @@ def getLowpass():
   else:
     return CFG_GLOBALS["lowpass"]
 
+def getBandpass():
+  global CFG_GLOBALS
+  if "bandpass" not in CFG_GLOBALS.keys():
+    return None
+  else:
+    return CFG_GLOBALS["bandpass"]
+
 def doCORR(tm_in):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
@@ -168,6 +176,60 @@ def doCORR(tm_in):
         savedDataIndex += 1
     else:
       print(("Index %d, discarding (correlation is %f, index is %d)" % (i,msv,msi)))
+  print("Saving...")
+  support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+
+import copy
+def doSingleCWTDenoise(x_in,wavelet="db4",level=1):
+  x = copy.copy(x_in)
+  coeff = pywt.wavedec(x,wavelet,mode="per")
+  sigma = mad( coeff[-level])
+  uthresh = sigma * np.sqrt( 2 * np.log( len(x) ) )
+  coeff[1:] = (pywt.threshold(i,value=uthresh,mode="soft") for i in coeff[1:])
+  y = pywt.waverec(coeff,wavelet,mode="per")
+  del(x)
+  return y
+  
+from statsmodels.robust import mad
+def doCWTDenoise(tm_in):
+  numTraces = tm_in.traceCount
+  sampleCnt = tm_in.numPoints
+  traces = zeros((numTraces,sampleCnt),float32)
+  data = zeros((numTraces,16),uint8)
+  data_out = zeros((numTraces,16),uint8)
+  savedDataIndex = 0
+  CONFIG_WRITEFILE = getVariable("writefile")
+  for i in range(0,numTraces):
+    x = tm_in.getSingleTrace(i)
+    dn = doSingleCWTDenoise(tm_in.getSingleTrace(i))
+    if isnan(dn[0]):
+      print("Discarding trace %d" % i)
+    else:
+      print("De-noised trace %d..." % i)
+      traces[savedDataIndex,:] = dn
+      data[savedDataIndex,:] = tm_in.getSingleData(i)
+      data_out[savedDataIndex,:] = tm_in.getSingleDataOut(i)
+      savedDataIndex += 1
+  print("Saving...")
+  support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+
+def doBandpass(tm_in):
+  numTraces = tm_in.traceCount
+  sampleCnt = tm_in.numPoints
+  traces = zeros((numTraces,sampleCnt),float32)
+  data = zeros((numTraces,16),uint8)
+  data_out = zeros((numTraces,16),uint8)
+  savedDataIndex = 0
+  CONFIG_WRITEFILE = getVariable("writefile")
+  (CONFIG_LCUTOFF,CONFIG_HCUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER) = getBandpass()
+  for i in range(0,numTraces):
+    print("Bandpassed traced %d..." % i)
+    x = tm_in.getSingleTrace(i)
+    r2 = butter_bandpass_filter(x,CONFIG_LCUTOFF,CONFIG_HCUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER)
+    traces[savedDataIndex,:] = r2
+    data[savedDataIndex,:] = tm_in.getSingleData(i)
+    data_out[savedDataIndex,:] = tm_in.getSingleDataOut(i)
+    savedDataIndex += 1
   print("Saving...")
   support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
@@ -215,13 +277,19 @@ def dispatchAlign(tm_in):
   global CFG_GLOBALS
   CONFIG_STRATEGY = getVariable("strategy")
   if CONFIG_STRATEGY in ("sad","SAD"):
-    print("Using strategy: SAD")
+    print("Using strategy: Align by Sum of Absolute Differences")
     doSAD(tm_in)
   elif CONFIG_STRATEGY in ("corr","CORR"):
-    print("Using strategy: CORR")
+    print("Using strategy: Align by Maximum Correlation")
     doCORR(tm_in)
+  elif CONFIG_STRATEGY in ("wavelet","WAVELET"):
+    print("Using strategy: Wavelet Denoise")
+    doCWTDenoise(tm_in)
+  elif CONFIG_STRATEGY in ("bandpass","BANDPASS"):
+    print("Using strategy: Band Pass")
+    doCWTDenoise(tm_in)
   else:
-    print("Strategy must be one of SAD, CORR")
+    print("Strategy must be one of SAD, CORR, CWT")
     return
 
 def doSingleCommand(cmd,tm_in):

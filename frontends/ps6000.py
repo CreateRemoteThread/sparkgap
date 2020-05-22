@@ -8,13 +8,11 @@ VRANGE_PRIMARY = 0.50
 SAMPLE_RATE = 125000000
 NUM_SAMPLES = 15000
 
-# TEST
-
 class CaptureInterface():
   def __init__(self):
-    print("Using PicoScope 2xxx Capture Interface")
+    print("Using PicoScope 6xxx Capture Interface")
     self.config = {}
-    self.config["samplecount"] = 15000
+    self.config["samplecount"] = 15000  
 
   def init(self):
     global SAMPLERATE, VRANGE_PRIMARY, ANALOG_OFFSET

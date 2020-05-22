@@ -1,0 +1,3 @@
+set strategy="wavelet"
+run
+
