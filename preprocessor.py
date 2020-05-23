@@ -10,6 +10,7 @@ import support.filemanager
 import numpy as np
 import matplotlib.pyplot as plt
 import pywt
+import random
 
 def butter_bandpass(lowcut,highcut,fs,order=5):
   nyq = 0.5 * fs
@@ -233,6 +234,25 @@ def doBandpass(tm_in):
   print("Saving...")
   support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
+def doEarthquake(tm_in):
+  numTraces = tm_in.traceCount
+  sampleCnt = tm_in.numPoints
+  traces = zeros((numTraces,sampleCnt),float32)
+  data = zeros((numTraces,16),uint8)
+  data_out = zeros((numTraces,16),uint8)
+  CONFIG_WRITEFILE = getVariable("writefile")
+  savedDataIndex = 0
+  for i in range(0,numTraces):
+    x = tm_in.getSingleTrace(i)
+    rval = -1500 + random.randint(0,3000)
+    print(("Index %d, rolling %d!" % (i,rval)))
+    traces[savedDataIndex,:] = roll(x,rval)
+    data[savedDataIndex,:] = tm_in.getSingleData(i)
+    data_out[savedDataIndex,:] = tm_in.getSingleDataOut(i)
+    savedDataIndex += 1
+  print("Saving...")
+  support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+
 def doSAD(tm_in):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
@@ -279,6 +299,9 @@ def dispatchAlign(tm_in):
   if CONFIG_STRATEGY in ("sad","SAD"):
     print("Using strategy: Align by Sum of Absolute Differences")
     doSAD(tm_in)
+  elif CONFIG_STRATEGY in ("earthquake","EARTHQUAKE"):
+    print("Using strategy: Misalign by time-quake! Yay for testing!")
+    doEarthquake(tm_in)
   elif CONFIG_STRATEGY in ("corr","CORR"):
     print("Using strategy: Align by Maximum Correlation")
     doCORR(tm_in)

@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
+import base
+
 from smartcard.CardType import AnyCardType
 from smartcard.CardRequest import CardRequest
 from smartcard.CardConnectionObserver import ConsoleCardConnectionObserver
 from smartcard.Exceptions import CardRequestTimeoutException
 import random
 
-class SIMController:
+class SIMController():
   def __init__(self):
     self.c = None      # fuck pyscard. seriously.
     pass
@@ -66,8 +68,9 @@ class SIMController:
     r,sw1,sw2 = self.c.transmit(authcmd)
 
 
-class DriverInterface():
+class DriverInterface(base.BaseDriverInterface):
   def __init__(self):
+    super().__init__()
     self.config = {}
     self.config["trigger"] = None
     print("Using Smartcard Driver")
@@ -76,7 +79,7 @@ class DriverInterface():
     print("Smartcard: initializing")
     self.sc = SIMController()
     self.scope = scope
-     
+   
   def drive(self,data_in = None):
     next_rand = [random.randint(0,255) for _ in range(16)]
     next_autn = [random.randint(0,255) for _ in range(16)]

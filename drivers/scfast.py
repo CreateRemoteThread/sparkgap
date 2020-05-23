@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import base
 import random
 import time
 import serial
@@ -76,8 +77,9 @@ class SIMController2:
     # r,sw1,sw2 = self.c.transmit(cmd)
     # return (r,sw1,sw2)
 
-class DriverInterface():
+class DriverInterface(base.BaseDriverInterface):
   def __init__(self):
+    super().__init__()
     self.config = {}
     self.config["trigger"] = None
     print("Using SCFast Driver")

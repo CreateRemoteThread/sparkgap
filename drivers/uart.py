@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 # standard usart driver.
+import base
 import random
 import time
 import serial
 
-class DriverInterface():
+class DriverInterface(base.BaseDriverInterface):
   def __init__(self):
+    super().__init__()
     self.config = {}
     print("Using Simple UART driver")
     # reserved names: samplecount,tracecount,trigger
