@@ -22,6 +22,44 @@ class TraceManager:
     if self.f is not None:
       self.f.close()
 
+  def save_cw(self):
+    print("TraceManager: exporting to chipwhisperer format")
+    # return
+    with cd(self.DR):
+      if os.path.isfile("cw.cwp"):
+        print("TraceManager.save_cw: This project is already converted")
+        return
+      f = open("project.cwp","w")
+      f.write("[Trace Management]\n")
+      for k in self.dataObj.keys():
+        f.write("tracefile%d = test%d.cfg\n" % (k,k))
+        f.write("enabled%d = True\n" % k)
+      f.write("[ChipWhisperer]\n")
+      f.write("[[General Settings]]\n")
+      f.write("Project Name = Untitled\n")
+      f.write("Program Name = ChipWhisperer\n")
+      f.close()
+      for k in self.dataObj.keys():
+        print("TraceManager.save_cw: Writing config for dataObj key %d" % k)
+        f = open("test%d.cfg" % k,"w")
+        f.write("[Trace Config]\n") # this is a little annoying, we need to symlink the files
+        f.write("format = native\n")
+        f.write("numTraces = %d\n" % len(self.dataObj[k].traces))
+        f.write("numPoints = %d\n" % len(self.dataObj[k].traces[0]))
+        f.write("prefix = save_cw%d\n" % k)
+        prefix = "save_cw%d" % k
+        print("TraceManager.save_cw: (Dirty Hack!) Linking numpy's to prefix %s" % prefix)
+        traces_fn_raw = self.dataObj[k].traces_fn.split("/")[1]
+        os.system("ln -s %s %s_traces.npy\n" % (traces_fn_raw,prefix))
+        data_fn_raw = self.dataObj[k].data_fn.split("/")[1]
+        os.system("ln -s %s %s_textin.npy\n" % (data_fn_raw,prefix))
+        data_out_fn_raw = self.dataObj[k].data_out_fn.split("/")[1]
+        os.system("ln -s %s %s_textout.npy\n" % (data_out_fn_raw,prefix))
+        os.system("ln -s %s %s_keylist.npy\n" % (data_out_fn_raw,prefix))
+        f.write("scopeSampleRate = 0\n")
+        f.close()
+      print("TraceManager.save_cw: Done. You can load %s/project.cwp" % self.DR)
+
   # wierd weighted mean...
   def getMeant(self):
     meant_array = []

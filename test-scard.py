@@ -146,8 +146,6 @@ class SIMController2:
     cmd.append(len(autn))
     cmd += autn
     self._send_apdu(cmd)
-    # r,sw1,sw2 = self.c.transmit(cmd)
-    # return (r,sw1,sw2)
     
 import time
 if __name__ == "__main__":
@@ -171,8 +169,8 @@ if __name__ == "__main__":
   # r = sc._readbuf()
   print("AUTH")
   sc._umts_auth([0xaa] * 16, [0xbb] * 16)
-  time.sleep(0.5)
-  r = sc._readbuf()
-  r = sc._get_response(r[2])
+  # time.sleep(0.5)
+  # r = sc._readbuf()
+  # r = sc._get_response(r[2])
   sc.ser.close()
   sys.exit(0)

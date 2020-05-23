@@ -13,6 +13,7 @@ class CaptureInterface():
     print("Using PicoScope 6xxx Capture Interface")
     self.config = {}
     self.config["samplecount"] = 15000  
+    self.config["startindex"] = 0
 
   def init(self):
     global SAMPLERATE, VRANGE_PRIMARY, ANALOG_OFFSET
@@ -38,7 +39,7 @@ class CaptureInterface():
 
   def capture(self):
     self.ps.waitReady()
-    return self.ps.getDataV("A",self.config["samplecount"],returnOverflow=False)
+    return self.ps.getDataV("A",self.config["samplecount"],startIndex = self.config["startindex"],returnOverflow=False)
 
   def close(self):
     self.ps.stop()

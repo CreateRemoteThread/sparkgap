@@ -303,7 +303,7 @@ def doSingleCommand(cmd,tm_in):
       print("%s=%s" % (k,CFG_GLOBALS[k]))
   elif tokens[0] == "savecw":
     print("Saving as ChipWhisperer format...")
-    support.filemanager.save_cw(tm_in)
+    tm_in.save_cw()
   elif tokens[0] in ("r","run"):
     dispatchAlign(tm_in)
   elif tokens[0] in ("q","quit"):
