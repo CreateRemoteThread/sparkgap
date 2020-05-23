@@ -241,10 +241,11 @@ def doEarthquake(tm_in):
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   CONFIG_WRITEFILE = getVariable("writefile")
+  CONFIG_SLIDEAMOUNT = int(getOptionalVariable("slidemax",1500))
   savedDataIndex = 0
   for i in range(0,numTraces):
     x = tm_in.getSingleTrace(i)
-    rval = -1500 + random.randint(0,3000)
+    rval = int(-(CONFIG_SLIDEAMOUNT)) + random.randint(0,CONFIG_SLIDEAMOUNT * 2)
     print(("Index %d, rolling %d!" % (i,rval)))
     traces[savedDataIndex,:] = roll(x,rval)
     data[savedDataIndex,:] = tm_in.getSingleData(i)
