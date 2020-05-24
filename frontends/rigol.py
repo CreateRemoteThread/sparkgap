@@ -809,7 +809,7 @@ class CaptureInterface():
     self.scope.write(":TRIG:EDGE:LEV 2.0")
     self.scope.write(":TRIG:EDGE:SWE SING")
     self.scope.write(":WAV:SOUR CHAN1")
-    # self.scope.timebase_scale = 10E-4
+    # self.scope.timebase_scale = 5E-5
 
   def arm(self):
     print("Rigol: arming")
@@ -817,7 +817,7 @@ class CaptureInterface():
     self.START_OFFSET = 0
     self.END_OFFSET = self.config["samplecount"]
     self.scope.single()
-    time.sleep(0.5)
+    # time.sleep(0.1)
 
   def capture(self):
     halftime = self.scope.memory_depth_curr_waveform / 2

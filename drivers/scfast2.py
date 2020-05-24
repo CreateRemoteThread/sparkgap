@@ -11,7 +11,32 @@ class SIMController2:
 
   def _do_auth(self):
     pass
+
+  def _set_wait_us(self,wait_time):
+    self.ser.write(b'w')
+    self.ser.write(bytes([(wait_time >> 8) & 0xFF]));
+    self.ser.write(bytes([wait_time & 0xFF]));
+    c = self.ser.read(1)
+    b1 = self.ser.read(1)
+    b2 = self.ser.read(1)
+    print(c)
+    print("%02x" % b1[0])
+    print("%02x" % b2[0])
+    return
     
+
+  def _set_wait_ms(self,wait_time):
+    self.ser.write(b'W')
+    self.ser.write(bytes([(wait_time >> 8) & 0xFF]));
+    self.ser.write(bytes([wait_time & 0xFF]));
+    c = self.ser.read(1)
+    b1 = self.ser.read(1)
+    b2 = self.ser.read(1)
+    print(c)
+    print("%02x" % b1[0])
+    print("%02x" % b2[0])
+    return
+ 
   def _send_apdu(self,apdu):
     self.ser.write(b'a')
     self.ser.write(bytes([len(apdu)]))
@@ -90,8 +115,11 @@ class DriverInterface(base.BaseDriverInterface):
     self.sc.ser.write(b'R')
     self.sc.ser.read(1)
     time.sleep(0.5)
+    print("Grabbing APDU")
     self.sc._readbuf()
     time.sleep(0.1)
+    self.sc._set_wait_us(0x0000)
+    self.sc._set_wait_ms(0x0000)
     r = self.sc._select_file(file_id=0x2F00)
     r = self.sc._readbuf()
     r = self.sc._get_response(r[1])
@@ -128,6 +156,8 @@ class DriverInterface(base.BaseDriverInterface):
       print("TLVA!")
       next_rand = data_in
     next_autn = [random.randint(0,255) for _ in range(16)]
+    self.sc._set_wait_ms(0x000a * 2)
+    time.sleep(0.1)
     self.scope.arm()
     self.sc._umts_auth([0xaa] * 16, [0xbb] * 16)
     time.sleep(0.1)
