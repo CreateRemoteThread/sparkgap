@@ -4,6 +4,7 @@ import random
 
 class BaseDriverInterface:
   def __init__(self):
+    print("BaseDriverInterface __init__() called")
     self.config = {}
 
   def init(self):

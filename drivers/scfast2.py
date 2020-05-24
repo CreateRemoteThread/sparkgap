@@ -74,8 +74,6 @@ class SIMController2:
     cmd.append(len(autn))
     cmd += autn
     self._send_apdu(cmd)
-    # r,sw1,sw2 = self.c.transmit(cmd)
-    # return (r,sw1,sw2)
 
 class DriverInterface(base.BaseDriverInterface):
   def __init__(self):
@@ -88,17 +86,6 @@ class DriverInterface(base.BaseDriverInterface):
     print("SCFast: initializing")
     self.sc = SIMController2()
     self.scope = scope
-
-  def drive(self,data_in = None):
-    return self.drive_efdir(data_in)
-
-  def drive_efdir(self,data_in = None):
-    if data_in is None:
-      next_rand = [random.randint(0,255) for _ in range(16)]
-    else:
-      print("TLVA!")
-      next_rand = data_in
-    next_autn = [random.randint(0,255) for _ in range(16)]
     print("Reset")
     self.sc.ser.write(b'R')
     self.sc.ser.read(1)
@@ -130,12 +117,21 @@ class DriverInterface(base.BaseDriverInterface):
     # r = self.sc._get_response(r[1])
     # time.sleep(0.1)
     print("AUTH")
+
+  def drive(self,data_in = None):
+    return self.drive_efdir(data_in)
+
+  def drive_efdir(self,data_in = None):
+    if data_in is None:
+      next_rand = [random.randint(0,255) for _ in range(16)]
+    else:
+      print("TLVA!")
+      next_rand = data_in
+    next_autn = [random.randint(0,255) for _ in range(16)]
     self.scope.arm()
     self.sc._umts_auth([0xaa] * 16, [0xbb] * 16)
-    #self.sc.nextg_apdu(next_rand,next_autn,scope=self.scope,trigger=self.config["trigger"])
     time.sleep(0.1)
     r = self.sc._readbuf()
-    # r = self.sc._get_response(r[2])
     return (next_rand,next_autn)
 
   def close(self):

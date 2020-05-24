@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import base
-
+from drivers import base
 from smartcard.CardType import AnyCardType
 from smartcard.CardRequest import CardRequest
 from smartcard.CardConnectionObserver import ConsoleCardConnectionObserver
