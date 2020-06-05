@@ -785,7 +785,8 @@ def format_hex(byte_str):
 
 class CaptureInterface():
   def __init__(self):
-    print("Using Rigol Capture Interface")
+    print("Using Rigol-Differential Capture Interface")
+    print("CH1 is HIGH side / CH3 is LOW side")
     self.config = {}
     self.config["samplecount"] = 15000
     self.setup = True
@@ -799,9 +800,8 @@ class CaptureInterface():
       print("Scope error :(")
       sys.exit(0)
     self.scope.write(":STOP")
-    self.scope.write(":CHAN1:SCAL 0.050")
-    # self.scope.write(":CHAN1:OFFS -3.292") ## 3v atmel
-    # self.scope.write(":CHAN1:OFFS 0.150")
+    self.scope.write(":CHAN1:SCAL 0.010")
+    self.scope.write(":CHAN3:SCAL 0.010")
     self.scope.write(":CHAN2:SCAL 5.0")
     self.scope.write(":CHAN2:OFFS 0.0")
     self.scope.write(":TRIG:MODE EDGE")
@@ -822,10 +822,14 @@ class CaptureInterface():
   def capture(self):
     halftime = self.scope.memory_depth_curr_waveform / 2
     if self.setup is True:
-      return self.scope.get_waveform_samples("CHAN1",mode="RAW",start=halftime + self.START_OFFSET+1,end=halftime  +self.END_OFFSET, setup=True)
+      c1 = self.scope.get_waveform_samples("CHAN1",mode="RAW",start=halftime + self.START_OFFSET+1,end=halftime  +self.END_OFFSET, setup=True)
+      c3 = self.scope.get_waveform_samples("CHAN3",mode="RAW",start=halftime + self.START_OFFSET+1,end=halftime  +self.END_OFFSET, setup=True)
       self.setup = False
+      return c1 - c3
     else:
-      return self.scope.get_waveform_samples("CHAN1",mode="RAW",start=halftime + self.START_OFFSET+1,end=halftime  +self.END_OFFSET, setup=False)
+      c1 = self.scope.get_waveform_samples("CHAN1",mode="RAW",start=halftime + self.START_OFFSET+1,end=halftime  +self.END_OFFSET, setup=False)
+      c3 = self.scope.get_waveform_samples("CHAN3",mode="RAW",start=halftime + self.START_OFFSET+1,end=halftime  +self.END_OFFSET, setup=False)
+      return c1 - c3
 
 
   def close(self):

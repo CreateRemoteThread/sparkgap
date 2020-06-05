@@ -1,9 +1,9 @@
 set strategy="sad"
-set corr_cutoff=0.60
-set sad_cutoff=1000
-set window_offset=494479
-set window_length=5000
-set window_slide=250
+set corr_cutoff=0.8
+set sad_cutoff=500
+set window_offset=36797
+set window_length=2957
+set window_slide=200
 set clkadjust=0
 set clkadjust_max=0
 set ref=0
