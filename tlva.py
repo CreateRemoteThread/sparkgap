@@ -79,6 +79,11 @@ def do_dpatest(fn,distinguisher,round):
   if group1_count == 0 or group2_count == 0:
     print("fatal: poor distinguisher for dpa, group1 %d, group2 %d" % (group1_count,group2_count))
     sys.exit(0)
+  print("******************************************************")
+  print(" warning: plaintext dpa can create false peaks at the")
+  print(" start of a signal due to alignment artefacts. always")
+  print(" double check with -d random :)")
+  print("******************************************************")
   group1[:] /= group1_count
   group2[:] /= group2_count
   diffProfile = abs(group1[:] - group2[:])

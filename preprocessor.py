@@ -184,6 +184,7 @@ def doCORR(tm_in):
         print(("Index %d, discarding (edge Max Coeff Index = not found, mcf is %f)" % (i,msv)))
       else:
         print(("Index %d, Max Corr Coeff Slide %d Samples, Max CF Value %f" % (i,msi,msv)))
+        # traces[savedDataIndex,:] = roll(x,msi)
         traces[savedDataIndex,:] = roll(x,-msi)
         data[savedDataIndex,:] = tm_in.getSingleData(i)
         data_out[savedDataIndex,:] = tm_in.getSingleDataOut(i)
@@ -365,9 +366,11 @@ def doSingleCommand(cmd,tm_in):
   elif tokens[0] == "savecw":
     print("Saving as ChipWhisperer format...")
     tm_in.save_cw()
-  elif tokens[0] in ("r","run"):
+  elif tokens[0] in ["rem","#"]:
+    pass
+  elif tokens[0] in ["r","run"]:
     dispatchAlign(tm_in)
-  elif tokens[0] in ("q","quit"):
+  elif tokens[0] in ["q","quit"]:
     print("Bye!")
     sys.exit(0)
   elif len(cmd) == 0:
