@@ -16,7 +16,8 @@ def butter_bandpass(lowcut,highcut,fs,order=5):
   nyq = 0.5 * fs
   low = lowcut / nyq
   high = highcut / nyq
-  b,a = butter(order, [low, high], btype = 'band')
+  b,a = butter(order, [low, high], btype = 'bandpass')
+  return b,a
 
 def butter_bandpass_filter(data,lowcut,highcut,fs,order=5):
   b,a = butter_bandpass(lowcut,highcut,fs,order=order)
@@ -56,7 +57,10 @@ def getMaxCorrCoeff(trace1,trace2):
         i += LOCAL_CLOCKADJUST
         r1 = trace1[CONFIG_WINDOW_OFFSET + i:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH + i]
         r2 = trace2[CONFIG_WINDOW_OFFSET:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH]
-        r = corrcoef(r1,r2)
+        try:
+          r = corrcoef(r1,r2)
+        except:
+          contiune
         if r[0,1] > maxCf:
           maxCf = r[0,1]
           maxCfIndex = i
@@ -64,7 +68,10 @@ def getMaxCorrCoeff(trace1,trace2):
         i += LOCAL_CLOCKADJUST
         r1 = trace1[CONFIG_WINDOW_OFFSET + i:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH + i]
         r2 = trace2[CONFIG_WINDOW_OFFSET:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH]
-        r = corrcoef(r1,r2)
+        try:
+          r = corrcoef(r1,r2)
+        except:
+          continue
         # print(r)
         if r[0,1] > maxCf:
           maxCf = r[0,1]
@@ -87,14 +94,20 @@ def getMinimalSAD(trace1,trace2):
     for LOCAL_CLOCKADJUST in cAdjustNeg:
       for i in range(0,CONFIG_WINDOW_SLIDE):
         i += LOCAL_CLOCKADJUST
-        ms = getSingleSAD(trace1[CONFIG_WINDOW_OFFSET + i:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH + i],trace2[CONFIG_WINDOW_OFFSET:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH])
+        try:
+          ms = getSingleSAD(trace1[CONFIG_WINDOW_OFFSET + i:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH + i],trace2[CONFIG_WINDOW_OFFSET:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH])
+        except:
+          continue
         if ms < minimalSAD:
           minimalSAD = ms
           minimalSADIndex = i
       for i in range(-CONFIG_WINDOW_SLIDE,0):
         i += LOCAL_CLOCKADJUST
         if CONFIG_WINDOW_OFFSET + i > 0:
-          ms = getSingleSAD(trace1[CONFIG_WINDOW_OFFSET + i:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH + i],trace2[CONFIG_WINDOW_OFFSET:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH])
+          try:
+            ms = getSingleSAD(trace1[CONFIG_WINDOW_OFFSET + i:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH + i],trace2[CONFIG_WINDOW_OFFSET:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH])
+          except:
+            continue
           if ms < minimalSAD:
             minimalSAD = ms
             minimalSADIndex = i
@@ -214,6 +227,26 @@ def doCWTDenoise(tm_in):
   print("Saving...")
   support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
+def doLowpass(tm_in):
+  numTraces = tm_in.traceCount
+  sampleCnt = tm_in.numPoints
+  traces = zeros((numTraces,sampleCnt),float32)
+  data = zeros((numTraces,16),uint8)
+  data_out = zeros((numTraces,16),uint8)
+  savedDataIndex = 0
+  CONFIG_WRITEFILE = getVariable("writefile")
+  (CONFIG_LCUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER) = getLowpass()
+  for i in range(0,numTraces):
+    print("Lowpassed traced %d..." % i)
+    x = tm_in.getSingleTrace(i)
+    r2 = butter_lowpass_filter(x,CONFIG_LCUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER)
+    traces[savedDataIndex,:] = r2
+    data[savedDataIndex,:] = tm_in.getSingleData(i)
+    data_out[savedDataIndex,:] = tm_in.getSingleDataOut(i)
+    savedDataIndex += 1
+  print("Saving...")
+  support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+
 def doBandpass(tm_in):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
@@ -286,6 +319,7 @@ def doSAD(tm_in):
         print(("Index %d, Minimal SAD Slide %d Samples, Minimal SAD Value %f" % (i,msi,msv)))
         # traces[savedDataIndex,:] = x
         traces[savedDataIndex,:] = roll(x,-msi)
+        # traces[savedDataIndex,:] = roll(x,msi)
         data[savedDataIndex,:] = tm_in.getSingleData(i)
         data_out[savedDataIndex,:] = tm_in.getSingleDataOut(i)
         savedDataIndex += 1
@@ -311,7 +345,10 @@ def dispatchAlign(tm_in):
     doCWTDenoise(tm_in)
   elif CONFIG_STRATEGY in ("bandpass","BANDPASS"):
     print("Using strategy: Band Pass")
-    doCWTDenoise(tm_in)
+    doBandpass(tm_in)
+  elif CONFIG_STRATEGY in ("lowpass","LOWPASS"):
+    print("Using strategy: Low Pass")
+    doLowpass(tm_in)
   else:
     print("Strategy must be one of SAD, CORR, CWT")
     return

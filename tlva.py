@@ -45,6 +45,17 @@ def distinguisher_fixed(data,round):
 def distinguisher_even(data,round):
   return data[round] % 2 == 0
 
+def unpackKeeloq(plaintext):
+  out = ""
+  for i in range(0,9):
+    out = format(plaintext[i],"08b") + out
+  print(out[6:])
+  return out[6:]
+
+def distinguisher_keeloq(data,round):
+  f = unpackKeeloq(data)
+  return f[round] == '1'
+
 def distinguisher_random(data,round):
   return random.randint(0,10) % 2 == 0
 
@@ -87,6 +98,9 @@ if __name__ == "__main__":
       elif value.upper() == "FIXED":
         print("* Using FIXED distinguisher (is the plaintext 0xAA * 16)")
         CONFIG_DISTINGUISHER = distinguisher_fixed
+      elif value.upper() == "KEELOQ":
+        print("* Using KEELOQ SPECIAL distinguisher")
+        CONFIG_DISTINGUISHER = distinguisher_keeloq
       elif value.upper() == "RANDOM":
         print("* Using RANDOM distinguisher. Traces into random buckets, testing for null hypothesis")
         CONFIG_DISTINGUISHER = distinguisher_random

@@ -6,6 +6,14 @@ import time
 import serial
 import binascii
 
+def packKeeloq(bitstring):
+  bs = int(bitstring,2)
+  out = [0] * 16
+  for i in range(0,9):
+    fq = (bs >> (i * 8)) & 0xFF
+    out[i] = fq
+  return out
+
 class DriverInterface(base.BaseDriverInterface):
   def __init__(self):
     super().__init__()
@@ -28,12 +36,12 @@ class DriverInterface(base.BaseDriverInterface):
     c = self.ser.read(1)
     print(c)
     self.ser.read(2)
-    fd = fd[0:32]
-    fi = int(fd[::-1],2)
-    print("%x:%s" % (fi,fd))
+    # fd = fd[0:32]
+    # fi = int(fd[::-1],2)
+    # print("%x:%s" % (fi,fd))
     # printf(fi,fd)
-    fr = [fi & 0xFF, (fi >> 8) & 0xFF, (fi >> 16) & 0xFF] + [0] * 13
-    return (fr,[0] * 16)
+    # fr = [fi & 0xFF, (fi >> 8) & 0xFF, (fi >> 16) & 0xFF] + [0] * 13
+    return (packKeeloq(fd),[0] * 16)
     # if fd[0] == ord('1'):
     #   return ([1] * 16,[0] * 16)
     # else:
