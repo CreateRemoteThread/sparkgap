@@ -111,19 +111,18 @@ DO_TLVA  = 0
 DO_DPA   = 1
 CONFIG_STRATEGY = DO_TLVA
 
-
 if __name__ == "__main__":
   optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:",["distinguisher=","writefile=","round=","dpa"])
   CONFIG_ROUND = 0
   for arg, value in optlist:
     if arg == "-f":
       CONFIG_FILE = value
-    elif arg in ("--dpa"):
+    elif arg in ["--dpa"]:
       print("* Using raw plaintext DPA technique")
       CONFIG_STRATEGY = DO_DPA
-    elif arg in ("-r","--round"):
+    elif arg in ["-r","--round"]:
       CONFIG_ROUND = int(value)
-    elif arg in ("-d","--distinguisher"):
+    elif arg in ["-d","--distinguisher"]:
       if value.upper() == "EVEN":
         print("* Using EVEN distinguisher (is the first byte of plaintext even)")
         CONFIG_DISTINGUISHER = distinguisher_even
@@ -139,7 +138,7 @@ if __name__ == "__main__":
       else:
         print("Unknown distinguisher. Valid values are EVEN, FIXED, RANDOM")
         sys.exit(0)
-    elif arg in ("-w","--writefile"):
+    elif arg in ["-w","--writefile"]:
       CONFIG_WRITEFILE = value
   if CONFIG_WRITEFILE is not None:
     mpl.use("Agg")  
