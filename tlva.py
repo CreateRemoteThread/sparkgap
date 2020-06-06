@@ -61,6 +61,30 @@ def distinguisher_random(data,round):
 
 CONFIG_DISTINGUISHER = distinguisher_fixed
 
+# plaintext dpa "t-test"
+def do_dpatest(fn,distinguisher,round):
+  df = support.filemanager.load(fn)
+  tracelen = len(df['traces'][0])
+  group1 = np.zeros(tracelen)
+  group2 = np.zeros(tracelen)
+  group1_count = 0
+  group2_count = 0
+  for i in range(0,len(df['traces'])):
+    if distinguisher(df['data'][i],round):
+      group1 += df['traces'][i]
+      group1_count += 1
+    else:
+      group2 += df['traces'][i]
+      group2_count += 1
+  if group1_count == 0 or group2_count == 0:
+    print("fatal: poor distinguisher for dpa, group1 %d, group2 %d" % (group1_count,group2_count))
+    sys.exit(0)
+  group1[:] /= group1_count
+  group2[:] /= group2_count
+  diffProfile = abs(group1[:] - group2[:])
+  return (diffProfile,0,0)
+
+# actual t-test
 def do_tlva(fn,distinguisher,round):
   cf = [0xAA] * 16
   df = support.filemanager.load(fn)
@@ -83,12 +107,20 @@ def do_tlva(fn,distinguisher,round):
 
 CONFIG_WRITEFILE = None
 
+DO_TLVA  = 0
+DO_DPA   = 1
+CONFIG_STRATEGY = DO_TLVA
+
+
 if __name__ == "__main__":
-  optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:",["distinguisher=","writefile=","round="])
+  optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:",["distinguisher=","writefile=","round=","dpa"])
   CONFIG_ROUND = 0
   for arg, value in optlist:
     if arg == "-f":
       CONFIG_FILE = value
+    elif arg in ("--dpa"):
+      print("* Using raw plaintext DPA technique")
+      CONFIG_STRATEGY = DO_DPA
     elif arg in ("-r","--round"):
       CONFIG_ROUND = int(value)
     elif arg in ("-d","--distinguisher"):
@@ -112,7 +144,13 @@ if __name__ == "__main__":
   if CONFIG_WRITEFILE is not None:
     mpl.use("Agg")  
   import matplotlib.pyplot as plt
-  (tt,tp,numSamples) = do_tlva(CONFIG_FILE,CONFIG_DISTINGUISHER,CONFIG_ROUND)
+  if CONFIG_STRATEGY == DO_TLVA:
+    (tt,tp,numSamples) = do_tlva(CONFIG_FILE,CONFIG_DISTINGUISHER,CONFIG_ROUND)
+  elif CONFIG_STRATEGY == DO_DPA:
+    (tt,tp,numSamples) = do_dpatest(CONFIG_FILE,CONFIG_DISTINGUISHER,CONFIG_ROUND)
+  else:
+    print("Unknown value of CONFIG_STRATEGY, %d" % CONFIG_STRATEGY)
+    sys.exit(0)
   fig,ax1 = plt.subplots()
   fig.canvas.mpl_connect("button_press_event",onclick)
   fig.canvas.set_window_title("Test Vector Leakage Assessment")
@@ -121,8 +159,10 @@ if __name__ == "__main__":
   ax1.set_ylabel("T-Test Value")
   ax1.plot(tt)
   tlen = numSamples
-  ax1.hlines(y=4.5,xmin=0,xmax=tlen,color='r')
-  ax1.hlines(y=-4.5,xmin=0,xmax=tlen,color='r')
+  if CONFIG_STRATEGY == DO_TLVA:
+    print("Drawing 4.5 markers")
+    ax1.hlines(y=4.5,xmin=0,xmax=tlen,color='r')
+    ax1.hlines(y=-4.5,xmin=0,xmax=tlen,color='r')
   if CONFIG_WRITEFILE is not None:
     plt.savefig(CONFIG_WRITEFILE)
   else:
