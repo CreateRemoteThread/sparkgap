@@ -45,6 +45,9 @@ def deriveKey(tm):
   recovered = zeros(leakmodel.keyLength)
   for BYTE_POSN in range(0,leakmodel.keyLength):
     print("Attempting recovery of byte %d..." % BYTE_POSN)
+    if(leakmodel.fragmentMax < 3):
+      print("fragmentMax in the attack model must be >= 3 for this to work")
+      sys.exit(0)
     plfh = zeros(leakmodel.fragmentMax)
     for KEY_GUESS in range(0,leakmodel.fragmentMax):
       numGroup1 = 0

@@ -54,7 +54,8 @@ def unpackKeeloq(plaintext):
 
 def distinguisher_keeloq(data,round):
   f = unpackKeeloq(data)
-  return f[round] == '1'
+  fc = f[0:32]
+  return fc.count('1') > 16
 
 def distinguisher_random(data,round):
   return random.randint(0,10) % 2 == 0

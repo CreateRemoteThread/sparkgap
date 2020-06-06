@@ -2,30 +2,45 @@
 
 # Keeloq DPA.
 
+import random
+import support.attacks.support.keeloq as keeloq
+
+def unpackKeeloq(plaintext):
+  out = ""
+  for i in range(0,9):
+    out = format(plaintext[i],"08b") + out
+  return out[6:]
+
+def unpackKeeloqInt(plaintext):
+  ival = unpackKeeloq(plaintext)
+  nextstep = ival[0:32]
+  return int(nextstep[::-1],2)
+
 class AttackModel:
   def __init__(self):
     print("Loading Keeloq Attack Model")
-    self.keyLength = 32
-    self.fragmentMax = 2
+    self.keyLength = 1
+    self.fragmentMax = 0b10000
 
   def loadPlaintextArray(self,plaintexts):
-    print("Loading Keeloq Ciphertexts (actually plaintexts lol")
-    self.pt = plaintexts
-    self.desManager = {}
-    trace_count = plaintexts[:,0].size
-    print("Pre-scheduling %d keys, this might take a while..." % trace_count)
-    for tnum in range(0,trace_count):
-      self.desManager[tnum] = dessupport.desIntermediateValue()
-      self.desManager[tnum].preprocess(plaintexts[tnum])
+    print("Loading Keeloq Ciphertexts")
+    self.kl = [unpackKeeloq(pt) for pt in plaintexts]
+    self.kl_ints = [unpackKeeloqInt(pt) for pt in plaintexts]
 
   def loadCiphertextArray(self,ct):
+    print("LoadCiphertextArray called, should be 0")
     self.ct = ct
 
   def genIVal(self,tnum,bnum,kguess):
-    return bin(self.desManager[tnum].generateSbox(bnum,kguess)).count("1")
+    print("Keeloq IVal Calculation: Returning 0")
+    return 0
+    # eturn bin(self.desManager[tnum].generateSbox(bnum,kguess)).count("1")
 
-  def genIValRaw(self,tnum,bnum,kguess):
-    return self.desManager[tnum].generateSbox(bnum,kguess)
-
+  # FOUR ROUNDS _ONLY_
   def distinguisher(self,tnum,bnum,kguess):
-    return self.genIValRaw(tnum,bnum,kguess) % 2 == 0
+    f = format(kguess,"04b")
+    (decr,dist) = keeloq.keeloqDecryptKeybitHD(self.kl_ints[tnum],int(f[3],2))
+    (decr,dist) = keeloq.keeloqDecryptKeybitHD(decr,int(f[2],2))
+    (decr,dist) = keeloq.keeloqDecryptKeybitHD(decr,int(f[1],2))
+    (decr,dist) = keeloq.keeloqDecryptKeybitHD(decr,int(f[0],2))
+    return dist > 16
