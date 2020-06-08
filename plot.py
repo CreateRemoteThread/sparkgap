@@ -229,6 +229,10 @@ if __name__ == "__main__":
     for i in TRACES:
       if OFFSET == 0 and COUNT == 0:
         d = tm.getSingleTrace(i)
+        di = tm.getSingleData(i)
+        do = tm.getSingleDataOut(i)
+        print(di)
+        print(do)
       else:
         d = tm.getSingleTrace(i)[OFFSET:OFFSET+COUNT]
       # print("Continuing...")

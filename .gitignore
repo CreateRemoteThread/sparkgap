@@ -1,4 +1,7 @@
 # Byte-compiled / optimized / DLL files
+
+experiments/pr-*.cmd
+
 __pycache__/
 *.py[cod]
 *$py.class

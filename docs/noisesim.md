@@ -2,12 +2,12 @@
 
 This toolkit has the ability to add varying degrees of misalignment. To use this, use the preprocessing tool, as follows:
 
-./preprocessor.py -f ~/source.traces -w ~/dest
-set strategy="earthquake"
-set slidemax=1234
-r
-...
-q
+    ./preprocessor.py -f ~/source.traces -w ~/dest
+    set strategy="earthquake"
+    set slidemax=1234
+    r
+    ...
+    q
 
 Note that the slidemax variable is half the "slide window": that is, each trace will be "rolled" (-slidemax) + random.randint(0,slidemax * 2) samples. You can then use various strategies to see how close you can come to realignment. As a test case, I've realigned an AVR AES sample data set with a slidemax of 100. The information extractable out of differential analysis is completely gone, and a CPA is much less effective:
 

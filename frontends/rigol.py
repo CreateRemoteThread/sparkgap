@@ -799,7 +799,8 @@ class CaptureInterface():
       print("Scope error :(")
       sys.exit(0)
     self.scope.write(":STOP")
-    self.scope.write(":CHAN1:SCAL 0.050")
+    # self.scope.write(":CHAN1:SCAL 0.050")
+    # self.scope.write(":CHAN1:OFFS -2.960")
     # self.scope.write(":CHAN1:OFFS 0.050")
     # self.scope.write(":CHAN1:OFFS -3.292") ## 3v atmel
     # self.scope.write(":CHAN1:OFFS 0.150")
@@ -807,7 +808,7 @@ class CaptureInterface():
     self.scope.write(":CHAN2:OFFS 0.0")
     self.scope.write(":TRIG:MODE EDGE")
     self.scope.write(":TRIG:EDGE:SOUR CHAN2")
-    self.scope.write(":TRIG:EDGE:LEV 2.0")
+    self.scope.write(":TRIG:EDGE:LEV 2.2")
     self.scope.write(":TRIG:EDGE:SWE SING")
     self.scope.write(":WAV:SOUR CHAN1")
     # self.scope.timebase_scale = 5E-5
