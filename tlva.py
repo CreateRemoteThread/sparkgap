@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
 
+#  TVLA leakfinder
+# -----------------
+#  -f <traceset>
+#  -d <distinguisher>
+#     - even
+#     - fixed
+#     - random
+#     - (an attack name), same as dpa
+#  -b <bytenum:default 0>
+#  -k <keyguess:default 0>>
+
 import scipy
 import scipy.stats
 import getopt
@@ -42,7 +53,7 @@ def onclick(event):
 def distinguisher_fixed(data,round):
   return np.array_equal(data,[0xaa] * 16)
 
-def distinguisher_even(data,round):
+def distinguisher_even(data,round,keyguess):
   return data[round] % 2 == 0
 
 # keeloq is 66 bits...
@@ -95,6 +106,20 @@ CONFIG_STRATEGY = DO_TLVA
 
 leakmodel = None
 
+class SpecialLeakModel:
+  def __init__(self):
+    self.customDistinguisher = None
+    pass
+
+  def loadPlaintextArray(self,pts):
+    self.plaintexts = pts
+
+  def loadCiphertextArray(self,cts):
+    self.ciphertexts = cts
+
+  def distinguisher(self,xindex,byte,key):
+    return self.customDistinguisher(self.plaintexts[xindex],byte,key)
+
 if __name__ == "__main__":
   optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:b:k:",["byte=","key=","distinguisher=","writefile=","round=","dpa"])
   CONFIG_ROUND = 0
@@ -113,12 +138,19 @@ if __name__ == "__main__":
     elif arg in ["-r","--round"]:
       CONFIG_ROUND = int(value)
     elif arg in ["-d","--distinguisher"]:
-      leakmodel = support.attack.fetchModel(value)
+      if value.upper() == "EVEN":
+        leakmodel = SpecialLeakModel()
+        leakmodel.customDistinguisher =distinguisher_even
+      else:
+        leakmodel = support.attack.fetchModel(value)
     elif arg in ["-w","--writefile"]:
       CONFIG_WRITEFILE = value
   if CONFIG_WRITEFILE is not None:
     mpl.use("Agg")  
   import matplotlib.pyplot as plt
+  if CONFIG_FILE is None:
+    print("You must specify a file")
+    sys.exit(0)
   fn = support.filemanager.TraceManager(CONFIG_FILE)
   leakmodel.loadPlaintextArray(fn.loadPlaintexts())
   if CONFIG_STRATEGY == DO_TLVA:
