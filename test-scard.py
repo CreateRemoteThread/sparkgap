@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-from smartcard.CardType import AnyCardType
-from smartcard.CardRequest import CardRequest
-from smartcard.CardConnectionObserver import ConsoleCardConnectionObserver
-from smartcard.Exceptions import CardRequestTimeoutException
 import triggerbuddy
 import getopt
 import sys
@@ -157,7 +153,7 @@ if __name__ == "__main__":
   r = sc._select_file(file_id=0x2F00) # EF_DIR
   time.sleep(0.1)
   r = sc._readbuf()
-  r = sc._get_response(r[1])
+  r = sc._get_response(r[2])
   # for cx in r:
   #   print("%02x" % cx)
   r = sc._send_apdu([0x00,0xB2,0x01,0x04,r[8]])

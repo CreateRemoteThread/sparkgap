@@ -1,7 +1,7 @@
 matplotlib
 statsmodels
 chipwhisperer
-chipshouter
 scipy
 numpy
-pywt
+PyWavelets
+python-vxi11

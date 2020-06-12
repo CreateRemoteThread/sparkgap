@@ -19,7 +19,7 @@ lastTime = 0.0
 lastX = 0
 
 def onclick(event):
-  global lastTime, lastX
+  global lastTime, lastX, OFFSET
   t = time.time()
   if t - lastTime < 0.200:
     print("debounce - nope")
@@ -31,12 +31,15 @@ def onclick(event):
     lastTime = t
     if lastX == 0:
       lastX = int(event.xdata)
+      lastX += OFFSET
       print("MARK: %d" % lastX)
     else:
       localX = int(event.xdata)
       fromX = min(lastX,localX)
       toX = max(lastX,localX)
       dist = toX - fromX
+      fromX += OFFSET
+      toX += OFFSET
       print("FROM %d TO %d DIST %d" % (fromX,toX,dist))
       lastX = localX
 
@@ -289,8 +292,7 @@ if __name__ == "__main__":
         else:
           plt.show()
           PLOT_SHOWN = True
-      else: # plot raw trace
-        # print(d[0:50])
+      else:
         plt.plot(d)
   if PLOT_SHOWN is False:
     plt.title(TITLE)

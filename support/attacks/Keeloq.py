@@ -2,8 +2,36 @@
 
 # Keeloq DPA.
 
+import sys
 import random
 import support.attacks.support.keeloq as keeloq
+
+def getHammingWeight(x):
+  return bin(x).count("1")
+
+print("Initializing HW LUT")
+HW_LUT = [getHammingWeight(x) for x in range(0,256)]
+
+print("Performing decryption test")
+decr = keeloq.keeloqDecryptKeybit(0x11223344,1)
+print(bin(decr))
+decr = keeloq.keeloqDecryptKeybit(decr,1)
+print(bin(decr))
+decr = keeloq.keeloqDecryptKeybit(decr,1)
+print(bin(decr))
+decr = keeloq.keeloqDecryptKeybit(decr,1)
+print(bin(decr))
+
+print("Perfroming decryption with alternate Key2")
+decr = keeloq.keeloqDecryptKeybit(0x11223344,1)
+print(bin(decr))
+decr = keeloq.keeloqDecryptKeybit(decr,0)
+print(bin(decr))
+decr = keeloq.keeloqDecryptKeybit(decr,1)
+print(bin(decr))
+decr = keeloq.keeloqDecryptKeybit(decr,1)
+print(bin(decr))
+# sys.exit(0)
 
 def unpackKeeloq(plaintext):
   out = ""
@@ -53,6 +81,7 @@ class AttackModel:
     return dist1
 
   def distinguisher(self,tnum,bnum,kguess):
+    global HW_LUT
     knownKey = 0x0218  # known keys get glued onto the end...
     knownKeyLen = 16
     decr = self.kl_ints[tnum]
@@ -62,6 +91,7 @@ class AttackModel:
     keyGuessBitString = format(kguess,"08b")
     for i in range(0,len(keyGuessBitString)):
       (decr,dist1) = keeloq.keeloqDecryptKeybitHD(decr,int(keyGuessBitString[i],2))
+    # MSB = 1 (trying "forward" attack)
+    # o = format(decr,"032b")
+    # return o[0] == '1'
     return dist1 > 16
-    # return decr % 2 == 0
-    # return decr % 2 == 0

@@ -808,7 +808,7 @@ class CaptureInterface():
     self.scope.write(":CHAN2:OFFS 0.0")
     self.scope.write(":TRIG:MODE EDGE")
     self.scope.write(":TRIG:EDGE:SOUR CHAN2")
-    self.scope.write(":TRIG:EDGE:LEV 2.2")
+    self.scope.write(":TRIG:EDGE:LEV 2.7")
     self.scope.write(":TRIG:EDGE:SWE SING")
     self.scope.write(":WAV:SOUR CHAN1")
     # self.scope.timebase_scale = 5E-5

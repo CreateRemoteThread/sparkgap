@@ -6,7 +6,7 @@ Sparkgap is a major refactor of my previous SCA and FI code. This provides a mor
 
 This toolkit contains:
 
-- cpa.py, wrapper for correlation attacks (AES and DES)
+- cpa.py, wrapper for correlation attacks
 - dpa.py, wrapper for differential attacks
 - plot.py, a simple trace visualizer
 - preprocessor.py, a signal alignment tool
@@ -15,6 +15,7 @@ This toolkit contains:
   - drivers/*, wrapper scripts for logic control drivers
 - triggerbuddy.py, control script for TriggerBuddy FPGA module
 - support/*, a single support package for FI and SCA
+- support/attacks/*, distinguisher and correlation modeling
 - experiments/*, in-progress and successful attacks
 - docs/*, self-contained markdown documentation
 - fpga/*, the source code + bitstream for a TriggerBuddy (for Arty A7 35T variant)

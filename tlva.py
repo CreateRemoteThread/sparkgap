@@ -76,7 +76,7 @@ CONFIG_DISTINGUISHER = distinguisher_fixed
 
 # plaintext dpa "t-test"
 def do_dpatest(fn,leakmodel,round,CONFIG_BYTE,CONFIG_KEYGUESS):
-  printf("DPA Test rework WIP, come back later...")
+  print("DPA Test rework WIP, come back later...")
   sys.exit(0)
 
 def do_tlva(fn,leakmodel,round,CONFIG_BYTE,CONFIG_KEYGUESS):

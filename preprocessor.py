@@ -7,6 +7,7 @@ from numpy import *
 import getopt
 import sys
 import support.filemanager
+import support.slipnslide
 import numpy as np
 import matplotlib.pyplot as plt
 import pywt
@@ -323,6 +324,15 @@ def doEarthquake(tm_in):
   print("Saving...")
   support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
+def doSlicer(tm_in):
+  CONFIG_REFTRACE = getVariable("ref")
+  CONFIG_REF_OFFSET = getVariable("ref_offset")
+  CONFIG_REF_LENGTH = getVariable("ref_length")
+  CONFIG_SLICE_DIST = getVariable("slicedist")
+  CONFIG_SAD_CUTOFF = getVariable("sad_cutoff")
+  se = support.slipnslide.SliceEngine(tm_in)
+  se.PrepareTemplate(CONFIG_REFTRACE, CONFIG_REF_OFFSET, CONFIG_REF_LENGTH,CONFIG_SLICE_DIST,CONFIG_SAD_CUTOFF)
+
 def doSAD(tm_in):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
@@ -388,6 +398,9 @@ def dispatchAlign(tm_in):
   elif CONFIG_STRATEGY in ("keeloq","KEELOQ"):
     print("Using strategy: Flip Keeloq IO Special")
     doFlipKeeloqIO(tm_in)
+  elif CONFIG_STRATEGY.upper() == "SLICER":
+    print("Using strategy: SlipNSlide Slice Extractor")
+    doSlicer(tm_in)
   else:
     print("Strategy must be one of SAD, CORR, CWT")
     return
