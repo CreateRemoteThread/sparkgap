@@ -330,8 +330,10 @@ def doSlicer(tm_in):
   CONFIG_REF_LENGTH = getVariable("ref_length")
   CONFIG_SLICE_DIST = getVariable("slicedist")
   CONFIG_SAD_CUTOFF = getVariable("sad_cutoff")
+  maxSlicesBackwards = getVariable("slices_backwards")
+  maxSlicesForwards = getVariable("slices_forwards")
   se = support.slipnslide.SliceEngine(tm_in)
-  se.PrepareTemplate(CONFIG_REFTRACE, CONFIG_REF_OFFSET, CONFIG_REF_LENGTH,CONFIG_SLICE_DIST,CONFIG_SAD_CUTOFF)
+  se.FindSlices(CONFIG_REFTRACE, CONFIG_REF_OFFSET, CONFIG_REF_LENGTH,CONFIG_SLICE_DIST,CONFIG_SAD_CUTOFF,maxSlicesBackwards,maxSlicesForwards)
 
 def doSAD(tm_in):
   numTraces = tm_in.traceCount

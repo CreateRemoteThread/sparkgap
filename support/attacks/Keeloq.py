@@ -64,17 +64,19 @@ class AttackModel:
 
   # Correlate via HD of 8th bit (should be *reasonably* stable?)
   def genIVal(self,tnum,bnum,kguess):
-    knownKey = 0x02 # 18debd
-    knownKeyLen = 8 # 32
+    knownKey = 0x0218debf # orig is 0x0218debd
+    knownKeyLen = 32 # 32
+    useKnownKey = True
     decr = self.kl_ints[tnum]
     if tnum in self.fragCache.keys():
       decr = self.fragCache[tnum]
     else:
       knownKeyBitString = format(knownKey,"0%db" % knownKeyLen)
-      for i in range(0,len(knownKeyBitString)):
-        (decr,dist1) = keeloq.keeloqDecryptKeybitHD(decr,int(knownKeyBitString[i],2))
-      print("Caching intermediate decrypt for trace %d" % tnum)
-      self.fragCache[tnum] = decr
+      if useKnownKey:
+        for i in range(0,len(knownKeyBitString)):
+          (decr,dist1) = keeloq.keeloqDecryptKeybitHD(decr,int(knownKeyBitString[i],2))
+        print("Caching intermediate decrypt for trace %d" % tnum)
+        self.fragCache[tnum] = decr
     keyGuessBitString = format(kguess,"08b")
     for i in range(0,len(keyGuessBitString)):
       (decr,dist1) = keeloq.keeloqDecryptKeybitHD(decr,int(keyGuessBitString[i],2))
@@ -82,16 +84,16 @@ class AttackModel:
 
   def distinguisher(self,tnum,bnum,kguess):
     global HW_LUT
-    knownKey = 0x0218  # known keys get glued onto the end...
+    knownKey = 0x1122  # known keys get glued onto the end...
     knownKeyLen = 16
+    useKnownKey = False
     decr = self.kl_ints[tnum]
+    # return (decr >> 1) % 2 == 0
     knownKeyBitString = format(knownKey,"0%db" % knownKeyLen)
-    for i in range(0,len(knownKeyBitString)):
-      (decr,dist1) = keeloq.keeloqDecryptKeybitHD(decr,int(knownKeyBitString[i],2))
+    if useKnownKey:
+      for i in range(0,len(knownKeyBitString)):
+        (decr,dist1) = keeloq.keeloqDecryptKeybitHD(decr,int(knownKeyBitString[i],2))
     keyGuessBitString = format(kguess,"08b")
     for i in range(0,len(keyGuessBitString)):
       (decr,dist1) = keeloq.keeloqDecryptKeybitHD(decr,int(keyGuessBitString[i],2))
-    # MSB = 1 (trying "forward" attack)
-    # o = format(decr,"032b")
-    # return o[0] == '1'
     return dist1 > 16

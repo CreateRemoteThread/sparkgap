@@ -804,11 +804,11 @@ class CaptureInterface():
     # self.scope.write(":CHAN1:OFFS 0.050")
     # self.scope.write(":CHAN1:OFFS -3.292") ## 3v atmel
     # self.scope.write(":CHAN1:OFFS 0.150")
-    self.scope.write(":CHAN2:SCAL 5.0")
-    self.scope.write(":CHAN2:OFFS 0.0")
+    # self.scope.write(":CHAN2:SCAL 5.0")
+    # self.scope.write(":CHAN2:OFFS 0.0")
     self.scope.write(":TRIG:MODE EDGE")
     self.scope.write(":TRIG:EDGE:SOUR CHAN2")
-    self.scope.write(":TRIG:EDGE:LEV 2.7")
+    # self.scope.write(":TRIG:EDGE:LEV 2.0")
     self.scope.write(":TRIG:EDGE:SWE SING")
     self.scope.write(":WAV:SOUR CHAN1")
     # self.scope.timebase_scale = 5E-5

@@ -50,10 +50,11 @@ def onclick(event):
       print("FROM %d TO %d DIST %d" % (fromX,toX,dist))
       lastX = localX
 
-def distinguisher_fixed(data,round):
+def distinguisher_fixed(data,roundmkeyguess):
   return np.array_equal(data,[0xaa] * 16)
 
 def distinguisher_even(data,round,keyguess):
+  # print("%02x" % data[round])
   return data[round] % 2 == 0
 
 # keeloq is 66 bits...
@@ -69,7 +70,7 @@ def distinguisher_keeloq(data,round):
   fc = f[0:32]
   return fc[round] == '1'
 
-def distinguisher_random(data,round):
+def distinguisher_random(data,round,keyguess):
   return random.randint(0,10) % 2 == 0
 
 CONFIG_DISTINGUISHER = distinguisher_fixed
@@ -141,6 +142,12 @@ if __name__ == "__main__":
       if value.upper() == "EVEN":
         leakmodel = SpecialLeakModel()
         leakmodel.customDistinguisher =distinguisher_even
+      elif value.upper() == "FIXED":
+        leakmodel = SpecialLeakModel()
+        leakmodel.customDistinguisher =distinguisher_fixed
+      elif value.upper() == "RANDOM":
+        leakmodel = SpecialLeakModel()
+        leakmodel.customDistinguisher =distinguisher_random
       else:
         leakmodel = support.attack.fetchModel(value)
     elif arg in ["-w","--writefile"]:
