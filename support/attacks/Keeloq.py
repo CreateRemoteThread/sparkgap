@@ -64,8 +64,8 @@ class AttackModel:
 
   # Correlate via HD of 8th bit (should be *reasonably* stable?)
   def genIVal(self,tnum,bnum,kguess):
-    knownKey = 0x0218debf # orig is 0x0218debd
-    knownKeyLen = 32 # 32
+    knownKey = 0x11 # 0x0218debf # orig is 0x0218debd
+    knownKeyLen = 8 # 32
     useKnownKey = True
     decr = self.kl_ints[tnum]
     if tnum in self.fragCache.keys():
