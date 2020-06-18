@@ -64,9 +64,9 @@ class AttackModel:
 
   # Correlate via HD of 8th bit (should be *reasonably* stable?)
   def genIVal(self,tnum,bnum,kguess):
-    knownKey = 0x11 # 0x0218debf # orig is 0x0218debd
-    knownKeyLen = 8 # 32
-    useKnownKey = False
+    knownKey = 0x0218de # 0x0218debf # orig is 0x0218debd
+    knownKeyLen = 24 # 32
+    useKnownKey = True
     decr = self.kl_ints[tnum]
     if tnum in self.fragCache.keys():
       decr = self.fragCache[tnum]
@@ -84,9 +84,9 @@ class AttackModel:
 
   def distinguisher(self,tnum,bnum,kguess):
     global HW_LUT
-    knownKey = 0x1122  # known keys get glued onto the end...
-    knownKeyLen = 16
-    useKnownKey = False
+    knownKey = 0x0218de  # known keys get glued onto the end...
+    knownKeyLen = 24
+    useKnownKey = True
     decr = self.kl_ints[tnum]
     # return (decr >> 1) % 2 == 0
     knownKeyBitString = format(knownKey,"0%db" % knownKeyLen)
@@ -97,4 +97,4 @@ class AttackModel:
     for i in range(0,len(keyGuessBitString)):
       (decr,dist1) = keeloq.keeloqDecryptKeybitHD(decr,int(keyGuessBitString[i],2))
     # return (decr >> 31) % 2 == 0
-    return dist1 > 16
+    return dist1 > 12
