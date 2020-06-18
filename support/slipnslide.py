@@ -21,27 +21,39 @@ class SliceEngine:
     print(" - sad_cutoff: %f" % sad_cutoff)
     rt = self.tm_in.getSingleTrace(ref_num)
     refSlice = rt[ref_offset:ref_offset + ref_length]
+    traceAverage = average(refSlice)
     print("Seeking from midpoint:")
-    foundSlices = []
+    foundSlices = array([])
     seekAdjust = 0
-    for seekAttempt in range(-1,-maxSlicesBackwards,-1):
-      seekOffset = seekAdjust + ref_offset + seekAttempt * dist_between_slices
-      firstSAD = None
-      minSAD = sad_cutoff
-      minShift = None
-      for offset in range(-wiggleRoom, wiggleRoom):
-        tempSlice = rt[seekOffset + offset:seekOffset + offset + ref_length]
-        if(seekOffset + offset < 0):
-          continue
-        elif seekOffset + offset + ref_length > self.tm_in.numPoints:
-          continue
-        currentSAD = getSingleSAD(refSlice,tempSlice)
-        if firstSAD is None:
-          firstSAD = currentSAD
-        if currentSAD < minSAD:
+    seekOffset = ref_offset
+    x = []
+    for i in range(-maxSlicesBackwards,maxSlicesForwards):
+      minSAD = None
+      minTest = None
+      minAdjust = None
+      if i == 0:
+        seekOffset = ref_offset
+      elif i < 0:
+        seekOffset -= ref_length
+      elif i > 0:
+        seekOffset += ref_length
+      if seekOffset - (ref_length // 4) <= 0 or seekOffset + ref_length + (ref_length // 4) - 1 >= self.tm_in.numPoints:
+        print("Stop at sample 0, i is %d" % i)
+        x = append(x,[traceAverage] * ref_length)
+        x = append(x,[0,0,0])
+        continue
+      for seekAttempt in range(-ref_length // 4, ref_length // 4):
+        currentTest = seekOffset + seekAttempt
+        currentSAD = getSingleSAD(refSlice,rt[currentTest:currentTest + ref_length])
+        if minSAD is None or currentSAD < minSAD:
           minSAD = currentSAD
-          minShift = offset
-      if minShift != None:  # always the left edge of the block
-        seekAdjust = minShift
-        foundSlices.append( (firstSAD,minSAD,minShift,seekOffset + minShift) )
-    print(foundSlices)
+          minTest = currentTest
+          minAdjust = seekAttempt
+      seekOffset = minTest
+      print("Minimal SAD,Minimal Adjust: %f,%d" % (minSAD,minAdjust))
+      x = append(x,rt[seekOffset:seekOffset + ref_length])
+      x = append(x, [0,0,0])
+      #plt.plot(rt[seekOffset:seekOffset + ref_length])
+    # plt.plot(x)
+    # plt.show()
+    return x

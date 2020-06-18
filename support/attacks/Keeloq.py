@@ -12,25 +12,25 @@ def getHammingWeight(x):
 print("Initializing HW LUT")
 HW_LUT = [getHammingWeight(x) for x in range(0,256)]
 
-print("Performing decryption test")
-decr = keeloq.keeloqDecryptKeybit(0x11223344,1)
-print(bin(decr))
-decr = keeloq.keeloqDecryptKeybit(decr,1)
-print(bin(decr))
-decr = keeloq.keeloqDecryptKeybit(decr,1)
-print(bin(decr))
-decr = keeloq.keeloqDecryptKeybit(decr,1)
-print(bin(decr))
+# print("Performing decryption test")
+# decr = keeloq.keeloqDecryptKeybit(0x11223344,1)
+# print(bin(decr))
+# decr = keeloq.keeloqDecryptKeybit(decr,1)
+# print(bin(decr))
+# decr = keeloq.keeloqDecryptKeybit(decr,1)
+# print(bin(decr))
+# decr = keeloq.keeloqDecryptKeybit(decr,1)
+# print(bin(decr))
 
-print("Perfroming decryption with alternate Key2")
-decr = keeloq.keeloqDecryptKeybit(0x11223344,1)
-print(bin(decr))
-decr = keeloq.keeloqDecryptKeybit(decr,0)
-print(bin(decr))
-decr = keeloq.keeloqDecryptKeybit(decr,1)
-print(bin(decr))
-decr = keeloq.keeloqDecryptKeybit(decr,1)
-print(bin(decr))
+# print("Perfroming decryption with alternate Key2")
+# decr = keeloq.keeloqDecryptKeybit(0x11223344,1)
+# print(bin(decr))
+# decr = keeloq.keeloqDecryptKeybit(decr,0)
+# print(bin(decr))
+# decr = keeloq.keeloqDecryptKeybit(decr,1)
+# print(bin(decr))
+# decr = keeloq.keeloqDecryptKeybit(decr,1)
+# print(bin(decr))
 # sys.exit(0)
 
 def unpackKeeloq(plaintext):
@@ -66,7 +66,7 @@ class AttackModel:
   def genIVal(self,tnum,bnum,kguess):
     knownKey = 0x11 # 0x0218debf # orig is 0x0218debd
     knownKeyLen = 8 # 32
-    useKnownKey = True
+    useKnownKey = False
     decr = self.kl_ints[tnum]
     if tnum in self.fragCache.keys():
       decr = self.fragCache[tnum]
@@ -96,4 +96,5 @@ class AttackModel:
     keyGuessBitString = format(kguess,"08b")
     for i in range(0,len(keyGuessBitString)):
       (decr,dist1) = keeloq.keeloqDecryptKeybitHD(decr,int(keyGuessBitString[i],2))
+    # return (decr >> 31) % 2 == 0
     return dist1 > 16

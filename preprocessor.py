@@ -329,11 +329,24 @@ def doSlicer(tm_in):
   CONFIG_REF_OFFSET = getVariable("ref_offset")
   CONFIG_REF_LENGTH = getVariable("ref_length")
   CONFIG_SLICE_DIST = getVariable("slicedist")
+  CONFIG_WRITEFILE = getVariable("writefile")
   CONFIG_SAD_CUTOFF = getVariable("sad_cutoff")
   maxSlicesBackwards = getVariable("slices_backwards")
   maxSlicesForwards = getVariable("slices_forwards")
+  newSampleCount = (maxSlicesBackwards + maxSlicesForwards) * (3 + CONFIG_REF_LENGTH)
+  numTraces = tm_in.traceCount
+  traces = zeros((numTraces,newSampleCount),float32)
+  data = zeros((numTraces,16),uint8)
+  data_out = zeros((numTraces,16),uint8)
+  numTraces = tm_in.traceCount
   se = support.slipnslide.SliceEngine(tm_in)
-  se.FindSlices(CONFIG_REFTRACE, CONFIG_REF_OFFSET, CONFIG_REF_LENGTH,CONFIG_SLICE_DIST,CONFIG_SAD_CUTOFF,maxSlicesBackwards,maxSlicesForwards)
+  for i in range(0,numTraces):
+    print("Slicing trace %d" % i)
+    traces[i:] = se.FindSlices(i, CONFIG_REF_OFFSET, CONFIG_REF_LENGTH,CONFIG_SLICE_DIST,CONFIG_SAD_CUTOFF,maxSlicesBackwards,maxSlicesForwards)
+    data[i,:] = tm_in.getSingleData(i)
+    data_out[i,:] = tm_in.getSingleDataOut(i)
+  print("Saving...")
+  support.filemanager.save(CONFIG_WRITEFILE,traces=traces,data=data,data_out=data_out)
 
 def doSAD(tm_in):
   numTraces = tm_in.traceCount
