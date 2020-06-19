@@ -60,7 +60,7 @@ class TraceManager:
         f.close()
       print("TraceManager.save_cw: Done. You can load %s/project.cwp" % self.DR)
 
-  # wierd weighted mean...
+  # this needed to use weights in the old trace format, this is
   def getMeant(self):
     meant_array = []
     meant_count =  0
