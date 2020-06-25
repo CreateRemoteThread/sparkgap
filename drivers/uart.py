@@ -27,8 +27,8 @@ class DriverInterface(base.BaseDriverInterface):
     time.sleep(1.0)
     self.ser.write(next_randstr.encode("utf-8"))
     print("Written")
-    f = self.ser.read(32)
-    print("OK")
+    f = self.ser.read(32 + 3)[1:33]
+    print("OK %s" % f)
     # grab newline
     return (next_rand,[0xAA] * 16)
 
