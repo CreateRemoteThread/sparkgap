@@ -20,6 +20,6 @@ This toolkit contains:
 - docs/*, self-contained markdown documentation
 - fpga/*, the source code + bitstream for a TriggerBuddy (for Arty A7 35T variant)
 
-These tools should be used in a workflow. A quick start workflow is documented [here](docs/quickstart.md), and more documentation can be found in the docs/* folder.
+These tools should be used in a workflow. A quick start workflow is documented [here](docs/quickstart.md), and more documentation can be found in the docs/ folder. You should also read [this](docs/quickstart-dev.md) to extend the framework.
 
 The code is provided as-is, pull requests welcome :)
