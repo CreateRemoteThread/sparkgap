@@ -7,6 +7,8 @@ from collections import namedtuple
 import csv
 import serial
 
+# EM Version ONLY...
+
 import numpy as np
 import sys
 
@@ -93,14 +95,9 @@ tryme = 0
 
 import random
 
-scope.glitch.ext_offset = 201
-while scope.glitch.ext_offset < 250:
-  # scope.glitch.ext_offset = rando
-  scope.glitch.ext_offset = random.randint(200,202)
-  # scope.glitch.ext_offset = random.randint(50,150)
-  # scope.glitch.repeat = random.randint(125,145)
-  scope.glitch.repeat = random.randint(35,55)
-  # scope.glitch.repeat = random.randint(145,155)
+while scope.glitch.ext_offset < 1000:
+  scope.glitch.ext_offset = random.randint(544,546)
+  scope.glitch.repeat = random.randint(27,33)
   if tryme == 500:
     tryme = 0
     scope.glitch.ext_offset += 1
@@ -123,6 +120,8 @@ while scope.glitch.ext_offset < 250:
   d = ser.read(999999)
   print(d)
   ser.timeout = None
+  if b"prepare_creds" in d:
+    print("prepare_creds detected")
   if b"dinner" in d:
     print("Op success.")
     scope.dis()

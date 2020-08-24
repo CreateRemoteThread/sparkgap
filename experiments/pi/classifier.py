@@ -6,6 +6,7 @@ import sys
 import glob
 import re
 import support
+import getopt
 
 crashes = 0
 entries = 0
@@ -14,6 +15,8 @@ wins = 0
 report = support.ReportingCore()
 
 PC_crashes = {}
+
+savedCrashes = {}
 
 for fn in glob.glob("logs/*.csv"):
   with open(fn) as csvfile:
@@ -44,8 +47,10 @@ for fn in glob.glob("logs/*.csv"):
           pc_result = f.groups(0)[0]
           if pc_result in PC_crashes.keys():
             PC_crashes[pc_result] += 1
+            savedCrashes[pc_result].append( (loc,len) )
           else:
             PC_crashes[pc_result] = 1
+            savedCrashes[pc_result] = [ (loc,len) ]
 
 print("Statistics...")
 print("%d Wins" % wins)
@@ -57,8 +62,10 @@ d_view.sort(reverse=True)
 
 for d,v in d_view:
   print("%s:%d" % (v,d))
+  print(savedCrashes[v])
 
 # report.startPlot()
+print(savedCrashes)
 
 # for x in PC_crashes.keys():
 #   print("%s:%d" % (x,PC_crashes[x]))
