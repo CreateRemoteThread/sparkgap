@@ -18,33 +18,40 @@ PC_crashes = {}
 
 savedCrashes = {}
 
+report.configureLocRange(400,1000)
+
 for fn in glob.glob("logs/*.csv"):
   with open(fn) as csvfile:
     csvreader = csv.reader(csvfile,delimiter=',')
     for row in csvreader:
       entries += 1
       (loc,len,result) = row
+      loc = float(loc)
+      len = float(len)
       result = result[2:-1]
       if result == "Li90cnltZQ0KNjI1MDAwMA0KZ3JpOjEwMDAvMTAwMC8xMDAwcGlAcmFzcGJlcnJ5cGk6fiQg":
         # default-result
-        report.addResult(len,loc,status=support.Status.Expected)
+        report.addResult(loc,len,status=support.Status.Expected)
         continue
       elif result == "Li90cnltZQ0K":
-        report.addResult(len,loc,status=support.Status.Mute)
+        report.addResult(loc,len,status=support.Status.Mute)
         continue
       else:
-        report.addResult(len,loc,status=support.Status.Glitch)
         try:
           result = base64.b64decode(result).decode("utf-8")
         except:
+          result = ""
           continue
-        print(result)
         crashes += 1
         if "winner" in result:
           wins += 1
         if "PC is at" in result:
           f = re.search("PC is at (.*?)\r",result)
           pc_result = f.groups(0)[0]
+          if "commit_creds" in pc_result:
+            report.addResult(loc,len,status=support.Status.Glitch)
+          else:
+            report.addResult(loc,len,status=support.Status.Mute)
           if pc_result in PC_crashes.keys():
             PC_crashes[pc_result] += 1
             savedCrashes[pc_result].append( (loc,len) )
@@ -64,8 +71,5 @@ for d,v in d_view:
   print("%s:%d" % (v,d))
   print(savedCrashes[v])
 
-# report.startPlot()
-print(savedCrashes)
+report.startPlot()
 
-# for x in PC_crashes.keys():
-#   print("%s:%d" % (x,PC_crashes[x]))

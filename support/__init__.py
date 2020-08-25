@@ -16,9 +16,20 @@ class Status(Enum):
 class ReportingCore:
   def __init__(self):
     self.resultsdb = {} # sort by color
+    self.min_loc = None
+    self.max_loc = None
     pass
 
+  def configureLocRange(self,min_loc,max_loc):
+    self.min_loc = min_loc
+    self.max_loc = max_loc
+  
   def addResult(self,time,width,status):
+    time = float(time)
+    width = float(width)
+    if self.min_loc is not None:
+      if time < self.min_loc or time > self.max_loc:
+        return
     status = status.value
     if status in self.resultsdb.keys():
       self.resultsdb[status].append( (time,width) )
@@ -35,13 +46,15 @@ class ReportingCore:
     from matplotlib.ticker import LinearLocator
     import matplotlib.ticker
     for k in self.resultsdb.keys():
-      x_pts = [x for (x,y) in self.resultsdb[k]]
-      y_pts = [y for (x,y) in self.resultsdb[k]]
+      x_pts = [float(x) for (x,y) in self.resultsdb[k]]  # loc
+      y_pts = [float(y) for (x,y) in self.resultsdb[k]]  # len
       ax.scatter(x_pts,y_pts,marker="d",color=k)
-    ax.get_xaxis().set_major_locator(LinearLocator(numticks=15))
-    ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter("%.2f"))
+    # ax.get_xaxis().set_major_locator(LinearLocator(numticks=15))
+    # ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter("%.2f"))
     # ax.set_xticks(["%.2g" % x_f for x_f in ax.get_xticks()])
     plt.xticks(rotation=90)
+    ax.set_xlabel("Time Offset")
+    ax.set_ylabel("Pulse Length")
     plt.title("pew pew plot")
     fig.canvas.mpl_connect("button_press_event",self.onclick)
     plt.show()

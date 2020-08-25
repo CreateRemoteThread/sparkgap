@@ -96,8 +96,9 @@ tryme = 0
 import random
 
 while scope.glitch.ext_offset < 1000:
-  scope.glitch.ext_offset = random.randint(544,546)
-  scope.glitch.repeat = random.randint(27,33)
+  # scope.glitch.ext_offset = random.randint(201,203)
+  scope.glitch.ext_offset = random.randint(543,544)
+  scope.glitch.repeat = random.randint(28,33)
   if tryme == 500:
     tryme = 0
     scope.glitch.ext_offset += 1
