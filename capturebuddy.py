@@ -77,6 +77,8 @@ def runCaptureTask():
     data_out[i:] = next_autn
   vars = {}
   if config["writefile"] is None:
+    print("Writefile is unconfigured, not saving results...")
+  elif config["writefile"] == "/tmp":
     tempfile = "/tmp/%s" % uuid.uuid4()
     support.filemanager.save(tempfile,traces=traces,data=data,data_out=data_out)
     print("Saved to %s" % tempfile)

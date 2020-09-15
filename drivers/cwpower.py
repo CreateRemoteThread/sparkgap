@@ -12,7 +12,7 @@ class DriverInterface(base.BaseDriverInterface):
     self.config["trigger"] = None
     print("Using cw-power driver: good hunting")
     self.cw = cw.scope()
-    self.target = cw.target(scope.cw)
+    self.target = cw.target(self.cw)
     self.cw.default_setup() # don't care
     self.cw.io.target_pwr = False
 
