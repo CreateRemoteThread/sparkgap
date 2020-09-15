@@ -8,6 +8,7 @@ import time
 import random
 import numpy as np
 import triggerbuddy
+import traceback
 import support.filemanager
 
 fe = None
@@ -19,6 +20,8 @@ def acquireInterface(interfacename):
     exec("from frontends.%s import CaptureInterface; fe = CaptureInterface()" % interfacename,globals())
   except:
     print("Unable to acquire interface '%s'" % interfacename)
+    print("-----------------------------------")
+    traceback.print_exc()
     fe = None
 
 def acquireDriver(interfacename):
@@ -27,6 +30,8 @@ def acquireDriver(interfacename):
     exec("from drivers.%s import DriverInterface; drv = DriverInterface()" % interfacename,globals())
   except:
     print("Unable to acquire driver '%s'" % interfacename)
+    print("-----------------------------------")
+    traceback.print_exc()
     drv = None
 
 def usage():
