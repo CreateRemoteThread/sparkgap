@@ -14,6 +14,8 @@ import vxi11
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_IP = "192.168.137.6"
+
 try:
     clock = time.perf_counter
 except AttributeError:
@@ -794,13 +796,13 @@ class CaptureInterface():
   def init(self):
     print("Rigol: initializing self.scope")
     try:
-      self.scope = DS1054Z("192.168.33.6")
+      self.scope = DS1054Z(DEFAULT_IP)
     except:
       print("Scope error :(")
       sys.exit(0)
     self.scope.write(":STOP")
     # self.scope.write(":CHAN1:SCAL 0.050")
-    # self.scope.write(":CHAN1:OFFS -2.960")
+    #self.scope.write(":CHAN1:OFFS -2.360")
     # self.scope.write(":CHAN1:OFFS 0.050")
     # self.scope.write(":CHAN1:OFFS -3.292") ## 3v atmel
     # self.scope.write(":CHAN1:OFFS 0.150")
@@ -831,6 +833,9 @@ class CaptureInterface():
 
 
   def close(self):
-    self.scope.close()
+    try:
+      self.scope.close()
+    except:
+      print("Scope not initialized, skipping close")
 
     
