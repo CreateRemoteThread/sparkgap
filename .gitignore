@@ -1,5 +1,9 @@
 # Byte-compiled / optimized / DLL files
 
+experiments/avr/*.csv
+experiments/avr/*.log
+experiments/avr/*.txt
+
 __pycache__/
 *.py[cod]
 *$py.class
