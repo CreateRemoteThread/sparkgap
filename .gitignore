@@ -2,6 +2,7 @@
 
 experiments/avr/*.csv
 experiments/avr/*.log
+experiments/avr/*.lst
 experiments/avr/*.txt
 
 __pycache__/

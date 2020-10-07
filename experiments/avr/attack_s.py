@@ -1,31 +1,24 @@
 #!/usr/bin/env python3
 
-if __name__ != "__main__":
-  from drivers import base
-
-import random
 import time
+import sys
 import serial
+import chipwhisperer as cw
 
-class DriverInterface(base.BaseDriverInterface):
+class BuspirateSPI:
   def __init__(self):
-    super().__init__()
-    self.config = {}
-    print("Using Buspirate SPI Driver")
-    # reserved names: samplecount,tracecount,trigger
-    pass
-
+    self.ser = serial.Serial("/dev/ttyUSB0",115200,timeout=2.0)
+  
   def fetchUntil(self,waitChar):
     c = None
     out = []
     while c != waitChar:
       c = self.ser.read(1).decode("utf-8")
       out.append(c)
+    # out.append(c)
     return out
 
-  def init(self,frontend=None):
-    print("initializing uart")
-    self.ser = serial.Serial("/dev/ttyUSB0",115200)
+  def beginSPI(self):
     self.ser.write(b"#\n")
     time.sleep(0.25)
     self.fetchUntil(">")
@@ -51,22 +44,19 @@ class DriverInterface(base.BaseDriverInterface):
     self.ser.write(b"2\n") # push pull (vs open drain)
     self.fetchUntil(">")
     print("OK!")
-    self.frontend = frontend
 
-  def drive(self,in_text=None):
-    self.frontend.arm()
-    time.sleep(0.5)
-    # self.ser.write(b"{0xac,A,0x53,0x11,0x50,0x30,0x22,0x00,0x33]a\n")
-    # self.ser.write(b"{0xac,A,0x50,0x11,0x50,0x30,0x22,0x00,0x33]a\n")
-    self.ser.write(b"{0xac,0x53,0x11,A,0x22,0x20,0x00,0x00,0xAA,0x28,0x00,0x00,0xAA]a\n")
+  def command(self,cmdstr):
+    out = []
+    self.ser.write(cmdstr)
     x = self.fetchUntil(">")
-    print("".join(x))
-    return ([0x00] * 16,[0xaa] * 16)
+    for l in "".join(x).split("\n"):
+      if "READ" in l:
+        # print(l.split(" "))
+        out +=  [int(l.split(" ")[3],16)]
+    print(["%02x" % o for o in out])
+    return out
 
-  def close(self):
-    try:
-      self.ser.close()
-    except:
-      pass
-
-
+if __name__ == "__main__":
+  bp = BuspirateSPI()
+  bp.beginSPI()
+  bp.command(b"{0xac,A,0x53,0x11,0x22,0x20,0x00,0x00,0xAA,0x28,0x00,0x00,0xAA]a\n")
