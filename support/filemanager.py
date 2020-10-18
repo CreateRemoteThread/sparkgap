@@ -106,6 +106,9 @@ class TraceManager:
     print("TraceManager: unmapBlocks couldn't unmap %d" % key)
     sys.exit(0)
 
+  def getTraceCount(self):
+    return self.traceCount
+
   def getSingleData(self,key):
     (min_,max_,index_) = self.unmapBlocks(key)
     return self.dataObj[index_].data[key - min_]

@@ -802,8 +802,8 @@ class CaptureInterface():
       sys.exit(0)
     self.scope.write(":STOP")
     # self.scope.write(":CHAN1:SCAL 0.050")
-    self.scope.write(":CHAN1:OFFS -3.000")
-    # self.scope.write(":CHAN1:OFFS -2.300")
+    # self.scope.write(":CHAN1:OFFS -2.548")
+    self.scope.write(":CHAN1:OFFS -2.400")
     # self.scope.write(":CHAN1:OFFS 0.050")
     # self.scope.write(":CHAN1:OFFS -3.292") ## 3v atmel
     # self.scope.write(":CHAN1:OFFS 0.150")

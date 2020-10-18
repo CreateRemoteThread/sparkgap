@@ -52,7 +52,7 @@ while tryCount < 1000:
   tryCount += 1
   scope.glitch.width = random.randint(5,45)
   scope.glitch.repeat = random.randint(1,5)
-  scope.glitch.ext_offset = random.randint(1,10)
+  scope.glitch.ext_offset = 1453
   scope.glitch.offset = random.randint(1,45)
   # :37 R:4 E:3 O:19
   scope.glitch.width = 37
@@ -81,6 +81,7 @@ while tryCount < 1000:
   else:
     print("+ W:%d R:%d E:%d O:%d" % (scope.glitch.width,scope.glitch.repeat,scope.glitch.ext_offset,scope.glitch.offset))
     csvwriter.writerow([scope.glitch.width,scope.glitch.repeat,scope.glitch.ext_offset,scope.glitch.offset,"E"])
+  sys.stdout.flush()
 
 # csvwriter.close()
 csvfile.close()

@@ -96,26 +96,40 @@ import base64
 bp = BuspirateSPI()
 bp.beginSPI()
 
-while tryCount < 1000:
+while tryCount < 5000:
   time.sleep(0.5)
   tryCount += 1
-  scope.glitch.width = random.randint(5,45)
-  scope.glitch.repeat = random.randint(1,5)
-  scope.glitch.ext_offset = 146850
+  # scope.glitch.width = random.randint(5,15)
+  # scope.glitch.repeat = 6
+  scope.glitch.ext_offset = 146000
   # scope.glitch.ext_offset = 136850
   scope.glitch.offset = random.randint(1,45)
   # :37 R:4 E:3 O:19
   scope.glitch.width = 37
   scope.glitch.repeat = 4
-  scope.glitch.ext_offset += random.randint(-100,100)
-  # scope.glitch.ext_offset = 3
-  scope.glitch.offset=19
+  scope.glitch.ext_offset += tryCount * 10
+  # scope.glitch.ext_offset = 
+  # scope.glitch.offset=19
   scope.arm()
   time.sleep(0.1)
   print("E: %d" % scope.glitch.ext_offset)
-  cmd = b"{0xac,0x53,0x11,A,0x22,0x20,0x00,0x00,0xAA,0x28,0x00,0x00,0xAA]a\n"
+  cmd = b"{0xac,A0x53,a,0x11,0x22,0x20,0x00,0x00,0x00\n"
   x = bp.command(cmd)
   print(["%02x" % xp for xp in x])
+  # '53', '11', '22', '20', '00', 'ff'
+  if x[2:] != [0x53,0x11,0x22,0x20,0x00,0xff]:
+    print("Success, EEPROM corruption\n")
+    print(x[2:])
+    target.dis()
+    scope.dis()
+    sys.exit(0)
+  if x[-1] == 0xFF:
+    bp.command(b"]\n")
+  else:
+    print("Success, AVR unlocked\n")
+    target.dis()
+    socpe.dis()
+    sys.exit(0)
   scope.capture()
   sys.stdout.flush()
 
