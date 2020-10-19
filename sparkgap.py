@@ -8,24 +8,104 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import support.filemanager
 import support.uihelper
+import support.sighelper
+import numpy as np
 import time
+
+def doMergeTraces(dataItems):
+  print("doMergeTraces: starting operation...")
+  for f in ["file1","file2","outfile"]:
+    if f not in dataItems.keys():
+      print("doMergeTraces: could not find critical parameter %s" % f)
+      return
+  tm_in1 = support.filemanager.TraceManager(dataItems["file1"])
+  tm_in2 = support.filemanager.TraceManager(dataItems["file2"])
+  if tm_in1.numPoints != tm_in2.numPoints:
+    print("doMergeTraces: tm_in1.numPoints != tm_in2.numPoints")
+    tm_in1.cleanup()
+    tm_in2.cleanup()
+    return
+  try:
+    totalTraces = tm_in1.traceCount + tm_in2.traceCount
+  except:
+    print("doMergeTraces: could not add tm_in1.traceCount and tm_in2.traceCount. Are your trace files valid?")
+    tm_in1.cleanup()
+    tm_in2.cleanup()
+    return
+  traces = np.zeros((totalTraces,tm_in1.numPoints),np.float32)
+  data_in = np.zeros((totalTraces,16),np.uint8)
+  data_out = np.zeros((totalTraces,16),np.uint8)
+  counter = 0
+  for i in range(0,tm_in1.traceCount):
+    traces[counter:] = tm_in1.getSingleTrace(i)
+    data_in[counter:] = tm_in1.getSingleData(i)
+    data_out[counter:] = tm_in1.getSingleDataOut(i)
+    counter += 1
+  for i in range(0,tm_in2.traceCount):
+    traces[counter:] = tm_in2.getSingleTrace(i)
+    data_in[counter:] = tm_in2.getSingleData(i)
+    data_out[counter:] = tm_in2.getSingleDataOut(i)
+    counter += 1
+  print("doMergeTraces: OK, %d traces merged" % counter)
+  support.filemanager.save(dataItems["outfile"],traces=traces,data=data_in,data_out=data_out)
 
 class Application(tk.Frame):
   def __init__(self,master=None):
     super().__init__(master)
     self.master = master
+    self.mark = []
     self.pack()
     self.create_menu()
     self.activeTrace = None
     self.entry = {}
-    self.status = tk.Label(self.master,text="")
+    self.statusText = tk.StringVar("")
+    self.status = tk.Label(self.master,textvariable=self.statusText)
     self.status.pack(side=tk.BOTTOM,fill=tk.X,expand=True)
     self.createNavbar()
     self.create_widgets()
+    self.SignalHelper = support.sighelper.SignalHelper
+    self.lastTime = 0.0
+    self.lastX = 0
+
+  def dlgMergeTraces(self):
+    self.saved_dlgMergeTraces = support.uihelper.DlgParameters(tk.Toplevel(self.master),callback=doMergeTraces,dataItems=["file1","file2","outfile"])
+    
 
   def canvasClick(self,event):
-    print("I clicked something!")
+    t = time.time()
+    if t - self.lastTime < 0.200:
+      print("canvasClick: please click slower :)")
+      return
+    elif event.xdata is None:
+      return
+    if self.activeTrace is None:
+      print("canvasClick: no trace loaded, skipping")
+      return
+    self.lastTime = t
+    if self.lastX == 0:
+      self.lastX = int(event.xdata)
+      self.lastX += self.getViewOffset()
+      self.mark = [self.lastX]
+      self.statusText.set("MARK: %d" % self.lastX)
+    else:
+      localX = int(event.xdata)
+      localX += self.getViewOffset()
+      fromX = min(self.lastX,localX)
+      toX = max(self.lastX,localX)
+      dist = toX - fromX
+      self.statusText.set("FROM: %d TO: %d, DIST: %d" % (fromX,toX,dist))
+      self.lastX = localX
+      self.mark = [toX,fromX]
+    self.redrawTrace()
     return
+
+  def getViewOffset(self):
+    if self.activeTrace is None:
+      return None
+    try:
+      return int(self.entry["txtOffset"].get())
+    except:
+      return None
 
   def selectTrace(self):
     traceSelection = self.entry["txtTraceSelect"].get()
@@ -50,6 +130,8 @@ class Application(tk.Frame):
     self.redrawTrace()
 
   def close_trace(self):
+    self.lastX = 0 # Reset mark
+    self.mark = []
     if self.activeTrace is None:
       print("No active trace, nothing to do")
       return
@@ -79,6 +161,8 @@ class Application(tk.Frame):
         return
       for f in viewSelect:
         self.mainPlot.plot(self.activeTrace.getSingleTrace(f)[viewOffset:viewSamplecount])
+      for f in self.mark:
+        self.mainPlot.axvline(x = f,color='r')
     self.canvas.draw()
 
   def save_cw(self):
@@ -97,6 +181,9 @@ class Application(tk.Frame):
     filemenu.add_separator()
     filemenu.add_command(label="Exit",command=self.exit_program)
     self.menubar.add_cascade(label="File",menu=filemenu)
+    utilmenu = tk.Menu(self.menubar,tearoff=0)
+    utilmenu.add_command(label="Merge Trace Sets",command=self.dlgMergeTraces)
+    self.menubar.add_cascade(label="Utility",menu=utilmenu)
     self.master.config(menu=self.menubar)
 
   def exit_program(self):
@@ -172,7 +259,7 @@ class Application(tk.Frame):
 
 if __name__ == "__main__":
   root = tk.Tk()
-  root.title("sparkgap")
+  root.title("sparkgap.py")
   root.geometry("800x600")
   app = Application(master=root)
   app.mainloop()
