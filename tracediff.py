@@ -8,26 +8,49 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import support.filemanager
 import getopt
+import copy
 from numpy import *
 
-def doSinglePlot(tracename):
-  tm_in = support.filemanager.TraceManager(tracename)
-  plt.plot(tm_in.getMeant())
+def doCompareTraces_SINGLE(tn1):
+  tm_in1 = support.filemanager.TraceManager(tn1)
+  tlva_group1_traces = []
+  tlva_group2_traces = []
+  group1_avg = None
+  group1_avg_cnt = 0
+  group2_avg = None
+  group2_avg_cnt = 0
+  for f in range(0,tm_in1.getTraceCount()):
+    if tm_in1.getSingleData(f)[0] == 0x00:
+      tlva_group1_traces.append(tm_in1.getSingleTrace(f))
+      if group1_avg is None:
+        group1_avg = tm_in1.getSingleTrace(f) * 1.0
+        print(group1_avg)
+        group1_avg_cnt += 1
+      else:
+        group1_avg += tm_in1.getSingleTrace(f) * 1.0
+        group1_avg_cnt += 1
+    else:
+      tlva_group2_traces.append(tm_in1.getSingleTrace(f))
+      if group2_avg is None:
+        group2_avg = tm_in1.getSingleTrace(f) * 1.0
+        group2_avg_cnt += 1
+      else:
+        group2_avg += tm_in1.getSingleTrace(f) * 1.0
+        group2_avg_cnt += 1
+  group1_avg /= group1_avg_cnt
+  group2_avg /= group2_avg_cnt
+  fig,(ax1,ax2) = plt.subplots(2,1)
+  ax1.plot(abs(group1_avg - group2_avg)[0:8000])
+  ax2.plot(np.std(tlva_group1_traces,axis=0,keepdims=True)[0][0:8000])
   plt.show()
-  sys.exit(0)
+  return
+  ttrace = scipy.stats.ttest_ind(tlva_group1_traces, tlva_group2_traces,axis=0,equal_var=False)
+  (tt,tn,_) =  (np.nan_to_num(ttrace[0]),np.nan_to_num(ttrace[1]),tm_in1.numPoints)
+  print("POO")
 
 TRACE_FILES = []
 CONFIG_OFFSET = None
 CONFIG_SAMPLES = None
-
-def doSingleTrace(tracename):
-  global CONFIG_OFFSET,CONFIG_SAMPLES
-  tm_in = support.filemanager.TraceManager(tracename)
-  trace_avg = tm_in.getMeant()
-  f,ax = plt.subplots(1,1)
-  ax.set_title("Averaged Traces")
-  ax.plot(trace_avg)
-  plt.show()
 
 import random
 # group 1 is random, group2  is fixed.
@@ -88,7 +111,7 @@ if __name__ == "__main__":
     elif opt in ("-n","--samples"):
       CONFIG_SAMPLES = int(arg)
   if len(TRACE_FILES) == 1:
-    doSingleTrace(TRACE_FILES[0])
+    doCompareTraces_SINGLE(TRACE_FILES[0])
   elif len(TRACE_FILES) == 2:
     doCompareTraces(TRACE_FILES[0],TRACE_FILES[1])
   else:

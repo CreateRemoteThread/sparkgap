@@ -1,6 +1,6 @@
 # sparkgap
 
-![Just for fun](docs/imgs/smartcard-align.png)
+![Just for fun](docs/imgs/new_ui.png)
 
 Sparkgap is a major refactor of my previous SCA and FI code. This provides a more consistent UI experience (console instead of paragraph-length command-lines), better self-contained documentation and a single unified support module for both FI and SCA tasks.
 

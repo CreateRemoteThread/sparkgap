@@ -18,6 +18,9 @@ def doMergeTraces(dataItems):
     if f not in dataItems.keys():
       print("doMergeTraces: could not find critical parameter %s" % f)
       return
+    if len(dataItems[f]) == 0:
+      print("doMergeTraces: data input '%s' was not filled in" % f)
+      return 
   tm_in1 = support.filemanager.TraceManager(dataItems["file1"])
   tm_in2 = support.filemanager.TraceManager(dataItems["file2"])
   if tm_in1.numPoints != tm_in2.numPoints:
@@ -68,8 +71,7 @@ class Application(tk.Frame):
     self.lastX = 0
 
   def dlgMergeTraces(self):
-    self.saved_dlgMergeTraces = support.uihelper.DlgParameters(tk.Toplevel(self.master),callback=doMergeTraces,dataItems=["file1","file2","outfile"])
-    
+    self.saved_dlgMergeTraces = support.uihelper.DlgMergeFiles(tk.Toplevel(self.master),callback=support.uihelper.doMergeTraces,dataItems=["file1","file2","outfile"])
 
   def canvasClick(self,event):
     t = time.time()
@@ -160,7 +162,7 @@ class Application(tk.Frame):
         print("redrawTrace: viewSelect returned None, don't know what to draw")
         return
       for f in viewSelect:
-        self.mainPlot.plot(self.activeTrace.getSingleTrace(f)[viewOffset:viewSamplecount])
+        self.mainPlot.plot(self.activeTrace.getSingleTrace(f)[viewOffset:viewOffset + viewSamplecount])
       for f in self.mark:
         self.mainPlot.axvline(x = f,color='r')
     self.canvas.draw()
@@ -236,7 +238,11 @@ class Application(tk.Frame):
     self.entry["txtTraceSelect"].delete(0,"end")
     self.entry["txtTraceSelect"].insert(0,"%d" % (viewSelect + 1))
     self.redrawTrace() 
-    
+
+  def deleteMarkers(self):
+    self.mark = []
+    self.redrawTrace()
+ 
   def createNavbar(self):
     self.navFrame = tk.Frame(self.master,height=100)
     self.entry["btnPrevTrace"] = tk.Button(self.navFrame,text="<",command=self.lastTrace)
@@ -255,6 +261,8 @@ class Application(tk.Frame):
     self.entry["txtSamplecount"].pack(side=tk.LEFT)
     self.entry["btnRefreshFilters"] = tk.Button(self.navFrame,text="Refresh",command=self.redrawTrace)
     self.entry["btnRefreshFilters"].pack(side=tk.LEFT)
+    self.entry["btnDeleteMarkers"] = tk.Button(self.navFrame,text="Remove Marks",command=self.deleteMarkers)
+    self.entry["btnDeleteMarkers"].pack(side=tk.RIGHT)
     self.navFrame.pack(side=tk.TOP,fill=tk.X,expand=True)
 
 if __name__ == "__main__":

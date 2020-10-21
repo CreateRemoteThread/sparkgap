@@ -72,8 +72,8 @@ import uuid
 scope.gain.gain = 25
 scope.adc.samples=3000
 scope.adc.offset = 0
-scope.adc.basic_mode = "rising_edge"
-scope.clock.clkgen_freq = 80000000
+scope.adc.basic_mode = "falling_edge"
+scope.clock.clkgen_freq = 125000000
 scope.clock.adc_src = "clkgen_x4"
 # scope.io.tio1 = "serial_tx"
 # scope.io.tio2 = "serial_rx"
@@ -99,21 +99,18 @@ bp.beginSPI()
 while tryCount < 5000:
   time.sleep(0.5)
   tryCount += 1
-  # scope.glitch.width = random.randint(5,15)
-  # scope.glitch.repeat = 6
-  scope.glitch.ext_offset = 146000
-  # scope.glitch.ext_offset = 136850
   scope.glitch.offset = random.randint(1,45)
-  # :37 R:4 E:3 O:19
   scope.glitch.width = 37
   scope.glitch.repeat = 4
-  scope.glitch.ext_offset += tryCount * 10
+  #scope.glitch.ext_offset = 894 + random.randint(-15,15)
+  scope.glitch.ext_offset = 10193 + random.randint(-15,15)
   # scope.glitch.ext_offset = 
   # scope.glitch.offset=19
   scope.arm()
   time.sleep(0.1)
   print("E: %d" % scope.glitch.ext_offset)
-  cmd = b"{0xac,A0x53,a,0x11,0x22,0x20,0x00,0x00,0x00\n"
+  bp.beginSPI()
+  cmd = b"{0xac,0x53,0x11,0x22,0x20,0x00,0x00,0x00\n"
   x = bp.command(cmd)
   print(["%02x" % xp for xp in x])
   # '53', '11', '22', '20', '00', 'ff'
@@ -130,6 +127,6 @@ while tryCount < 5000:
     target.dis()
     socpe.dis()
     sys.exit(0)
-  scope.capture()
+  # scope.capture()
   sys.stdout.flush()
 
