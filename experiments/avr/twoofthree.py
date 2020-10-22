@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# clock glitch variant
+# correct:  '53', '00', '00', '20', '10', 'ff', 'aa', '20', '00', '0c', 'bb', '28', '00', '94']
 
 import sys
 import chipwhisperer as cw
@@ -13,20 +13,15 @@ class AvrSpecial:
 
   def drive(self,in_text=None):
     time.sleep(0.5)
-    self.ser.write(b"#\x08\xFF\xAC\x00\x53\x00\x00\x00\x00\x00\x20\x00\x00\x00\x00\x00\xFF#")
+    self.ser.write(b"#\x10\xFF\xAC\x00\x53\x00\x00\x00\x00\x00\x20\x00\x00\x00\x14\x00\xAA\x00\x28\x00\x00\x00\x14\x00\xBB\x00\x20\x00\x00\x00\x15\x00\xCC#")
     x = self.ser.read(1)
     if x != b'#':
       print("Critical Error: expected '#', got ",)
       print(x)
-    x = self.ser.read(8)
-    if x[2:] != b"\x53\x00\x00\x20\x00\xff":
-      print(["%02x" % ix for ix in x])
-      print("Success, EEPROM corrupted")
-      input(">")
       sys.exit(0)
-    # ['ff', 'ff', '53', '00', '00', '20', '00', 'ff']
-    print(["%02x" % ix for ix in x])
-    return x[-1]
+    x = self.ser.read(16)
+    sys.stdout.write(str(["%02x" % ix for ix in x]))
+    return x
 
 scope = cw.scope()
 scope.default_setup()
@@ -49,7 +44,7 @@ scope.clock.clkgen_freq = 16000000
 scope.clock.adc_src = "clkgen_x4"
 scope.trigger.triggers = "tio4"
 scope.glitch.clk_src = "clkgen"
-scope.glitch.output = "clock_or"
+scope.glitch.output = "clock_xor"
 scope.glitch.trigger_src = 'ext_single'
 scope.io.hs2 = "glitch"
 scope.io.glitch_hp  = False
@@ -60,7 +55,7 @@ scope.io.glitch_lp = False
 import random
 import time
 
-tryCount = 0
+tryCount = 1
 
 import base64
 
@@ -68,27 +63,28 @@ bp = AvrSpecial()
 while tryCount < 2000:
   time.sleep(0.5)
   tryCount += 1
-  scope.glitch.offset = random.randint(1,45)
-  # scope.glitch.width = random.randint(1,45)
-  scope.glitch.width = 30
-  scope.glitch.offset = 37
-  scope.glitch.repeat = random.randint(1,100)
-  #scope.glitch.ext_offset = 894 + random.randint(-15,15)
-  scope.glitch.ext_offset = 1 + random.randint(0,30)
-  # scope.glitch.ext_offset = 3984 + random.randint(-50,50)
-
-  # scope.glitch.ext_offset = 
-  # scope.glitch.offset=19
+  scope.glitch.width = 30 + random.randint(-5,5)
+  if random.randint(1,10) % 2 == 0:
+    scope.glitch.offset = 37 + random.randint(-5,5)
+  else:
+    scope.glitch.offset = -37 + random.randint(-5,5)
+  scope.glitch.repeat = random.randint(1,3)
+  scope.glitch.ext_offset = 100 + (tryCount / 10)
   scope.arm()
   time.sleep(0.1)
-  print("E:%d, R:%d, W:%d, O:%d" % (scope.glitch.ext_offset,scope.glitch.repeat,scope.glitch.width,scope.glitch.offset))
+  sys.stdout.write("E:%d, R:%d, W:%d, O:%d : " % (scope.glitch.ext_offset,scope.glitch.repeat,scope.glitch.width,scope.glitch.offset),)
   x = bp.drive()
-  print(x)
-  if x != 0xFF:
-    print("Success, EEPROM corruption\n")
-    target.dis()
-    scope.dis()
-    sys.exit(0)
+  if x[2:] == b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF":
+    print("Mute")
+  elif x[2:] != b"\x53\x00\x00\x20\x00\xff\xaa\x28\x00\xff\xbb\x20\x00\xff":
+    print("Success!")
+  else:
+    print("")
   scope.capture()
   sys.stdout.flush()
+
+target.dis()
+scope.dis()
+sys.exit(0)
+
 
