@@ -475,4 +475,4 @@ if __name__ == "__main__":
     sys.exit(0)
   doCommands(CONFIG_READFILE,CONFIG_CMDFILE)
 
-sys.exit(0)
+

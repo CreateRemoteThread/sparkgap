@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+# one-off target board read (confirming functionality
+
 import sys
 import serial
 
 ser = serial.Serial("/dev/ttyUSB0",timeout=2.0)
 while True:
-  ser.write(b"#\x08\xFF\xAC\x00\x53\x00\x00\x00\x00\x00\x28\x00\x00\x00\x00\x00\xFF#")
+  ser.write(b"#\x08\x00\xAC\x00\x53\x00\x00\x00\x00\xFF\x28\xFF\x00\xFF\x00\x00\xFF#")
   x = ser.read(1)
   if x != b'#':
     print("Error")

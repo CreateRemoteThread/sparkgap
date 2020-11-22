@@ -80,6 +80,20 @@ class TraceManager:
         final_meant += meant * (meanweight / meant_count)
     return final_meant
 
+  def loadCiphertexts(self):
+    print("TraceManager: loadCiphertexts called")
+    pt_array = None
+    for i in range(0,65535):
+      if i not in self.dataObj.keys():
+        print("TraceManager: loadCiphertexts complete, %d entries returned" % len(pt_array))
+        return pt_array
+      else:
+        if pt_array is None:
+          pt_array = self.dataObj[i].data_out
+        else:
+          pt_array = numpy.vstack([pt_array,self.dataObj[i].data_out])
+        print("TraceManager: length of ct_array is %d" % len(pt_array))
+
   def loadPlaintexts(self):
     print("TraceManager: loadPlaintexts called")
     pt_array = None

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# 16mhz synchronous clock
+# 125MHz asynchronous EM
 # correct:  '53', '00', '00', '20', '10', 'ff', 'aa', '20', '00', '0c', 'bb', '28', '00', '94']
 
 import sys
@@ -37,19 +37,16 @@ import uuid
 # csvfile = open("eggs-%s.csv" % uuid.uuid4(),"w",newline='')
 # csvwriter = csv.writer(csvfile,delimiter=',')
 
-scope.io.target_pwr = True
-
 scope.gain.gain = 25
 scope.adc.samples=3000
 scope.adc.offset = 0
-scope.adc.basic_mode = "falling_edge"
-scope.clock.clkgen_freq = 16000000
+scope.adc.basic_mode = "rising_edge"
+scope.clock.clkgen_freq = 125000000
 scope.clock.adc_src = "clkgen_x4"
 scope.trigger.triggers = "tio4"
 scope.glitch.clk_src = "clkgen"
-scope.glitch.output = "clock_or"
+scope.glitch.output = "enable_only"
 scope.glitch.trigger_src = 'ext_single'
-scope.io.hs2 = "glitch"
 scope.io.glitch_hp  = True
 scope.io.glitch_lp = False
 
@@ -63,16 +60,14 @@ tryCount = 1
 import base64
 
 bp = AvrSpecial()
-while tryCount < 5000:
+while tryCount < 1000:
   time.sleep(0.5)
   tryCount += 1
-  scope.glitch.width = 30 + random.randint(-5,5)
-  if random.randint(1,10) % 2 == 0:
-    scope.glitch.offset = 37 + random.randint(-5,5)
-  else:
-    scope.glitch.offset = -37 + random.randint(-5,5)
-  scope.glitch.repeat = random.randint(1,3)
-  scope.glitch.ext_offset = 1 + (tryCount / 10)
+  scope.glitch.offset = 5
+  scope.glitch.width = 37
+  scope.glitch.repeat = 12
+  scope.glitch.ext_offset = 50 + (tryCount / 10)
+  # scope.glitch.ext_offset = 1 + (tryCount / 10)
   scope.arm()
   time.sleep(0.1)
   sys.stdout.write("E:%d, R:%d, W:%d, O:%d : " % (scope.glitch.ext_offset,scope.glitch.repeat,scope.glitch.width,scope.glitch.offset),)
@@ -83,10 +78,9 @@ while tryCount < 5000:
     print("Success!")
   else:
     print("")
-  scope.capture()
+  # scope.capture()
   sys.stdout.flush()
 
-scope.io.target_pwr = False
 target.dis()
 scope.dis()
 sys.exit(0)

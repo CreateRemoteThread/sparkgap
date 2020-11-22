@@ -184,7 +184,7 @@ class Application(tk.Frame):
     filemenu.add_command(label="Exit",command=self.exit_program)
     self.menubar.add_cascade(label="File",menu=filemenu)
     utilmenu = tk.Menu(self.menubar,tearoff=0)
-    utilmenu.add_command(label="Merge Trace Sets",command=self.dlgMergeTraces)
+    utilmenu.add_command(label="Merge Sparkgap Traces",command=self.dlgMergeTraces)
     self.menubar.add_cascade(label="Utility",menu=utilmenu)
     self.master.config(menu=self.menubar)
 
@@ -192,7 +192,7 @@ class Application(tk.Frame):
     self.close_trace()
     print("exit_program: Cleanup OK")
     sys.exit(0)
-
+  
   def create_widgets(self):
     self.f = Figure(figsize=(8,6),dpi=100)
     self.mainPlot = self.f.add_subplot(111)

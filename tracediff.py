@@ -40,8 +40,8 @@ def doCompareTraces_SINGLE(tn1):
   group1_avg /= group1_avg_cnt
   group2_avg /= group2_avg_cnt
   fig,(ax1,ax2) = plt.subplots(2,1)
-  ax1.plot(abs(group1_avg - group2_avg)[0:3900])
-  ax2.plot(np.std(tlva_group1_traces,axis=0,keepdims=True)[0][0:3900])
+  ax1.plot(abs(group1_avg - group2_avg))
+  ax2.plot(np.std(tlva_group1_traces,axis=0,keepdims=True)[0])
   plt.show()
   return
   ttrace = scipy.stats.ttest_ind(tlva_group1_traces, tlva_group2_traces,axis=0,equal_var=False)

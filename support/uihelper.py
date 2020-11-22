@@ -3,6 +3,7 @@
 import tkinter as tk
 import numpy as np
 import support.filemanager
+import preprocessor
 
 def doMergeTraces(dataItems):
   print("doMergeTraces: starting operation...")
@@ -40,7 +41,6 @@ def doMergeTraces(dataItems):
     counter += 1
   print("doMergeTraces: OK, %d traces merged" % counter)
   support.filemanager.save(dataItems["outfile"],traces=traces,data=data_in,data_out=data_out)
-
 
 def getTraceConfig(r_str):
   r = []

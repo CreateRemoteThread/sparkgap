@@ -45,6 +45,8 @@ import uuid
 config = {}
 config["tracecount"] = 1
 config["samplecount"] = 15000
+config["len_in"] = 16
+config["len_out"] = 16
 config["writefile"] = None
 config["tlva"] = None
 
@@ -54,8 +56,8 @@ def runCaptureTask():
   fe.init()
   drv.init(fe)
   traces = np.zeros((config["tracecount"],config["samplecount"]),np.float32)
-  data = np.zeros((config["tracecount"],16),np.uint8)         # RAND
-  data_out = np.zeros((config["tracecount"],16),np.uint8)     # AUTN
+  data = np.zeros((config["tracecount"],config["len_in"]),np.uint8)         # RAND
+  data_out = np.zeros((config["tracecount"],config["len_out"]),np.uint8)     # AUTN
   for i in range(0,config["tracecount"]):
     print("Running job: %d/%d. %d missed" % (i,config["tracecount"],missedCount))
     if config["tlva"] is None:

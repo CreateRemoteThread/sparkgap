@@ -39,7 +39,8 @@ class DriverInterface(base.BaseDriverInterface):
   def drive(self,in_text=None):
     self.frontend.arm()
     time.sleep(0.5)
-    self.ser.write(b"#\x08\xFF\xAC\x00\x53\x00\x00\x00\x00\x00\x20\x00\x00\x00\x00\x00\xFF#")
+    self.ser.write(b"#\x08\x00\xAC\x00\x53\x00\x00\x00\x00\xFF\x20\xFF\x00\xFF\x00\x00\xFF#")
+    # self.ser.write(b"#\x08\xFF\xAC\x00\x53\x00\x00\x00\x00\x00\x20\x00\x00\x00\x00\x00\xFF#")
     x = self.ser.read(1)
     if x != b'#':
       print("Critical Error: expected '#', got ",)

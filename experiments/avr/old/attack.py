@@ -102,8 +102,7 @@ while tryCount < 5000:
   scope.glitch.offset = random.randint(1,45)
   scope.glitch.width = 37
   scope.glitch.repeat = 4
-  #scope.glitch.ext_offset = 894 + random.randint(-15,15)
-  scope.glitch.ext_offset = 10193 + random.randint(-15,15)
+  scope.glitch.ext_offset = 2747 + tryCount / 10
   # scope.glitch.ext_offset = 
   # scope.glitch.offset=19
   scope.arm()
