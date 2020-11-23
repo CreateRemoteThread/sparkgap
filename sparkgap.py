@@ -70,6 +70,9 @@ class Application(tk.Frame):
     self.lastTime = 0.0
     self.lastX = 0
 
+  def dlgMergeNumpy(self):
+    self.saved_dlgMergeTraces = support.uihelper.DlgMergeNumpy(tk.Toplevel(self.master),callback=support.uihelper.doMergeNumpy,dataItems=["file_pt","file_ct","file_traces","outfile"])
+
   def dlgMergeTraces(self):
     self.saved_dlgMergeTraces = support.uihelper.DlgMergeFiles(tk.Toplevel(self.master),callback=support.uihelper.doMergeTraces,dataItems=["file1","file2","outfile"])
 
@@ -171,7 +174,7 @@ class Application(tk.Frame):
     if self.activeTrace is None:
       print("save_cw: activeTrace is None")
       return
-    self.active_trace.save_cw()
+    self.activeTrace.save_cw()
 
   def create_menu(self):
     self.menubar = tk.Menu(self.master)
@@ -185,6 +188,7 @@ class Application(tk.Frame):
     self.menubar.add_cascade(label="File",menu=filemenu)
     utilmenu = tk.Menu(self.menubar,tearoff=0)
     utilmenu.add_command(label="Merge Sparkgap Traces",command=self.dlgMergeTraces)
+    utilmenu.add_command(label="Merge Numpy Traces",command=self.dlgMergeNumpy)
     self.menubar.add_cascade(label="Utility",menu=utilmenu)
     self.master.config(menu=self.menubar)
 

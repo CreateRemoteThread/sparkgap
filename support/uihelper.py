@@ -5,6 +5,23 @@ import numpy as np
 import support.filemanager
 import preprocessor
 
+def doMergeNumpy(dataItems):
+  print("doMergeNumpy: starting operation...")
+  for f in ["file_pt","file_ct","file_traces","outfile"]:
+    if f not in dataItems.keys():
+      print("doMergeTraces: could not find critical parameter %s" % f)
+      return
+  if ".traces" in dataItems["outfile"]:
+    saveName = dataItems["outfile"].replace(".traces","")
+  else:
+    saveName = dataITems["outfile"]
+  f = open("%s.traces" % saveName,"w")
+  f.write("traces=%s\n" % dataItems["file_traces"])
+  f.write("data_in=%s\n" % dataItems["file_pt"])
+  f.write("data_out=%s\n" % dataItems["file_ct"])
+  f.close()
+  print("doMergeNumpy: saved to %s.traces" % saveName)
+
 def doMergeTraces(dataItems):
   print("doMergeTraces: starting operation...")
   for f in ["file1","file2","outfile"]:
@@ -90,7 +107,6 @@ class DlgParameters(tk.Frame):
     testButton.pack(side=tk.LEFT,expand=True,fill=tk.X)
     finalFrame.pack(side=tk.TOP,expand=True,fill=tk.X)
 
-
 class DlgMergeFiles(DlgParameters):
   def __init__(self,master=None,callback=None,dataItems=[]):
     super().__init__(master,callback,dataItems)
@@ -136,4 +152,13 @@ class DlgPass(tk.Frame):
     self.widgetItems = {}
     self.dataItems = dataItems
     self.create_widgets()
+
+class DlgMergeNumpy(DlgMergeFiles):
+  def __init__(self,master=None,callback=None,dataItems=[]):
+    super().__init__(master,callback,dataItems)
+
+  def grabFile(self,f):
+    self.widgetItems["txt_%s" % f].delete(0,"end")
+    t = tk.filedialog.askopenfilename(initialdir="~/",title="Select trace...",filetypes=(("NumPy","*.npy"),))
+    self.widgetItems["txt_%s" % f].insert(0,t)
 
