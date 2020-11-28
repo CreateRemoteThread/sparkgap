@@ -19,9 +19,9 @@ class SIMController2:
     c = self.ser.read(1)
     b1 = self.ser.read(1)
     b2 = self.ser.read(1)
-    print(c)
-    print("%02x" % b1[0])
-    print("%02x" % b2[0])
+    # print(c)
+    # print("%02x" % b1[0])
+    # print("%02x" % b2[0])
     return
     
 
@@ -32,9 +32,9 @@ class SIMController2:
     c = self.ser.read(1)
     b1 = self.ser.read(1)
     b2 = self.ser.read(1)
-    print(c)
-    print("%02x" % b1[0])
-    print("%02x" % b2[0])
+    # print(c)
+    # print("%02x" % b1[0])
+    # print("%02x" % b2[0])
     return
  
   def _send_apdu(self,apdu):
@@ -46,11 +46,8 @@ class SIMController2:
     self.ser.write(bytes([len(apdu)]))
     self.ser.write(apdu)
 
-  def _select_file(self,file_id=None,aid=[],extra_delay=None,override=False):
-    if override:
-      cmd = [0xa0, 0xa4, 0x08, 0x00, 0x02]
-    else:
-      cmd = [0xa0, 0xa4, 0x00, 0x00, 0x02]
+  def _select_file(self,file_id=None,aid=[],extra_delay=None):
+    cmd = [0xa0, 0xa4, 0x00, 0x00, 0x02]
     USIM_CLA = 0x00
     cmd[0] = USIM_CLA
     cmd[3] = 0x04
@@ -62,6 +59,10 @@ class SIMController2:
       b1 = (file_id >> 8) & 0xFF
       b2 = file_id & 0xFF
       cmd += [b1,b2]
+    # out = ""
+    # for c in cmd:
+    #   out += "%02x " % c
+    # print(out)
     self._send_apdu(cmd)
     if extra_delay is not None:
       time.sleep(extra_delay)
@@ -70,10 +71,10 @@ class SIMController2:
   def _get_response(self,size):
     cmd = [0x00,0xC0,0x00,0x00]
     cmd += [size]
-    out = ""
-    for c in cmd:
-      out += "%02x " % c
-    print(out)
+    # out = ""
+    # for c in cmd:
+    #   out += "%02x " % c
+    # print(out)
     self._send_apdu(cmd)
     time.sleep(0.1)
     return self._readbuf()
@@ -108,7 +109,7 @@ class DriverInterface(base.BaseDriverInterface):
     super().__init__()
     self.config = {}
     self.config["trigger"] = None
-    print("Using SCFast Driver")
+    print("Using SCFast (SSTIC) Driver")
 
   def init(self,scope):
     print("SCFast: initializing")
@@ -123,30 +124,35 @@ class DriverInterface(base.BaseDriverInterface):
     time.sleep(0.1)
     self.sc._set_wait_us(0x0000)
     self.sc._set_wait_ms(0x0000)
-    r = self.sc._select_file(file_id=0x2F00,override=False) # override for Blue T SIM
+    r = self.sc._select_file(file_id=0x2F00)
     r = self.sc._readbuf()
     r = self.sc._get_response(r[1])
-    r = self.sc._send_apdu([0x00,0xB2,0x01,0x04,r[8]])
-    time.sleep(0.1)
-    r = self.sc._readbuf()
+    # r = self.sc._send_apdu([0x00,0xB2,0x01,0x04,r[8]])
+    # time.sleep(0.1)
+    # r = self.sc._readbuf()
+    # print("SELECTING 3G")
     r = self.sc._select_file(aid=r[5:5+r[4]],extra_delay=0.5)
-    print("3G SELECTED")
     time.sleep(0.1)
     # r = self.sc._readbuf()
+    r = self.sc._get_response(r[2])
+    # r = self.sc._readbuf()
+    # r = self.sc._get_response(r[1])
+    # r = self.sc._readbuf()
     # r = self.sc._get_response(r[2]) # this does 0x61, blah
-    time.sleep(0.1)
+    # time.sleep(0.1)
     # r = self.sc._select_file(file_id = 0x6F07)
-    r = self.sc._select_file(file_id = 0x6F22)
-    time.sleep(0.1)
-    r = self.sc._readbuf()
-    r = self.sc._get_response(r[1])
+    # time.sleep(0.1)
+    # r = self.sc._readbuf()
+    # r = self.sc._get_response(r[1])
     # print("SENDING READBINARY CMD")
-    # r = self.sc._send_apdu([0x00,0xB0,0x00,0x00,r[])
+    # r = self.sc._send_apdu([0x00,0xB0,0x00,0x00,0x09])
     # time.sleep(0.1)
     # r = self.sc._readbuf()
     # if 0x6C in r:
     #   print("READBINARY LENGHT ERROR")
-    print("INIT COMPLETE")
+    # r = self.sc._get_response(r[1])
+    # time.sleep(0.1)
+    print("GO TO AUTH")
 
   def drive(self,data_in = None):
     return self.drive_efdir(data_in)
@@ -161,10 +167,10 @@ class DriverInterface(base.BaseDriverInterface):
     self.sc._set_wait_ms(0x000a * 2)
     time.sleep(0.1)
     self.scope.arm()
-    self.sc._umts_auth(next_rand, next_autn)
-    r = self.sc._readbuf()
-    r = self.sc._readbuf()
+    self.sc._umts_auth([0xaa] * 16, [0xbb] * 16)
     time.sleep(0.1)
+    r = self.sc._readbuf()
+    r = self.sc._readbuf()
     return (next_rand,next_autn)
 
   def close(self):

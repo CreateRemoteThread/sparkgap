@@ -189,6 +189,10 @@ class Application(tk.Frame):
     utilmenu = tk.Menu(self.menubar,tearoff=0)
     utilmenu.add_command(label="Merge Sparkgap Traces",command=self.dlgMergeTraces)
     utilmenu.add_command(label="Merge Numpy Traces",command=self.dlgMergeNumpy)
+    # mathmenu = tk.Menu(self.menubar,tearoff=0)
+    # mathmenu.add_command(label="Display FFT",command=self.dlgFFT)
+    
+    # self.menubar.add_cascade(label="Analysis",menu=mathmenu)
     self.menubar.add_cascade(label="Utility",menu=utilmenu)
     self.master.config(menu=self.menubar)
 

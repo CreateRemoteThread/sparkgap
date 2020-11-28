@@ -802,7 +802,7 @@ class CaptureInterface():
       sys.exit(0)
     self.scope.write(":STOP")
     # self.scope.write(":CHAN1:OFFS -3.280")
-    self.scope.write(":CHAN1:OFFS -3.110")
+    self.scope.write(":CHAN1:OFFS -1.700")
     self.scope.write(":TRIG:MODE EDGE")
     self.scope.write(":TRIG:EDGE:SOUR CHAN2")
     # self.scope.write(":TRIG:EDGE:LEV 2.0")

@@ -225,6 +225,7 @@ class TraceManager:
       self.f = None # lazy save
       return
     self.f = open(filename,"r+")
+    self.sr = 0
     with cd(WORKING_ROOT):
       traceCount = 0
       numPoints = None
@@ -338,7 +339,7 @@ def save_cw(dataObj=None):
       # sys.exit(0)
       print("Done. You can load %s/project.cwp" % WORKING_ROOT)
 
-def save(fn_,traces=None,data=None,data_out=None,freq=None):
+def save(fn_,traces=None,data=None,data_out=None,freq=None,additionalParams={}):
   if ".npz" in fn_ or ".traces" in fn_:
     print("Do not save as .npz or .traces. Removing suffix")
     fn = fn_.replace(".npz","").replace(".traces","")
@@ -360,6 +361,8 @@ def save(fn_,traces=None,data=None,data_out=None,freq=None):
     f.write("traces=%s\n" % FN_TRACES)
     f.write("data_in=%s\n" % FN_DATA_IN)
     f.write("data_out=%s\n" % FN_DATA_OUT)
+    for opt in additionalParams.keys():
+      f.write("%s=%s\n" % (opt,additionalParameters[opt]))
     if freq != None:
       f.write("sr=%d\n" % freq)
     f.close() 
@@ -370,6 +373,7 @@ def save(fn_,traces=None,data=None,data_out=None,freq=None):
 
 def load(fn):
   dataObj = {}
+  dataObj["sr"] = None
   dataObj["orig_fn"] = fn
   try:
     WORKING_ROOT = "/".join(fn.split("/")[:-1])
@@ -395,8 +399,10 @@ def load(fn):
         dataObj["data_out"] = numpy.load(val,mmap_mode="r")
       elif arg == "sr":
         dataObj["sr"] = int(val) 
+        print("* Sample rate loaded as %d Hz" % dataObj["sr"])
       else:
         dataObj[arg] = val
+        print("* Optional argument '%s' loaded as '%s'" % (arg,val))
     f.close()
     traceCount = len(dataObj["traces"])
     numPoints = len(dataObj["traces"][0])

@@ -57,6 +57,10 @@ def distinguisher_even(data,round,keyguess):
   # print("%02x" % data[round])
   return data[round] % 2 == 0
 
+def distinguisher_hw(data,round,keyguess):
+  # print("%02x" % data[round])
+  return bin(data[round]).count("1") >= 4
+
 # keeloq is 66 bits...
 def unpackKeeloq(plaintext):
   out = ""
@@ -142,6 +146,9 @@ if __name__ == "__main__":
       if value.upper() == "EVEN":
         leakmodel = SpecialLeakModel()
         leakmodel.customDistinguisher =distinguisher_even
+      elif value.upper() == "HW":
+        leakmodel = SpecialLeakModel()
+        leakmodel.customDistinguisher = distinguisher_hw
       elif value.upper() == "FIXED":
         leakmodel = SpecialLeakModel()
         leakmodel.customDistinguisher =distinguisher_fixed
