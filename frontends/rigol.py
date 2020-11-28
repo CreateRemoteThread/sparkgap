@@ -802,7 +802,12 @@ class CaptureInterface():
       sys.exit(0)
     self.scope.write(":STOP")
     # self.scope.write(":CHAN1:OFFS -3.280")
-    self.scope.write(":CHAN1:OFFS -1.700")
+    if "rigol_offset" in self.config.keys():
+      print("Rigol: using custom offset %s" % self.config["rigol_offset"])
+      self.scope.write(":CHAN1:OFFS %s" % self.config["rigol_offset"])
+    else:
+      print("Rigol: using default offset of -1.700")
+      self.scope.write(":CHAN1:OFFS -1.700")
     self.scope.write(":TRIG:MODE EDGE")
     self.scope.write(":TRIG:EDGE:SOUR CHAN2")
     # self.scope.write(":TRIG:EDGE:LEV 2.0")
