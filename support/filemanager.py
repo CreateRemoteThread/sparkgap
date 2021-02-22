@@ -80,6 +80,20 @@ class TraceManager:
         final_meant += meant * (meanweight / meant_count)
     return final_meant
 
+  def loadCiphertexts(self):
+    print("TraceManager: loadCiphertexts called")
+    pt_array = None
+    for i in range(0,65535):
+      if i not in self.dataObj.keys():
+        print("TraceManager: loadCiphertexts complete, %d entries returned" % len(pt_array))
+        return pt_array
+      else:
+        if pt_array is None:
+          pt_array = self.dataObj[i].data_out
+        else:
+          pt_array = numpy.vstack([pt_array,self.dataObj[i].data_out])
+        print("TraceManager: length of ct_array is %d" % len(pt_array))
+
   def loadPlaintexts(self):
     print("TraceManager: loadPlaintexts called")
     pt_array = None
@@ -211,6 +225,7 @@ class TraceManager:
       self.f = None # lazy save
       return
     self.f = open(filename,"r+")
+    self.sr = 0
     with cd(WORKING_ROOT):
       traceCount = 0
       numPoints = None
@@ -324,7 +339,7 @@ def save_cw(dataObj=None):
       # sys.exit(0)
       print("Done. You can load %s/project.cwp" % WORKING_ROOT)
 
-def save(fn_,traces=None,data=None,data_out=None,freq=None):
+def save(fn_,traces=None,data=None,data_out=None,freq=None,additionalParams={}):
   if ".npz" in fn_ or ".traces" in fn_:
     print("Do not save as .npz or .traces. Removing suffix")
     fn = fn_.replace(".npz","").replace(".traces","")
@@ -346,6 +361,8 @@ def save(fn_,traces=None,data=None,data_out=None,freq=None):
     f.write("traces=%s\n" % FN_TRACES)
     f.write("data_in=%s\n" % FN_DATA_IN)
     f.write("data_out=%s\n" % FN_DATA_OUT)
+    for opt in additionalParams.keys():
+      f.write("%s=%s\n" % (opt,additionalParameters[opt]))
     if freq != None:
       f.write("sr=%d\n" % freq)
     f.close() 
@@ -356,6 +373,7 @@ def save(fn_,traces=None,data=None,data_out=None,freq=None):
 
 def load(fn):
   dataObj = {}
+  dataObj["sr"] = None
   dataObj["orig_fn"] = fn
   try:
     WORKING_ROOT = "/".join(fn.split("/")[:-1])
@@ -381,8 +399,10 @@ def load(fn):
         dataObj["data_out"] = numpy.load(val,mmap_mode="r")
       elif arg == "sr":
         dataObj["sr"] = int(val) 
+        print("* Sample rate loaded as %d Hz" % dataObj["sr"])
       else:
         dataObj[arg] = val
+        print("* Optional argument '%s' loaded as '%s'" % (arg,val))
     f.close()
     traceCount = len(dataObj["traces"])
     numPoints = len(dataObj["traces"][0])

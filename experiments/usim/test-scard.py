@@ -147,7 +147,10 @@ import time
 if __name__ == "__main__":
   sc = SIMController2()
   sc.ser.write(b'R')
-  sc.ser.read(1)
+  if sc.ser.read(1) != b'A':
+    print("Unexpected answer from SIMController2")
+  else:
+    print("SIMController2 Reset OK")
   sc._readbuf()
   time.sleep(1.0)
   r = sc._select_file(file_id=0x2F00) # EF_DIR
