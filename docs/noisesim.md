@@ -13,7 +13,20 @@ Note that the slidemax variable is half the "slide window": that is, each trace 
 
 ![cpa misaligned](imgs/cpa-misaligned.png)
 
-To realign the traces, we can use a one-pass Minimum SAD alignment, against a unique pattern in the first round (pick any). Again, simulating an unknown noise source, we eyeball our SAD cutoff and slide window parameters (500 total SAD, a cutoff). Repeating a CPA attack, peaks appear again:
+To realign the traces, we can use a one-pass Minimum SAD alignment, against a unique pattern in the first round (pick any). Again, simulating an unknown noise source, we eyeball our SAD cutoff and slide window parameters (500 total SAD, a cutoff).
+
+    ./preprocessor.py -f ~/dest.traces -w ~/dest-realigned.traces
+    # note the settings are off, this is just a demonstration of how to align traces
+    set ref=0
+    set strategy="sad"
+    set window_offset=1000
+    set window_length=100    
+    set window_length=1000
+    set window_slide=100
+    set sad_cutoff=100
+    r
+
+Repeating a CPA attack, peaks appear again:
 
 ![cpa realigned](imgs/cpa-realigned.png)
 
