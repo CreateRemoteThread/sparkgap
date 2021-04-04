@@ -1,6 +1,6 @@
 # Quick Start Guide Development
 
-![Setup Picture](docs/imgs/quickstart/docs-commit.png)
+![Setup Picture](imgs/quickstart/docs-commit.PNG)
 
 This page documents the software architecture of the sparkgap project, to support development. If you want to implement additional frontends/drivers, this is the place.
 
