@@ -9,6 +9,7 @@ import random
 import numpy as np
 import triggerbuddy
 import traceback
+import datetime
 import support.filemanager
 
 fe = None
@@ -59,7 +60,9 @@ def runCaptureTask():
   data = np.zeros((config["tracecount"],config["len_in"]),np.uint8)         # RAND
   data_out = np.zeros((config["tracecount"],config["len_out"]),np.uint8)     # AUTN
   for i in range(0,config["tracecount"]):
-    print("Running job: %d/%d. %d missed" % (i,config["tracecount"],missedCount))
+    print("=" * 80)
+    print("[%s] Running job: %d/%d. %d missed" % (datetime.datetime.now(),i,config["tracecount"],missedCount))
+    print("=" * 80)
     if config["tlva"] is None:
       (next_rand, next_autn) = drv.drive(None)
     else:
