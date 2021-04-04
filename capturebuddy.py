@@ -71,7 +71,10 @@ def runCaptureTask():
       else:
         (next_rand, next_autn) = drv.drive(None)
     time.sleep(3.0)
-    dataA = fe.capture()
+    if next_rand is None and next_autn is None:
+      dataA = []
+    else:
+      dataA = fe.capture()
     if len(dataA) == 0:
       print("Missed a trace!")
       missedCount += 1

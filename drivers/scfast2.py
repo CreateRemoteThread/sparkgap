@@ -84,7 +84,7 @@ class SIMController2:
     c = self.ser.read(1)
     if c != b'#':
       print("Expected #, got %02x" % ord(c))
-      # return
+      raise Exception("escaping out of driver, capturebuddy should get this")
     respsize = ord(self.ser.read(1))
     print("RESPSIZE %d" % respsize)
     c = self.ser.read(respsize)
@@ -149,7 +149,10 @@ class DriverInterface(base.BaseDriverInterface):
     print("INIT COMPLETE")
 
   def drive(self,data_in = None):
-    return self.drive_efdir(data_in)
+    try:
+      return self.drive_efdir(data_in)
+    except:
+      return (None,None)
 
   def drive_efdir(self,data_in = None):
     if data_in is None:

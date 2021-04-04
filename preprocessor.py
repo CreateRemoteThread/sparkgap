@@ -468,7 +468,7 @@ if __name__ == "__main__":
     elif arg in ("-c","--cmdfile"):
       CONFIG_CMDFILE = opt
   if CONFIG_READFILE is None:
-    print("You must specify an input file with -r")
+    print("You must specify an input file with -f / --infile")
     sys.exit(0)
   if os.path.isfile(CONFIG_READFILE) is False:
     print("Source file %s not valid" % CONFIG_READFILE)
