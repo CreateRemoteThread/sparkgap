@@ -116,7 +116,7 @@ class DriverInterface(base.BaseDriverInterface):
     self.scope = scope
     print("Reset")
     self.sc.ser.write(b'R')
-    self.sc.ser.read(1)
+    print(self.sc.ser.read(1))
     time.sleep(0.5)
     print("Grabbing APDU")
     self.sc._readbuf()

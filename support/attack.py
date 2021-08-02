@@ -18,7 +18,8 @@ def fetchModel(modelname):
   try:
     exec("from support.attacks.%s import AttackModel; fe = AttackModel()" % modelname,globals())
     return fe
-  except:
+  except Exception as ex:
+    print(ex)
     print("Could not load attack model '%s'" % modelname)
     usage()
     sys.exit(0)

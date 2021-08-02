@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 t0 = [
     0xc66363a5, 0xf87c7c84, 0xee777799, 0xf67b7b8d,
     0xfff2f20d, 0xd66b6bbd, 0xde6f6fb1, 0x91c5c554,
@@ -271,11 +270,29 @@ t3 = [
 
 tset = [t0,t1,t2,t3]
 
+class model:
+  def __init__(self):
+    self.hw_table_length = 2 ** 16
+    self.hw_table = [0] * self.hw_table_length
+    self.init_hw_table()
+
+  @staticmethod
+  def hw(value):
+    return bin(value).count('1')
+
+  def init_hw_table(self):
+    for i in range(self.hw_table_length):
+      self.hw_table[i] = self.hw(i)
+
+  def leak(self, value):
+    return self.hw_table[value & 0xffff] + self.hw_table[value >> 16 & 0xffff]
+
+
 class AttackModel:
   def __init__(self):
     self.keyLength = 16
     self.fragmentMax = 256
-    self.ttable_model = ttable.model()
+    self.ttable_model = model()
 
   def loadPlaintextArray(self,pt):
     print("Loading plaintext array for AES TTable Out HW Attack...")

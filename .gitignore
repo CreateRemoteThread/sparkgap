@@ -1,3 +1,7 @@
+# go away preprocessor files
+
+*.cmd
+
 # Byte-compiled / optimized / DLL files
 
 experiments/avr/*.csv

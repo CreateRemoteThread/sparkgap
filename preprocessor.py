@@ -61,7 +61,7 @@ def getMaxCorrCoeff(trace1,trace2):
         try:
           r = corrcoef(r1,r2)
         except:
-          contiune
+          continue
         if r[0,1] > maxCf:
           maxCf = r[0,1]
           maxCfIndex = i
@@ -420,7 +420,8 @@ def dispatchAlign(tm_in):
     print("Strategy must be one of SAD, CORR, CWT")
     return
 
-def doSingleCommand(cmd,tm_in):
+def doSingleCommand(cmd,tm_in_raw):
+  tm_in = tm_in_raw
   tokens = cmd.split(" ")
   if tokens[0] == "set" and len(tokens) >= 2:
     tx = " ".join(tokens[1:])
