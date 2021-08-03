@@ -13,6 +13,24 @@ import matplotlib.pyplot as plt
 import pywt
 import random
 
+class TraceManagerStub:
+  def __init__(self,traces,data_in,data_out):
+    print("TraceManagerStub: Creating with %d traces" % len(traces))
+    self.traces = traces
+    self.data_in = data_in
+    self.data_out = data_out
+    self.traceCount = len(self.traces)
+    self.numPoints = len(self.traces[0])
+
+  def getSingleTrace(self,i):
+    return self.traces[i]
+
+  def getSingleData(self,i):
+    return self.data[i]
+
+  def getSingleDataOut(self,i):
+    return self.data_out[i]
+
 def butter_bandpass(lowcut,highcut,fs,order=5):
   nyq = 0.5 * fs
   low = lowcut / nyq
@@ -192,8 +210,10 @@ def doCORR(tm_in):
         savedDataIndex += 1
     else:
       print(("Index %d, discarding (correlation is %f, index is %d)" % (i,msv,msi)))
-  print("Saving...")
-  support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+  print("Returning data, don't forget to commit!")
+  return (traces[0:savedDataIndex],data[0:savedDataIndex],data_out[0:savedDataIndex])
+  # print("Saving...")
+  # support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
 import copy
 def doSingleCWTDenoise(x_in,wavelet="db4",level=1):
@@ -226,8 +246,10 @@ def doCWTDenoise(tm_in):
       data[savedDataIndex,:] = tm_in.getSingleData(i)
       data_out[savedDataIndex,:] = tm_in.getSingleDataOut(i)
       savedDataIndex += 1
-  print("Saving...")
-  support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+  print("Returning data, don't forget to commit!")
+  return (traces[0:savedDataIndex],data[0:savedDataIndex],data_out[0:savedDataIndex])
+  # print("Saving...")
+  # support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
 def unpackKeeloq(plaintext):
   out = ""
@@ -261,8 +283,10 @@ def doFlipKeeloqIO(tm_in):
     data[savedDataIndex,:] = packKeeloq(unpackKeeloq(tm_in.getSingleData(i))[::-1])
     data_out[savedDataIndex,:] = packKeeloq(unpackKeeloq(tm_in.getSingleDataOut(i)[::-1])[::-1])
     savedDataIndex += 1
-  print("Saving...")
-  support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+  print("Returning data, don't forget to commit!")
+  return (traces[0:savedDataIndex],data[0:savedDataIndex],data_out[0:savedDataIndex])
+  # print("Saving...")
+  # support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
 def doLowpass(tm_in):
   numTraces = tm_in.traceCount
@@ -281,8 +305,10 @@ def doLowpass(tm_in):
     data[savedDataIndex,:] = tm_in.getSingleData(i)
     data_out[savedDataIndex,:] = tm_in.getSingleDataOut(i)
     savedDataIndex += 1
-  print("Saving...")
-  support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+  print("Returning data, don't forget to commit!")
+  return (traces[0:savedDataIndex],data[0:savedDataIndex],data_out[0:savedDataIndex])
+  # print("Saving...")
+  # support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
 def doBandpass(tm_in):
   numTraces = tm_in.traceCount
@@ -301,8 +327,10 @@ def doBandpass(tm_in):
     data[savedDataIndex,:] = tm_in.getSingleData(i)
     data_out[savedDataIndex,:] = tm_in.getSingleDataOut(i)
     savedDataIndex += 1
-  print("Saving...")
-  support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+  print("Returning data, don't forget to commit!")
+  return (traces[0:savedDataIndex],data[0:savedDataIndex],data_out[0:savedDataIndex])
+  # print("Saving...")
+  # support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
 def doEarthquake(tm_in):
   numTraces = tm_in.traceCount
@@ -321,8 +349,10 @@ def doEarthquake(tm_in):
     data[savedDataIndex,:] = tm_in.getSingleData(i)
     data_out[savedDataIndex,:] = tm_in.getSingleDataOut(i)
     savedDataIndex += 1
-  print("Saving...")
-  support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+  print("Returning data, don't forget to commit!")
+  return (traces[0:savedDataIndex],data[0:savedDataIndex],data_out[0:savedDataIndex])
+  # print("Saving...")
+  # support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
 def doSlicer(tm_in):
   CONFIG_REFTRACE = getVariable("ref")
@@ -345,8 +375,9 @@ def doSlicer(tm_in):
     traces[i:] = se.FindSlices(i, CONFIG_REF_OFFSET, CONFIG_REF_LENGTH,CONFIG_SLICE_DIST,CONFIG_SAD_CUTOFF,maxSlicesBackwards,maxSlicesForwards)
     data[i,:] = tm_in.getSingleData(i)
     data_out[i,:] = tm_in.getSingleDataOut(i)
-  print("Saving...")
-  support.filemanager.save(CONFIG_WRITEFILE,traces=traces,data=data,data_out=data_out)
+  print("Returning data, don't forget to commit!")
+  return (traces,data,data_out)
+  # support.filemanager.save(CONFIG_WRITEFILE,traces=traces,data=data,data_out=data_out)
 
 def doSAD(tm_in):
   numTraces = tm_in.traceCount
@@ -386,64 +417,96 @@ def doSAD(tm_in):
         savedDataIndex += 1
     else:
       print(("Index %d, discarding (MSV is %f)" % (i,msv)))
-  print("Saving...")
-  support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+  print("Returning data, don't forget to commit!")
+  return (traces[0:savedDataIndex],data[0:savedDataIndex],data_out[0:savedDataIndex])
+  # support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
 def dispatchAlign(tm_in):
   global CFG_GLOBALS
   CONFIG_STRATEGY = getVariable("strategy")
   if CONFIG_STRATEGY in ("sad","SAD"):
     print("Using strategy: Align by Sum of Absolute Differences")
-    doSAD(tm_in)
+    (traces,data_in,data_out) = doSAD(tm_in)
   elif CONFIG_STRATEGY in ("earthquake","EARTHQUAKE"):
     print("Using strategy: Misalign by time-quake! Yay for testing!")
-    doEarthquake(tm_in)
+    (traces,data_in,data_out) = doEarthquake(tm_in)
   elif CONFIG_STRATEGY in ("corr","CORR"):
     print("Using strategy: Align by Maximum Correlation")
-    doCORR(tm_in)
+    (traces,data_in,data_out) = doCORR(tm_in)
   elif CONFIG_STRATEGY in ("wavelet","WAVELET"):
     print("Using strategy: Wavelet Denoise")
-    doCWTDenoise(tm_in)
+    (traces,data_in,data_out) = doCWTDenoise(tm_in)
   elif CONFIG_STRATEGY in ("bandpass","BANDPASS"):
     print("Using strategy: Band Pass")
-    doBandpass(tm_in)
+    (traces,data_in,data_out) = doBandpass(tm_in)
   elif CONFIG_STRATEGY in ("lowpass","LOWPASS"):
     print("Using strategy: Low Pass")
-    doLowpass(tm_in)
+    (traces,data_in,data_out) = doLowpass(tm_in)
   elif CONFIG_STRATEGY in ("keeloq","KEELOQ"):
     print("Using strategy: Flip Keeloq IO Special")
-    doFlipKeeloqIO(tm_in)
+    (traces,data_in,data_out) = doFlipKeeloqIO(tm_in)
   elif CONFIG_STRATEGY.upper() == "SLICER":
     print("Using strategy: SlipNSlide Slice Extractor")
-    doSlicer(tm_in)
+    (traces,data_in,data_out) = doSlicer(tm_in)
   else:
-    print("Strategy must be one of SAD, CORR, CWT")
-    return
+    print("Unknown strategy: %s" % CONFIG_STRATEGY)
+    return (None,None,None)
+  return (traces,data_in,data_out)
+
+needsCommit = False
 
 def doSingleCommand(cmd,tm_in_raw):
+  global needsCommit,CFG_GLOBALS
+  CONFIG_WRITEFILE = getVariable("writefile")
   tm_in = tm_in_raw
   tokens = cmd.split(" ")
   if tokens[0] == "set" and len(tokens) >= 2:
     tx = " ".join(tokens[1:])
     (argname,argval) = tx.split("=")
     CFG_GLOBALS[argname] = eval(argval)
+    return None
   elif tokens[0] == "vars":
     for k in CFG_GLOBALS.keys():
       print("%s=%s" % (k,CFG_GLOBALS[k]))
   elif tokens[0] == "savecw":
-    print("Saving as ChipWhisperer format...")
-    tm_in.save_cw()
-  elif tokens[0] in ["rem","#"]:
+    if needsCommit:
+      print("Commit your changes first. No operation performed")
+    else:
+      print("Saving as ChipWhisperer format...")
+      tm_in.save_cw()
+    return None
+  elif tokens[0] in ["rem","#",";","//"]:
     pass
+    return None
   elif tokens[0] in ["r","run"]:
-    dispatchAlign(tm_in)
-  elif tokens[0] in ["q","quit"]:
+    (traces,data_in,data_out) = dispatchAlign(tm_in)
+    needsCommit = True
+    tm_in_new = TraceManagerStub(traces,data_in,data_out)
+    return tm_in_new
+  elif tokens[0] in ["c","commit"]:
+    if needsCommit:
+      support.filemanager.save(CONFIG_WRITEFILE,traces=tm_in.traces,data=tm_in.data,data_out=tm_in.data_out) 
+      needsCommit = False
+    else:
+      print("No changes need committing")
+    return None
+  elif tokens[0] == "force-quit":
+    if needsCommit:
+      print("Unsaved changes present, quitting anyway")
     print("Bye!")
     sys.exit(0)
+  elif tokens[0] in ["q","quit"]:
+    if needsCommit:
+      print("Unsaved changes need committing, use 'force-quit' to quit without saving")
+    else:
+      print("Bye!")
+      sys.exit(0)
   elif len(cmd) == 0:
     pass
+    return None
   else:
     print("Unknown / invalid command")
+    return None
 
 def doCommands(CONFIG_READFILE,CONFIG_CMDFILE):
   global CFG_GLOBALS
@@ -452,7 +515,10 @@ def doCommands(CONFIG_READFILE,CONFIG_CMDFILE):
     f = open(CONFIG_CMDFILE)
     cmds = [d.rstrip() for d in f.readlines()]
     for i in range(0,len(cmds)):
-      doSingleCommand(cmds[i],tm_in)
+      p = doSingleCommand(cmds[i],tm_in)
+      if p is not None:
+        print("doCommands loop: Replacing tm_in")
+        tm_in = p
   while True:
     cmd = input(" > ").lstrip().rstrip()
     doSingleCommand(cmd,tm_in)
