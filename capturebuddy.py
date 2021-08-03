@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import getopt
 import sys
@@ -120,6 +121,14 @@ def processCommand(c):
       if "~" in config["writefile"]:
         print("Sanity check failed: no path expansions allowed in writefile")
         return
+      try:
+        f = open(config["writefile"],"w")
+      except Exception as ex:
+        print("Sanity check failed: %s is not writeable" % config["writefile"])
+        return
+      else:
+        f.close()
+        os.unlink(config["writefile"])
     runCaptureTask()
   elif tokens[0] == "vars":
     for i in config.keys():
@@ -131,9 +140,15 @@ def processCommand(c):
   elif tokens[0] == "set":
     cmdx = " ".join(tokens[1:])
     (varname,varval) = cmdx.split("=")
-    config[varname] = eval(varval)
-    fe.config[varname] = eval(varval)
-    drv.config[varname] = eval(varval)
+    try:
+      p = eval(varval)
+    except Exception as ex:
+      print("Exception: could not evaluate '%s'" % varval)
+      print("No variables set!")
+    else:
+      config[varname] = p
+      fe.config[varname] = p
+      drv.config[varname] = p
   elif tokens[0] == "fe.set":
     cmdx = " ".join(tokens[1:])
     (varname,varval) = cmdx.split("=")
