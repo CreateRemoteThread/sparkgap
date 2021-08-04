@@ -62,13 +62,19 @@ def send_and_get_resp(byte_array):
 reader.set_trigger_strategy(0, point_list=[])
 
 f = Fuck()
-r = send_and_get_resp(f._select_file(0x2F00))
+r = send_and_get_resp(f._select_file(0x3F00))   # MASTER
+r = send_and_get_resp(f._select_file(0x2F00))   # EF_DIR
 r = send_and_get_resp([0x00,0xB2,0x01,0x04,r.data[7]])
+AID = r.data[4:4+r.data[3]]
+print(" ".join(["%02x" % x for x in AID]))
 r = send_and_get_resp(f._select_file(aid=r.data[4:4+r.data[3]]))
+
+# srsran/srsue end of init
+
+
 
 next_rand = [random.randint(0,255) for _ in range(16)]
 next_autn = [random.randint(0,255) for _ in range(16)]
-
 
 l = f._umts_auth(next_rand,next_autn)
 reader.set_trigger_strategy(0, point_list=[TriggerPoints.TRIG_IRQ_PUTC],delay=len(l) - 1,single=1)

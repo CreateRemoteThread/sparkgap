@@ -26,7 +26,7 @@ class TraceManagerStub:
     return self.traces[i]
 
   def getSingleData(self,i):
-    return self.data[i]
+    return self.data_in[i]
 
   def getSingleDataOut(self,i):
     return self.data_out[i]
@@ -465,6 +465,9 @@ def doSingleCommand(cmd,tm_in_raw):
     (argname,argval) = tx.split("=")
     CFG_GLOBALS[argname] = eval(argval)
     return None
+  elif tokens[0] == "unset" and len(tokens) == 2:
+    if tokens[1] in CFG_GLOBALS.keys():
+      del CFG_GLOBALS[tokens[1]]
   elif tokens[0] == "vars":
     for k in CFG_GLOBALS.keys():
       print("%s=%s" % (k,CFG_GLOBALS[k]))
@@ -485,7 +488,7 @@ def doSingleCommand(cmd,tm_in_raw):
     return tm_in_new
   elif tokens[0] in ["c","commit"]:
     if needsCommit:
-      support.filemanager.save(CONFIG_WRITEFILE,traces=tm_in.traces,data=tm_in.data,data_out=tm_in.data_out) 
+      support.filemanager.save(CONFIG_WRITEFILE,traces=tm_in.traces,data=tm_in.data_in,data_out=tm_in.data_out) 
       needsCommit = False
     else:
       print("No changes need committing")

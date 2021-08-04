@@ -82,6 +82,7 @@ class DriverInterface(base.BaseDriverInterface):
     print("GO")
     self.reader.reset()
     print(self.reader.get_ATR())
+    r = send_and_get_resp(self.reader,self.f._select_file(0x3F00))  # MASTER
     r = send_and_get_resp(self.reader,self.f._select_file(0x2F00))
     r = send_and_get_resp(self.reader,[0x00,0xB2,0x01,0x04,r.data[7]])
     r = send_and_get_resp(self.reader,self.f._select_file(aid=r.data[4:4+r.data[3]]))
