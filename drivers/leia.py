@@ -26,6 +26,7 @@ class Fuck:
     return cmd
 
   def _umts_auth(self,rand,autn):
+    print("Generating UMTS Auth")
     cmd = [0x00, 0x88, 0x00, 0x81, 0x22]
     cmd.append(len(rand))
     cmd += rand
@@ -63,6 +64,7 @@ class DriverInterface(base.BaseDriverInterface):
     self.f = Fuck()
     self.scope = scope
     self.reader = LEIA("/dev/ttyACM0")
+    self.reader.configure_smartcard(protocol_to_use=0,freq_to_use=1000000)
     print("LEIA: OK")
 
   def drive(self,data_in = None):
@@ -83,10 +85,11 @@ class DriverInterface(base.BaseDriverInterface):
     self.reader.reset()
     print(self.reader.get_ATR())
     r = send_and_get_resp(self.reader,self.f._select_file(0x3F00))  # MASTER
-    r = send_and_get_resp(self.reader,self.f._select_file(0x2F00))
+    r = send_and_get_resp(self.reader,self.f._select_file(0x2F00))  # GET AID
     r = send_and_get_resp(self.reader,[0x00,0xB2,0x01,0x04,r.data[7]])
     r = send_and_get_resp(self.reader,self.f._select_file(aid=r.data[4:4+r.data[3]]))
-    print(next_autn,next_rand)
+    # r = send_and_get_resp(self.reader,self.f._select_file(aid=[0] * 5))
+    # print(next_autn,next_rand)
     l = self.f._umts_auth(next_rand,next_autn)
     time.sleep(0.1)
     self.reader.set_trigger_strategy(0, point_list=[TriggerPoints.TRIG_IRQ_PUTC],delay=len(l) - 1,single=1)
