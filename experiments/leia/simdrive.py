@@ -78,6 +78,8 @@ print("OK!")
 
 l = f._umts_auth(next_rand,next_autn)
 reader.set_trigger_strategy(0, point_list=[TriggerPoints.TRIG_IRQ_PUTC],delay=len(l) - 1,single=1)
+print(reader.get_trigger_strategy(0))
+
 r = send_and_get_resp(l)
 print(reader.get_trigger_strategy(0))
 

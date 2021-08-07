@@ -80,10 +80,12 @@ def runCaptureTask():
       print("Missed a trace!")
       missedCount += 1
       traces[i:] = np.zeros(config["samplecount"])
+      data[i:] = [0] * 16
+      data_out[i:] = [0] * 16
     else:
       traces[i:] = dataA
-    data[i:] = next_rand
-    data_out[i:] = next_autn
+      data[i:] = next_rand
+      data_out[i:] = next_autn
   vars = {}
   if config["writefile"] is None:
     print("Writefile is unconfigured, not saving results...")

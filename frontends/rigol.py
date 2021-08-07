@@ -3,6 +3,7 @@
 
 # converted from pklaus/ds1054z to embed into 
 
+import os
 import logging
 import re
 import time
@@ -801,13 +802,27 @@ class CaptureInterface():
       print("Scope error :(")
       sys.exit(0)
     self.scope.write(":STOP")
+    CFG_PATH = os.path.expanduser("~/.sparkgap/rigol_offset")
     # self.scope.write(":CHAN1:OFFS -3.280")
     if "rigol_offset" in self.config.keys():
+      try:
+        f = open(CFG_PATH,"w")
+        f.write(self.config["rigol_offset"])
+        f.close()
+      except:
+        print("Rigol: could not save rigol_offset")
       print("Rigol: using custom offset %s" % self.config["rigol_offset"])
       self.scope.write(":CHAN1:OFFS %s" % self.config["rigol_offset"])
     else:
-      print("Rigol: using default offset of -1.700")
-      self.scope.write(":CHAN1:OFFS -1.840")
+      if os.path.isfile(CFG_PATH):
+        f = open(CFG_PATH,"r")
+        r_offset = f.read().rstrip()
+        f.close()
+        print("Rigol: using saved offset of %s" % r_offset)
+        self.scope.write(":CHAN1:OFFS %s" % r_offset)
+      else:
+        print("Rigol: using default offset of -0.001")
+        self.scope.write(":CHAN1:OFFS -0.001")
     self.scope.write(":TRIG:MODE EDGE")
     self.scope.write(":TRIG:EDGE:SOUR CHAN2")
     # self.scope.write(":TRIG:EDGE:LEV 2.0")
