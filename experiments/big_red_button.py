@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import getopt
 import chipwhisperer as cw
 import time
 import random
@@ -7,10 +8,10 @@ import random
 scope = cw.scope()
 target = cw.target(scope)
 
-scope.clock.clkgen_freq = 16000000
+scope.clock.clkgen_freq = 64000000
 scope.clock.adc_src = "clkgen_x1"
 scope.glitch.clk_src = "clkgen"
-scope.glitch.output = "glitch_only"
+scope.glitch.output = "enable_only"
 
 scope.glitch.offset=30
 scope.glitch.width=40

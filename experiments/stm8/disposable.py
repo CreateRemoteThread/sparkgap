@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import chipwhisperer as cw
-
-print("Manual disarm")
+import sys
 
 scope = cw.scope()
-scope.dis()
+
+print("Setting up Glitch Trigger")
+
