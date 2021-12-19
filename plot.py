@@ -226,9 +226,10 @@ if __name__ == "__main__":
       sys.exit(0)
     if len(TRACES) != 1:
       TITLE = "TRACE PLOT"
-    if ((OFFSET != 0) and (COUNT == 0)) or ((OFFSET == 0) and (COUNT != 0)):
-      print("You can't specify -o without -n")
-      sys.exit(0)
+    if ((OFFSET != 0) and (COUNT == 0)):
+      print("Fix: Assume you want to start at %d, finish at trace end" % OFFSET)
+      d = tm.getSingleTrace(0)
+      COUNT = len(d) - OFFSET
     for i in TRACES:
       if OFFSET == 0 and COUNT == 0:
         d = tm.getSingleTrace(i)
