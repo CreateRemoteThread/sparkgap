@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 from numpy import *
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+# import matplotlib as mpl
+# import matplotlib.pyplot as plt
 
 def getSingleSAD(array1,array2):
   totalSAD = 0.0

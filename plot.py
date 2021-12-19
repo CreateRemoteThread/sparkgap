@@ -2,6 +2,7 @@
 
 # Extremely simple signal plotting tool
 
+import os
 import sys
 import binascii
 import random
@@ -220,6 +221,9 @@ if __name__ == "__main__":
     print("TraceManager no longer supports multiple files by design. Try something else")
     sys.exit(0)
   for f in ADDITIONAL_FILES:
+    if not os.path.isfile(f):
+      print("Fatal: could not open %s" % f)
+      sys.exit(0)
     tm = support.filemanager.TraceManager(f)
     if len(TRACES) == 0:
       print("You must specify at least one trace with -c")

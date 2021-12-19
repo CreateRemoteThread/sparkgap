@@ -1,7 +1,5 @@
 # sparkgap
 
-![Just for fun](docs/imgs/new_ui.png)
-
 [quickstart](docs/quickstart.md) | [develop](docs/quickstart-dev.md) | [noise_preprocessing](docs/noisesim.md)
 
 Sparkgap is a major refactor of my previous SCA and FI code. This provides a more consistent UI experience (console instead of paragraph-length command-lines), better self-contained documentation and a single unified support module for both FI and SCA tasks.

@@ -7,6 +7,7 @@ import h5py
 import numpy
 import os
 import sys
+# import matplotlib.pyplot as plt
 
 class TraceSet:
   def __init__(self,key):
@@ -27,18 +28,21 @@ class TraceManager:
 
   # this needed to use weights in the old trace format, this is
   def getMeant(self):
-    meant_array = []
-    meant_count =  0
     print("TraceManager2: getMeant called")
-    return numpy.mean(self.traces)    
+    m = numpy.mean(self.traces,axis=0)    
+    # plt.plot(m)
+    # plt.show()
+    return m
 
   def loadCiphertexts(self):
     print("TraceManager2: loadCiphertexts called")
+    return self.f["data_out"]
     pass
 
   def loadPlaintexts(self):
     print("TraceManager2: loadPlaintexts called")
-    pass
+    return self.f["data_in"]
+    # pass
 
   def getTraceCount(self):
     return self.traceCount

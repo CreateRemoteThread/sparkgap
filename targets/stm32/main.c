@@ -54,7 +54,9 @@ int main(void)
 			}
 			AES_init_ctx(&ctx, key);
 			memcpy(aes_out,in,16);
-			// PORTB |= (1 << PORTB0);
+      // todo: mmap io. hal_gpio_writepin is slow
+      // and you can miss the first few bytes of the key in first-round
+      // analysis. who needs sequentiale execution amirite
       HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,1);
 			AES_ECB_encrypt(&ctx, aes_out);
       HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,0);

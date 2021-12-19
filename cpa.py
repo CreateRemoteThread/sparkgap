@@ -127,7 +127,7 @@ if __name__ == "__main__":
     sys.exit(0)
   print("Stage 1: Loading plaintexts...")
   tm = support.filemanager.TraceManager(fn)
-  tm.mapBlocks()
+  # tm.mapBlocks()
   if TRACE_LENGTH == 0:
     TRACE_LENGTH = tm.numPoints
   print("Stage 2: Deriving key... wish me luck!")

@@ -9,7 +9,7 @@ import sys
 import support.filemanager
 import support.slipnslide
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import pywt
 import random
 
