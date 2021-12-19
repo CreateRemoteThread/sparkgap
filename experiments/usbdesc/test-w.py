@@ -6,7 +6,7 @@ import binascii
 import array
 import time
 import warnings
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from collections import namedtuple
 
 #sanity = [18, 1, 0, 2, 0, 0, 0, 64, 76, 83, 1, 0, 0, 1, 1, 2, 3, 1]

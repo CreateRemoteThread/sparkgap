@@ -116,7 +116,7 @@ while trycounter < CONFIG_TRY:
   else:
     print("Connected!")
     while True:
-      x = eval(raw_input("py > "))
+      x = eval(input("py > ").rstrip())
 
 target.dis()
 scope.dis()
