@@ -26,10 +26,6 @@ TRACE_OFFSET = 0
 TRACE_LENGTH = 0
 TRACE_MAX = 0
 
-def loadTraces(fns):
-  dx = support.filemanager.load(fns)
-  return (dx['traces'],dx['data'])
-
 CONFIG_PLOT = True
 CONFIG_LEAKMODEL = "helpmsg"
 

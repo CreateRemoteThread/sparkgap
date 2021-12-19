@@ -6,3 +6,4 @@ numpy
 PyWavelets
 python-vxi11
 pylink-square
+h5py
