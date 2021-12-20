@@ -2,6 +2,7 @@
 
 # Extremely simple signal plotting tool
 
+import os
 import sys
 import binascii
 import random
@@ -220,15 +221,19 @@ if __name__ == "__main__":
     print("TraceManager no longer supports multiple files by design. Try something else")
     sys.exit(0)
   for f in ADDITIONAL_FILES:
+    if not os.path.isfile(f):
+      print("Fatal: could not open %s" % f)
+      sys.exit(0)
     tm = support.filemanager.TraceManager(f)
     if len(TRACES) == 0:
       print("You must specify at least one trace with -c")
       sys.exit(0)
     if len(TRACES) != 1:
       TITLE = "TRACE PLOT"
-    if ((OFFSET != 0) and (COUNT == 0)) or ((OFFSET == 0) and (COUNT != 0)):
-      print("You can't specify -o without -n")
-      sys.exit(0)
+    if ((OFFSET != 0) and (COUNT == 0)):
+      print("Fix: Assume you want to start at %d, finish at trace end" % OFFSET)
+      d = tm.getSingleTrace(0)
+      COUNT = len(d) - OFFSET
     for i in TRACES:
       if OFFSET == 0 and COUNT == 0:
         d = tm.getSingleTrace(i)

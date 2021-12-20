@@ -264,12 +264,14 @@ class GoodFETMAXUSB(GoodFET):
     """Peek 8 bits from a register."""
     data=[reg<<3,0];
     self.writecmd(self.MAXUSBAPP,0x00,len(data),data);
-    return ord(self.data[1]);
+    # return ord(self.data[1]);
+    return self.data[1];
   def rregAS(self,reg):
     """Peek 8 bits from a register, setting AS."""
     data=[(reg<<3)|1,0];
     self.writecmd(self.MAXUSBAPP,0x00,len(data),data);
-    return ord(self.data[1]);
+    return self.data[1];
+    # return ord(self.data[1]);
   def wreg(self,reg,value):
     """Poke 8 bits into a register."""
     data=[(reg<<3)|2,value];
@@ -367,7 +369,8 @@ class GoodFETMAXUSB(GoodFET):
     self.xfrdata = []
     self.wreg(rHCTL,bmRCVTOG1);        #FIRST data packet in CTL transfer uses DATA1 toggle.
     # self.sanity = [18, 1, 0, 2, 0, 0, 0, 64, 76, 83, 1, 0, 0, 1, 1, 2, 3, 1]
-    self.sanity = [14, 3, 84, 0, 82, 0, 69, 0, 90, 0, 79, 0, 82, 0]
+    # self.sanity = [14, 3, 84, 0, 82, 0, 69, 0, 90, 0, 79, 0, 82, 0]
+    self.sanity = [16, 3, 75, 0, 101, 0, 101, 0, 112, 0, 75, 0, 101, 0, 121, 0]
     # print "IN_Transfer fetching %d bytes" % bytes_to_read
     print("IN_Transfer patched for 255 bytes")
     resultcode=self.IN_Transfer(0,255, trigger=False);
@@ -561,7 +564,6 @@ class GoodFETMAXUSBHost(GoodFETMAXUSB):
   def wait_for_disconnect(self):
     """Wait for a device to be disconnected."""
     print("Waiting for a device disconnect.");
-    
     self.wreg(rHIRQ,bmCONDETIRQ); #Clear disconnect IRQ
     while not (self.rreg(rHIRQ) & bmCONDETIRQ):
       #Wait for IRQ to change.

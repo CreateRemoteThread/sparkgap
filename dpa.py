@@ -29,9 +29,6 @@ def getUsefulTraceLength(fn):
   f.close()
   return c
 
-def loadTraces(fns):
-  dx = support.filemanager.load(fns)
-  return (dx['traces'],dx['data'])
 
 leakmodel = None
 
@@ -42,7 +39,8 @@ def deriveKey(tm):
   global leakmodel
   leakmodel = support.attack.fetchModel(CONFIG_LEAKMODEL)
   leakmodel.loadPlaintextArray(tm.loadPlaintexts()) 
-  leakmodel.loadCiphertextArray(tm.loadCiphertexts()) 
+  # todo: fix
+  # leakmodel.loadCiphertextArray(tm.loadCiphertexts()) 
   recovered = zeros(leakmodel.keyLength)
   for BYTE_POSN in range(0,leakmodel.keyLength):
     print("Attempting recovery of byte %d..." % BYTE_POSN)
@@ -121,7 +119,6 @@ if __name__ == "__main__":
     sys.exit(0)
   print("Stage 1: Loading plaintexts...")
   tm = support.filemanager.TraceManager(fn)
-  # data,plaintexts = loadTraces(fn)
   print("Deriving key... wish me luck!")
   r = deriveKey(tm)
   if CONFIG_PLOT:

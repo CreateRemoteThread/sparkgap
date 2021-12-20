@@ -1,86 +1,115 @@
+// use with kokke/tiny-ecdh
+// todo: fix stdio lol
+
 #include <stdio.h>
-#include "aes.h"
 #include "main.h"
-#include <string.h>
+#include "ecdh.h"
 
 UART_HandleTypeDef huart1;
+
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 
 void stm_gets(char *p)
 {
-  char r = 0;
-  int wHead = 0;
-  while(r != 0x0d && r != 0x0a)
+	char r = 0;
+	char wHead = 0;
+	while(r != 0x0d && r != 0x0a)
+	{
+		HAL_UART_Receive(&huart1,&r,1,HAL_MAX_DELAY);
+		p[wHead++] = r;
+	}
+	p[wHead] = 0;
+	return;
+}
+
+typedef struct
+{
+  uint32_t a;
+  uint32_t b;
+  uint32_t c;
+  uint32_t d;
+} prng_t;
+
+static prng_t prng_ctx;
+
+static uint32_t prng_rotate(uint32_t x, uint32_t k)
+{
+  return (x << k) | (x >> (32 - k));
+}
+
+static uint32_t prng_next(void)
+{
+  uint32_t e = prng_ctx.a - prng_rotate(prng_ctx.b, 27);
+  prng_ctx.a = prng_ctx.b ^ prng_rotate(prng_ctx.c, 17);
+  prng_ctx.b = prng_ctx.c + prng_ctx.d;
+  prng_ctx.c = prng_ctx.d + e;
+  prng_ctx.d = e + prng_ctx.a;
+  return prng_ctx.d;
+}
+
+static void prng_init(uint32_t seed)
+{
+  uint32_t i;
+  prng_ctx.a = 0xf1ea5eed;
+  prng_ctx.b = prng_ctx.c = prng_ctx.d = seed;
+
+  for (i = 0; i < 31; ++i)
   {
-    HAL_UART_Receive(&huart1,&r,1,HAL_MAX_DELAY);
-    p[wHead++] = r;
+    (void) prng_next();
   }
-  p[wHead] = 0;
-  return;
 }
 
 int main(void)
 {
+  static uint8_t puba[ECC_PUB_KEY_SIZE];
+  static uint8_t prva[ECC_PRV_KEY_SIZE];
+  static uint8_t seca[ECC_PUB_KEY_SIZE];
+  static uint8_t pubb[ECC_PUB_KEY_SIZE];
+  static uint8_t prvb[ECC_PRV_KEY_SIZE];
+  static uint8_t secb[ECC_PUB_KEY_SIZE];
+  uint32_t i;
+  char cmd[128];
+
   HAL_Init();
   SystemClock_Config();
   MX_GPIO_Init();
   MX_USART1_UART_Init();
 
-    uint8_t key[] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
-  uint8_t in[]  = { 0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96, 0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a };
-  uint8_t aes_out[]  = { 0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96, 0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a };
+  HAL_UART_Transmit(&huart1,"hello\r\n",7,10);
 
-  struct AES_ctx ctx;
-  char lol[50];
-  printf("hello\r\n");
+  static int initialized = 0;
+  if (!initialized)
+  {
+    prng_init(0x12341234);
+    initialized = 1;
+  }
 
   while (1)
   {
-    stm_gets(lol);
-    if(lol[0] == 'e')
-    {
-      char *l = (char *)lol + 1;
-			int i = 0;
-			for(;i < 16;i++)
-			{
-				if(l[0] == '\r' || l[0] == '\n')
-				{
-					break;
-				}
-				sscanf(l,"%02x",&in[i]);
-				l += 2;
-			}
-			AES_init_ctx(&ctx, key);
-			memcpy(aes_out,in,16);
-      // todo: mmap io. hal_gpio_writepin is slow
-      // and you can miss the first few bytes of the key in first-round
-      // analysis. who needs sequentiale execution amirite
-      HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,1);
-			AES_ECB_encrypt(&ctx, aes_out);
-      HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,0);
-			// PORTB &= ~(1 << PORTB0);
-			printf("e");
-			for(i = 0;i < 16;i++)
-			{
-				printf("%02x",aes_out[i]);
-			}
-			printf("\r\n");
-    }
-    else
-    {
-      printf("unknown\r\n");
-    }
+	  stm_gets(cmd);
+	  for (i = 0; i < ECC_PRV_KEY_SIZE; ++i)
+	  {
+		  prva[i] = prng_next();
+	  }
+	  ecdh_generate_keys(puba, prva);
+	  HAL_UART_Transmit(&huart1,"done\r\n",6,10);
+	  // printf("e11223344556677889900aabbccddeeff\r\n");
   }
 }
 
+/**
+  * @brief System Clock Configuration
+  * @retval None
+  */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -90,7 +119,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -138,27 +167,6 @@ static void MX_USART1_UART_Init(void)
 
 }
 
-#include  <errno.h>
-#include  <sys/unistd.h> // STDOUT_FILENO, STDERR_FILENO
-
-int _write(int file, char *data, int len);
-
-int _write(int file, char *data, int len)
-{
-   if ((file != STDOUT_FILENO) && (file != STDERR_FILENO))
-   {
-      errno = EBADF;
-      return -1;
-   }
-
-   // arbitrary timeout 1000
-   HAL_StatusTypeDef status =
-      HAL_UART_Transmit(&huart1, (uint8_t*)data, len, 1000);
-
-   // return # of bytes written - as best we can tell
-   return (status == HAL_OK ? len : 0);
-}
-
 /**
   * @brief GPIO Initialization Function
   * @param None
@@ -176,12 +184,11 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PC13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
@@ -196,7 +203,10 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+  __disable_irq();
+  while (1)
+  {
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -209,12 +219,11 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
