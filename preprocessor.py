@@ -199,9 +199,9 @@ def doCORR(tm_in):
       r2 = x
     (msv,msi) = getMaxCorrCoeff(r2,ref)
     if msv > CONFIG_MCF_CUTOFF:
-      if msi == -CONFIG_WINDOW_SLIDE or msi == CONFIG_WINDOW_SLIDE - 1:
-        print(("Index %d, discarding (edge Max Coeff Index = not found, mcf is %f)" % (i,msv)))
-      else:
+      # if msi == -CONFIG_WINDOW_SLIDE or msi == CONFIG_WINDOW_SLIDE - 1:
+      #   print(("Index %d, discarding (edge Max Coeff Index = not found, mcf is %f)" % (i,msv)))
+      if True:
         print(("Index %d, Max Corr Coeff Slide %d Samples, Max CF Value %f" % (i,msi,msv)))
         # traces[savedDataIndex,:] = roll(x,msi)
         traces[savedDataIndex,:] = roll(x,-msi)
@@ -379,6 +379,15 @@ def doSlicer(tm_in):
   return (traces,data,data_out)
   # support.filemanager.save(CONFIG_WRITEFILE,traces=traces,data=data,data_out=data_out)
 
+def doVerticalAlign(tm_in):
+  numTraces = tm_in.traceCount
+  sampleCnt = tm_in.numPoints
+  traces = zeros((numTraces,sampleCnt),float32)
+  data = zeros((numTraces,16),uint8)
+  data_out = zeros((numTraces,16),uint8)
+  CONFIG_REFTRACE = getVariable("ref")
+  ref = tm_in.getSingleTrace(CONFIG_REFTRACE)
+
 def doSAD(tm_in):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
@@ -442,6 +451,9 @@ def dispatchAlign(tm_in):
   elif CONFIG_STRATEGY in ("lowpass","LOWPASS"):
     print("Using strategy: Low Pass")
     (traces,data_in,data_out) = doLowpass(tm_in)
+  elif CONFIG_STRATEGY in ("vertical","VERTICAL"):
+    print("Using strategy: Vertical Align")
+    (traces,data_in,data_out) = doVerticalAlign(tm_in)
   elif CONFIG_STRATEGY in ("keeloq","KEELOQ"):
     print("Using strategy: Flip Keeloq IO Special")
     (traces,data_in,data_out) = doFlipKeeloqIO(tm_in)

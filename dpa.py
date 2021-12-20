@@ -39,7 +39,8 @@ def deriveKey(tm):
   global leakmodel
   leakmodel = support.attack.fetchModel(CONFIG_LEAKMODEL)
   leakmodel.loadPlaintextArray(tm.loadPlaintexts()) 
-  leakmodel.loadCiphertextArray(tm.loadCiphertexts()) 
+  # todo: fix
+  # leakmodel.loadCiphertextArray(tm.loadCiphertexts()) 
   recovered = zeros(leakmodel.keyLength)
   for BYTE_POSN in range(0,leakmodel.keyLength):
     print("Attempting recovery of byte %d..." % BYTE_POSN)
