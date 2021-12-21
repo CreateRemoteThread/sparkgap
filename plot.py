@@ -288,7 +288,7 @@ if __name__ == "__main__":
         ax2.set_title("Spectogram")
         ax2.set_ylabel("Frequency Component")
         ax2.set_xlabel("Time")
-        ax2.specgram(d,NFFT=1024,Fs=SPECGRAM_SR,noverlap=900)
+        ax2.specgram(d * 100,NFFT=1024,Fs=SPECGRAM_SR,noverlap=900)
         ax1.margins(0)
         fig.canvas.set_window_title("plot.py")
         if CONFIG_WRITEFILE is not None:

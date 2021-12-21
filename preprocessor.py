@@ -6,6 +6,7 @@ from scipy.signal import butter,lfilter,freqz
 from numpy import *
 import getopt
 import sys
+import readline
 import support.filemanager
 import support.slipnslide
 import numpy as np

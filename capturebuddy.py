@@ -10,6 +10,7 @@ import random
 import numpy as np
 import triggerbuddy
 import traceback
+import readline
 import datetime
 import support.filemanager
 
