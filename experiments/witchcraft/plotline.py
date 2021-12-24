@@ -12,6 +12,9 @@ ax2 = plt.subplot(2,1,2)
 ax1.set_title(sys.argv[1])
 ax2.set_title(sys.argv[2])
 
+# ax1.specgram(plot1,NFFT=4096,Fs=1800000,noverlap=900)
+# ax2.specgram(plot2,NFFT=4096,Fs=1800000,noverlap=900)
+
 ax1.plot(sdr_helper.flatten_fft(plot1))
 ax2.plot(sdr_helper.flatten_fft(plot2))
 

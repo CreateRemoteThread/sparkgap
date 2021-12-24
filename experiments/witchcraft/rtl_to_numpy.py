@@ -32,8 +32,8 @@ class top_block(gr.top_block):
 if __name__ == "__main__":
   CONFIG_BW = 200000
   CONFIG_FREQ = 65000000
-  CONFIG_SR = 800000
-  CONFIG_SAMPLECOUNT = 10000000
+  CONFIG_SR = 1800000
+  CONFIG_SAMPLECOUNT = 18000000
   CONFIG_WFILE = "butts"
   opts,args = getopt.getopt(sys.argv[1:],"n:w:s:f:b:",["num_samples=","writefile=","sr=","freq=","bw="])
   for (opt,arg) in opts:
