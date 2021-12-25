@@ -21,18 +21,19 @@ class DriverInterface(base.BaseDriverInterface):
     pass
 
   def drive(self,in_text=None):
-    next_rand = [random.randint(0,255) for _ in range(0,16)]
-    next_randstr = "e" + "".join(["%02x" % nr for nr in next_rand]) + "\n"
+    # next_rand = [random.randint(0,255) for _ in range(0,16)]
+    # next_randstr = "e" + "".join(["%02x" % nr for nr in next_rand]) + "\n"
     self.frontend.arm()
     time.sleep(1.0)
-    self.ser.write(next_randstr.encode("utf-8"))
-    print("Written")
+    # z for 0x00
+    # a for 0xaa
+    # f for 0xff
+    # r for random privkey.
+    self.ser.write(b"z-\n")
+    print("Command sent")
     f = self.ser.read(6)
     print("Done")
-    # f = self.ser.read(32 + 3)[1:33]
-    # print("OK %s" % f)
-    # grab newline
-    return (next_rand,[0xAA] * 16)
+    return ([0],[0])
 
   def close(self):
     self.ser.close()

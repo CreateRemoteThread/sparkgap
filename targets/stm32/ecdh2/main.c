@@ -1,15 +1,6 @@
-// use with kokke/tiny-ecdh
-// todo: fix stdio lol
-
-#include <stdio.h>
 #include "main.h"
-#include "ecdh.h"
 
 UART_HandleTypeDef huart1;
-
-void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_USART1_UART_Init(void);
 
 void stm_gets(char *p)
 {
@@ -23,79 +14,56 @@ void stm_gets(char *p)
 	p[wHead] = 0;
 	return;
 }
+#define TRIGGER_ON HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,1)
+#define TRIGGER_OFF HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,0)
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_USART1_UART_Init(void);
 
-typedef struct
-{
-  uint32_t a;
-  uint32_t b;
-  uint32_t c;
-  uint32_t d;
-} prng_t;
-
-static prng_t prng_ctx;
-
-static uint32_t prng_rotate(uint32_t x, uint32_t k)
-{
-  return (x << k) | (x >> (32 - k));
-}
-
-static uint32_t prng_next(void)
-{
-  uint32_t e = prng_ctx.a - prng_rotate(prng_ctx.b, 27);
-  prng_ctx.a = prng_ctx.b ^ prng_rotate(prng_ctx.c, 17);
-  prng_ctx.b = prng_ctx.c + prng_ctx.d;
-  prng_ctx.c = prng_ctx.d + e;
-  prng_ctx.d = e + prng_ctx.a;
-  return prng_ctx.d;
-}
-
-static void prng_init(uint32_t seed)
-{
-  uint32_t i;
-  prng_ctx.a = 0xf1ea5eed;
-  prng_ctx.b = prng_ctx.c = prng_ctx.d = seed;
-
-  for (i = 0; i < 31; ++i)
-  {
-    (void) prng_next();
-  }
-}
 
 int main(void)
 {
-  static uint8_t puba[ECC_PUB_KEY_SIZE];
-  static uint8_t prva[ECC_PRV_KEY_SIZE];
-  static uint8_t seca[ECC_PUB_KEY_SIZE];
-  static uint8_t pubb[ECC_PUB_KEY_SIZE];
-  static uint8_t prvb[ECC_PRV_KEY_SIZE];
-  static uint8_t secb[ECC_PUB_KEY_SIZE];
-  uint32_t i;
-  char cmd[128];
-
+  const struct uECC_Curve_t * curve = uECC_secp160r1();
+  uint8_t _private[21];
+  uint8_t _public[40];
   HAL_Init();
   SystemClock_Config();
   MX_GPIO_Init();
   MX_USART1_UART_Init();
+  char cmd[128];
+  int i = 0;
 
-  HAL_UART_Transmit(&huart1,"hello\r\n",7,10);
-
-  static int initialized = 0;
-  if (!initialized)
+  for(i = 0;i < 128;i++)
   {
-    prng_init(0x12341234);
-    initialized = 1;
+	  cmd[i] = 0x00;
   }
+  HAL_UART_Transmit(&huart1,"hello\r\n",7,HAL_MAX_DELAY);
 
   while (1)
   {
+	  cmd[0] = 0x00;
 	  stm_gets(cmd);
-	  for (i = 0; i < ECC_PRV_KEY_SIZE; ++i)
+	  if(cmd[0] == 'z')
 	  {
-		  prva[i] = prng_next();
+		  for(i = 0;i < 21;i++)
+		  {
+			  _private[i] = 0x00;
+		  }
+		  TRIGGER_ON;
+		  uECC_make_key(_public, _private, curve);
+		  TRIGGER_OFF;
 	  }
-	  ecdh_generate_keys(puba, prva);
+	  else if(cmd[0] == 'a')
+	  {
+		  for(i = 0;i < 21;i++)
+		  {
+			  _private[i] = 0xFF;
+		  }
+		  TRIGGER_ON;
+		  uECC_make_key(_public, _private, curve);
+		  TRIGGER_OFF;
+	  }
 	  HAL_UART_Transmit(&huart1,"done\r\n",6,10);
-	  // printf("e11223344556677889900aabbccddeeff\r\n");
   }
 }
 
@@ -181,14 +149,15 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PC13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14;
+  /*Configure GPIO pins : PC13 PC14 PC15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
