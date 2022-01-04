@@ -807,7 +807,7 @@ class CaptureInterface():
     if "rigol_offset" in self.config.keys():
       try:
         f = open(CFG_PATH,"w")
-        f.write(self.config["rigol_offset"])
+        f.write(bytes(self.config["rigol_offset"]))
         f.close()
       except:
         print("Rigol: could not save rigol_offset")
@@ -815,7 +815,7 @@ class CaptureInterface():
       self.scope.write(":CHAN1:OFFS %s" % self.config["rigol_offset"])
     else:
       if os.path.isfile(CFG_PATH):
-        f = open(CFG_PATH,"r")
+        f = open(CFG_PATH,"rb")
         r_offset = f.read().rstrip()
         f.close()
         print("Rigol: using saved offset of %s" % r_offset)
@@ -823,6 +823,12 @@ class CaptureInterface():
       else:
         print("Rigol: using default offset of -0.001")
         self.scope.write(":CHAN1:OFFS -0.001")
+    if "time_offset" in self.config.keys():
+      self.halftime = int(self.config["time_offset"])
+      print("Rigol: using time offset of %d" % self.halftime)
+    else:
+      print("Rigol: starting capture from halfway")
+      self.halftime = None
     self.scope.write(":TRIG:MODE EDGE")
     self.scope.write(":TRIG:EDGE:SOUR CHAN2")
     # self.scope.write(":TRIG:EDGE:LEV 2.0")
@@ -839,7 +845,10 @@ class CaptureInterface():
     # time.sleep(0.1)
 
   def capture(self):
-    halftime = self.scope.memory_depth_curr_waveform / 2
+    if self.halftime != None:
+      halftime = self.halftime
+    else:
+      halftime = self.scope.memory_depth_curr_waveform / 2
     if self.setup is True:
       return self.scope.get_waveform_samples("CHAN1",mode="RAW",start=halftime + self.START_OFFSET+1,end=halftime  +self.END_OFFSET, setup=True)
       self.setup = False
