@@ -156,6 +156,8 @@ if __name__ == "__main__":
         leakmodel = SpecialLeakModel()
         leakmodel.customDistinguisher =distinguisher_random
       else:
+        print("Attempting to use distinguisher '%s'" % value)
+        print("Otherwise, use 'even', 'hw', 'fixed' or 'random'")
         leakmodel = support.attack.fetchModel(value)
     elif arg in ["-w","--writefile"]:
       CONFIG_WRITEFILE = value
@@ -180,6 +182,8 @@ if __name__ == "__main__":
   ax1.set_title("T-Value")
   ax1.set_xlabel("Sample")
   ax1.set_ylabel("T-Test Value")
+  t = np.argmax(abs(tt))
+  print("Argmax is %d" % t)
   ax1.plot(tt)
   tlen = numSamples
   if CONFIG_STRATEGY == DO_TLVA:

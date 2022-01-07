@@ -31,12 +31,16 @@ CONFIG_LEAKMODEL = "helpmsg"
 
 leakmodel = None
 
-def deriveKey(tm):
+def deriveKey(tm,OptionManager):
   global CONFIG_LEAKMODEL
   global CONFIG_PLOT
   global TRACE_MAX
   global leakmodel
   leakmodel = support.attack.fetchModel(CONFIG_LEAKMODEL)
+  if hasattr(leakmodel,"loadOptions"):
+    leakmodel.loadOptions(OptionManager)
+  else:
+    print("LeakModel '%s' doesn't have loadOptions, ignoring" % CONFIG_LEAKMODEL)
   leakmodel.loadPlaintextArray(tm.loadPlaintexts())
   bestguess = [0] * leakmodel.keyLength
   meant = tm.getMeant()[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH]
@@ -103,7 +107,8 @@ def usage():
   print(" --txt : do not plot (ssh mode)")
 
 if __name__ == "__main__":
-  opts, remainder = getopt.getopt(sys.argv[1:],"ha:o:n:f:c:",["algo=","help","offset=","samples=","file=","count=","txt"])
+  opts, remainder = getopt.getopt(sys.argv[1:],"ha:o:n:f:c:",["algo=","help","offset=","samples=","file=","count=","txt","opt="])
+  OptionManager = {}
   for opt, arg in opts:
     if opt in ("-h","--help"):
       usage()
@@ -118,6 +123,13 @@ if __name__ == "__main__":
       CONFIG_LEAKMODEL =  arg
     elif opt == "--txt":
       CONFIG_PLOT = False
+    elif opt == "--opt":
+      try:
+        (key,val) = arg.split(":")
+        OptionManager[key.strip()] = val.strip()
+      except:
+        print("Fatal: could not split '%s' on ':'" % arg)
+        sys.exit(0)
     elif opt in ("-f","--file"):
       fn = arg
   print("TRACE_OFFSET = %d" % TRACE_OFFSET)
@@ -131,7 +143,7 @@ if __name__ == "__main__":
   if TRACE_LENGTH == 0:
     TRACE_LENGTH = tm.numPoints
   print("Stage 2: Deriving key... wish me luck!")
-  r = deriveKey(tm)
+  r = deriveKey(tm,OptionManager)
   if CONFIG_PLOT:
     plt.title("%s SubKey Correlation Overview" % CONFIG_LEAKMODEL)
     plt.ylabel("Correlation")

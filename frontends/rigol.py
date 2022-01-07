@@ -811,6 +811,9 @@ class CaptureInterface():
         f.close()
       except:
         print("Rigol: could not save rigol_offset")
+      if isinstance(self.config["rigol_offset"]):
+        print("Rigol: converting rigol_offset to float")
+        self.config["rigol_offset"] = "%.3f" % self.config["rigol_offset"]
       print("Rigol: using custom offset %s" % self.config["rigol_offset"])
       self.scope.write(":CHAN1:OFFS %s" % self.config["rigol_offset"])
     else:
