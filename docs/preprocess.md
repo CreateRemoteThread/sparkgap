@@ -1,22 +1,36 @@
 # Signal Preprocessing
 
-Because this framework is non-synchronous, traces will be desynchronised with one another. The "preprocessor.py" tool offers two key methods of noise reduction: sum-of-absolute-difference minimization and peak correlation finding. Support is built-in for using an operational 
+The preprocessor.py utility can be used to filter and align traces, and perform a variety of other transforms to trace files before attacks or visualisation. The preprocessor takes 3 arguments:
 
-To demonstrate this, let's review a power trace from a smartcard running a variant MILENAGE. To begin, let us plot three traces atop one another. To show the signal clearly, let's use a first order low pass filter, with a cut off at 600khz and a sample rate of 125MSPS, and zomming in on a power consumption peak:
+    ./preprocessor.py -f <source.hdf> -w <new_file.hdf> -c <commandfile.cmd>
 
-./plot.py -f ~/data/example1.traces -c 1,2,3 --lowpass 600000,125000000,1 -o 50000 -n 5000:
+The -c argument is optional: if it is present, the preprocessor will execute the commands one by one, then enter a prompt where more commands can be input. If it is not present, the preprocessor will enter a REPL immediately, you can just pipe the command file in I guess.
 
-![misaligned](imgs/prs-lowpass-misaligned.png)
+This is useful for asynchronous captures: for example, if you take a capture of an STM32F2 doing AES using a normal scope, you'll notice there's a little bit of misalignment between samples, and because of this, CPA or DPA attacks are ruined. This is an example CPA, note the lack of strong correlation peaks:
 
-The traces are too misaligned to conduct a useful statistical attack, so let's use the preprocessor tool to clean this up. We can first implement a "coarse" max-correlation alignment, as follows:
+![cpa misaligned](imgs/cpa-misaligned2.png)
 
-./preprocessor.py -f ~/data/example1.traces -w ~/data/example1-step1-out -c experiments/pr-scfast-coarse.cmd
+Now, we can use the following preprocessor script:
 
-You need to edit the pr-scfast-coarse.cmd to pick a "reference window" and a corresponding "reference trace". You can see that now, the peaks are aligned, but the individual samples are still not:
+    set lowpass=(3200000,125000000,1)
+    set strategy="lowpass"
+    run
+    set strategy="sad"
+    set corr_cutoff=0.8
+    set sad_cutoff=500
+    set window_offset=1766
+    set window_length=2000
+    set window_slide=30
+    set clkadjust=0
+    set clkadjust_max=0
+    set ref=0
+    run
 
-We can then implement a "fine-grained" alignment pass, using pr-scfast-fine.cmd:
+This performs two tasks: it first executes a low pass filter over every trace, with a cut off of 32Mhz, a sample rate of 125Mhz and at first order. Then, it will execute a Sum-of-Absolute-Difference alignment from pt 1766 to 3766, sliding 30 samples either way until the minimum difference is reached.
 
-![fine alignment](imgs/prs-fine-align.png)
+If the length of a clock cycle is known, "clkadjust" can be used to shift entire clock cycles, with the minimum SAD being tested at each clock cycle shift.
 
-Now, we are (maybe, idk, not working here but WIP) ready to perform statistical analysis.
+Now, running the same CPA produces well defined correlation peaks, correctly identifying the majority of the key:
+
+![cpa aligned](imgs/cpa-stm32-aligned.png)
 
