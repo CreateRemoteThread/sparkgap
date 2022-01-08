@@ -15,22 +15,33 @@ class DriverInterface(base.BaseDriverInterface):
 
   def init(self,frontend=None):
     print("initializing uart")
-    self.ser = serial.Serial("/dev/ttyUSB0",9600)
-    # self.ser.read(1024)
+    self.ser = serial.Serial("/dev/ttyUSB0",9600,timeout=1.0)
+    self.ser.write(b"\n")
     self.frontend = frontend
     pass
 
   def drive(self,in_text=None):
     next_rand = [random.randint(0,255) for _ in range(0,16)]
-    next_randstr = "e" + "".join(["%02x" % nr for nr in next_rand]) + "\n"
     self.frontend.arm()
-    time.sleep(1.0)
-    self.ser.write(next_randstr.encode("utf-8"))
+    time.sleep(0.5)
+    # fucking stm32
+    self.ser.write(b"e")
+    self.ser.write(b"".join([b"%02x" % nr for nr in next_rand]))
+    self.ser.write(b"\n")
     print("Written")
-    f = self.ser.read(32 + 3)[1:33]
-    print("OK %s" % f)
-    # grab newline
-    return (next_rand,[0xAA] * 16)
+    f = self.ser.read(16+36)
+    while self.ser.in_waiting:
+      f += self.ser.read(1)
+      time.sleep(0.01)
+    print("OK: %s" % f)
+    # f = f.strip().split("+e")[1]
+    # b'++++++++++++++++e9501ed06d55029667d11c338baeab7eb\r\n'
+    if b'+e' in f:
+      next_ct = f[17:49]
+      next_ct = [int(next_ct[i:i+2],16) for i in range(0,len(next_ct),2)]
+    else:
+      next_ct = [0x00] * 16
+    return (next_rand,next_ct)
 
 
   def close(self):

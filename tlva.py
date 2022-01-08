@@ -50,16 +50,22 @@ def onclick(event):
       print("FROM %d TO %d DIST %d" % (fromX,toX,dist))
       lastX = localX
 
-def distinguisher_fixed(data,roundmkeyguess):
+def distinguisher_fixed(data,ct,round,keyguess):
   return np.array_equal(data,[0xaa] * 16)
 
-def distinguisher_even(data,round,keyguess):
+def distinguisher_even(data,ct,round,keyguess):
   # print("%02x" % data[round])
   return data[round] % 2 == 0
 
-def distinguisher_hw(data,round,keyguess):
+def distinguisher_hw(data,ct,round,keyguess):
   # print("%02x" % data[round])
   return bin(data[round]).count("1") >= 4
+
+def distinguisher_hw_cryp(data,ct,round,keyguess):
+  bc = 0
+  for i in range(0,4):
+    bc += bin(ct[i]).count("1")
+  return bc >= 16
 
 # keeloq is 66 bits...
 def unpackKeeloq(plaintext):
@@ -74,7 +80,7 @@ def distinguisher_keeloq(data,round):
   fc = f[0:32]
   return fc[round] == '1'
 
-def distinguisher_random(data,round,keyguess):
+def distinguisher_random(data,ct,round,keyguess):
   return random.randint(0,10) % 2 == 0
 
 CONFIG_DISTINGUISHER = distinguisher_fixed
@@ -123,7 +129,7 @@ class SpecialLeakModel:
     self.ciphertexts = cts
 
   def distinguisher(self,xindex,byte,key):
-    return self.customDistinguisher(self.plaintexts[xindex],byte,key)
+    return self.customDistinguisher(self.plaintexts[xindex],self.ciphertexts[xindex],byte,key)
 
 if __name__ == "__main__":
   optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:b:k:",["byte=","key=","distinguisher=","writefile=","round=","dpa"])
@@ -146,6 +152,9 @@ if __name__ == "__main__":
       if value.upper() == "EVEN":
         leakmodel = SpecialLeakModel()
         leakmodel.customDistinguisher =distinguisher_even
+      elif value.upper() == "HW_CRYP":
+        leakmodel = SpecialLeakModel()
+        leakmodel.customDistinguisher = distinguisher_hw_cryp
       elif value.upper() == "HW":
         leakmodel = SpecialLeakModel()
         leakmodel.customDistinguisher = distinguisher_hw
@@ -169,6 +178,7 @@ if __name__ == "__main__":
     sys.exit(0)
   fn = support.filemanager.TraceManager(CONFIG_FILE)
   leakmodel.loadPlaintextArray(fn.loadPlaintexts())
+  leakmodel.loadCiphertextArray(fn.loadCiphertexts())
   if CONFIG_STRATEGY == DO_TLVA:
     (tt,tp,numSamples) = do_tlva(fn,leakmodel,CONFIG_ROUND,CONFIG_BYTE,CONFIG_KEY)
   elif CONFIG_STRATEGY == DO_DPA:
@@ -183,8 +193,9 @@ if __name__ == "__main__":
   ax1.set_xlabel("Sample")
   ax1.set_ylabel("T-Test Value")
   t = np.argmax(abs(tt))
-  print("Argmax is %d" % t)
+  print("Argmax is %d, tvalue is %d" % (t,tt[t]))
   ax1.plot(tt)
+  ax1.plot(t,tt[t],marker='x')
   tlen = numSamples
   if CONFIG_STRATEGY == DO_TLVA:
     print("Drawing 4.5 markers")

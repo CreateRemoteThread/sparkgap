@@ -80,9 +80,7 @@ def deriveKey(tm,OptionManager):
       maxcpa[kguess] = max(abs(cpaoutput[kguess]))
     if CONFIG_PLOT:
       try:
-        # pass
         plt.plot(list(range(0,leakmodel.fragmentMax)),maxcpa)
-        # plt.show()
       except:
         print("Fault in plt.plot. CONFIG_PLOT = False")
         CONFIG_PLOT = False
