@@ -63,8 +63,9 @@ def distinguisher_hw(data,ct,round,keyguess):
 
 def distinguisher_hw_cryp(data,ct,round,keyguess):
   bc = 0
-  bc += bin(ct[round]).count("1")
-  return bc >= 4
+  for i in range(0,4):
+    bc += bin(data[i]).count("1")
+  return bc >= 16
 
 # keeloq is 66 bits...
 def unpackKeeloq(plaintext):
@@ -130,8 +131,10 @@ class SpecialLeakModel:
   def distinguisher(self,xindex,byte,key):
     return self.customDistinguisher(self.plaintexts[xindex],self.ciphertexts[xindex],byte,key)
 
+OptionManager = {}
+
 if __name__ == "__main__":
-  optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:b:k:",["byte=","key=","distinguisher=","writefile=","round=","dpa"])
+  optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:b:k:",["byte=","key=","distinguisher=","writefile=","round=","dpa","opt="])
   CONFIG_ROUND = 0
   CONFIG_BYTE = 0
   CONFIG_KEY = 0
@@ -142,6 +145,13 @@ if __name__ == "__main__":
       CONFIG_BYTE = int(value,0)
     elif arg in ["--key","-k"]:
       CONFIG_KEY = int(value,0)
+    elif arg == "--opt":
+      try:
+        (key,val) = value.split(":")
+        OptionManager[key.strip()] = val.strip()
+      except:
+        print("Fatal: could not split '%s' on ':'" % arg)
+        sys.exit(0)
     elif arg in ["--dpa"]:
       print("* Using raw plaintext DPA technique")
       CONFIG_STRATEGY = DO_DPA
@@ -151,9 +161,9 @@ if __name__ == "__main__":
       if value.upper() == "EVEN":
         leakmodel = SpecialLeakModel()
         leakmodel.customDistinguisher =distinguisher_even
-      elif value.upper() == "HW_CRYP":
-        leakmodel = SpecialLeakModel()
-        leakmodel.customDistinguisher = distinguisher_hw_cryp
+      # elif value.upper() == "HW_CRYP_SPEC":
+      #   leakmodel = SpecialLeakModel()
+      #   leakmodel.customDistinguisher = distinguisher_hw_cryp
       elif value.upper() == "HW":
         leakmodel = SpecialLeakModel()
         leakmodel.customDistinguisher = distinguisher_hw
@@ -176,6 +186,9 @@ if __name__ == "__main__":
     print("You must specify a file")
     sys.exit(0)
   fn = support.filemanager.TraceManager(CONFIG_FILE)
+  if hasattr(leakmodel,"loadOptions"):
+    print("Loading options for leakmodel")
+    leakmodel.loadOptions(OptionManager)
   leakmodel.loadPlaintextArray(fn.loadPlaintexts())
   leakmodel.loadCiphertextArray(fn.loadCiphertexts())
   if CONFIG_STRATEGY == DO_TLVA:

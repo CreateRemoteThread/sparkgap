@@ -170,12 +170,12 @@ HW_LUT = [getHammingWeight(x) for x in range(0,256)]
 
 class AttackModel:
   def __init__(self):
-    self.keyLength = 16
-    self.fragmentMax = 256
+    self.keyLength = 4
+    self.fragmentMax = 10
     self.knownKey = None
 
   def loadOptions(self,OptionManager):
-    print("Loading options for AES SBoxOut HW Attack...")
+    print("Loading options for HW_Cryp attack")
     if "knownKey" in OptionManager.keys():
       print("Instantiating Post-First-Round Cache")
       self.cache = {}
@@ -187,14 +187,13 @@ class AttackModel:
         sys.exit(0)
 
   def loadPlaintextArray(self,pt):
-    print("Loading plaintext array for AES SBox Out HW Attack...")
+    print("Loading plaintext array for HW_Cryp Attack...")
     if self.knownKey == None:
       self.pt = pt
     else:
       print("Pre-converting plaintext to Round 2..")
       a = AESHelper(self.knownKey)
       self.pt = np.array([a.convertToRound2(t) for t in pt])
-      # print(self.pt.shape)      
  
   def loadCiphertextArray(self,ct):
     self.ct = ct
@@ -210,10 +209,6 @@ class AttackModel:
   def distinguisher(self,tnum,bnum,kguess):
     self.knownKey = 0x11223344
     self.lut_total = 0
-    for i in range(0,4):
+    for i in range(bnum * 4,(bnum + 1) * 4):
       self.lut_total += HW_LUT[self.pt[tnum,i]]
-    # self.lut_total += HW_LUT[self.genIValRaw(tnum,0,0x11)]
-    # self.lut_total += HW_LUT[self.genIValRaw(tnum,1,0x22)]
-    # self.lut_total += HW_LUT[self.genIValRaw(tnum,2,0x33)]
-    # self.lut_total += HW_LUT[self.genIValRaw(tnum,3,0x44)]
     return self.lut_total >= 16
