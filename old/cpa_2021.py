@@ -1,13 +1,24 @@
 #!/usr/bin/env python3
 
+# Version 2 - Multi-model Correlation Attack Script
+# ========================================================================
+# ./cpa.py -f /workingdir/lol.traces -o 1000 -n 8000 -a AES_SboxOut_HW
+#   - use trace set specified in lol.traces (support/filemanager.py)
+#   - each trace, ignore samples before 1000
+#   - each trace, only use 8000 samples starting from 1000
+#   - use the AES_SboxOut_HW model (support/attack.py)
+
+# 16/12/2019: Updated to use TraceManager
+
 import numpy as np
 from scipy.signal import butter, lfilter, freqz
-import support.resultviz
+import matplotlib.pyplot as plt
 from numpy import *
 import getopt
 import sys
 import glob
 import binascii
+# from dessupport import desIntermediateValue
 import support.filemanager
 import support.attack
 
@@ -19,7 +30,6 @@ CONFIG_PLOT = True
 CONFIG_LEAKMODEL = "helpmsg"
 
 leakmodel = None
-resultViz = None
 
 def deriveKey(tm,OptionManager):
   global CONFIG_LEAKMODEL
@@ -70,8 +80,11 @@ def deriveKey(tm,OptionManager):
       cpaoutput[kguess] = sumnum / d
       maxcpa[kguess] = max(abs(cpaoutput[kguess]))
     if CONFIG_PLOT:
-      global resultViz
-      resultViz.addData(bnum,list(range(0,leakmodel.fragmentMax)),maxcpa)
+      try:
+        plt.plot(list(range(0,leakmodel.fragmentMax)),maxcpa)
+      except:
+        print("Fault in plt.plot. CONFIG_PLOT = False")
+        CONFIG_PLOT = False
     bestguess[bnum] = np.argmax(maxcpa)
     sortedcpa = np.argsort(maxcpa)[::-1]
     print("Selected: %02x; CPA: %f, %02x %f, %02x %f" % (bestguess[bnum], maxcpa[bestguess[bnum]], sortedcpa[1], maxcpa[sortedcpa[1]], sortedcpa[2], maxcpa[sortedcpa[2]]))
@@ -129,14 +142,14 @@ if __name__ == "__main__":
   if TRACE_LENGTH == 0:
     TRACE_LENGTH = tm.numPoints
   print("Stage 2: Deriving key... wish me luck!")
-  if CONFIG_PLOT:
-    resultViz = support.resultviz.VisualizerApp()
   r = deriveKey(tm,OptionManager)
+  if CONFIG_PLOT:
+    plt.title("%s SubKey Correlation Overview" % CONFIG_LEAKMODEL)
+    plt.ylabel("Correlation")
+    plt.xlabel("Hypothesis")
+    plt.show()
   out = ""
   for i in range(0,leakmodel.keyLength):
     out += "%02x " % int(r[i])
   print("Done: %s" % out)
   out = ""
-  if CONFIG_PLOT:
-    resultViz.render()
-    resultViz.mainloop()
