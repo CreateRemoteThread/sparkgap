@@ -3,7 +3,6 @@
 import numpy as np
 from numpy import *
 import sys
-import support.resultviz
 import glob
 import getopt
 import matplotlib.pyplot as plt
@@ -32,7 +31,6 @@ def getUsefulTraceLength(fn):
 
 
 leakmodel = None
-resultViz = None
 
 def deriveKey(tm):
   global CONFIG_LEAKMODEL
@@ -75,13 +73,11 @@ def deriveKey(tm):
     sorted_dpa = argsort(plfh)[::-1]
     print("Selected %02x, %f, %02x %f, %02x %f" % (argmax(plfh),plfh[sorted_dpa[0]],sorted_dpa[1],plfh[sorted_dpa[1]],sorted_dpa[2],plfh[sorted_dpa[2]]))
     if CONFIG_PLOT:
-      global resultViz
-      resultViz.addData(BYTE_POSN,list(range(0,leakmodel.fragmentMax)),plfh)
-      # try:
-      #   # plt.plot(list(range(0,leakmodel.fragmentMax)),plfh)
-      # except:
-      #   print("Fault in plt.plot. CONFIG_PLOT = False")
-      #  CONFIG_PLOT = False
+      try:
+        plt.plot(list(range(0,leakmodel.fragmentMax)),plfh)
+      except:
+        print("Fault in plt.plot. CONFIG_PLOT = False")
+        CONFIG_PLOT = False
     recovered[BYTE_POSN] = argmax(plfh)
   return recovered
 
@@ -123,19 +119,16 @@ if __name__ == "__main__":
   print("Stage 1: Loading plaintexts...")
   tm = support.filemanager.TraceManager(fn)
   print("Deriving key... wish me luck!")
-  if CONFIG_PLOT:
-    resultViz = support.resultviz.VisualizerApp()
-    # plt.title("%s Power Leakage v Hypothesis Overview" % CONFIG_LEAKMODEL)
-    # plt.ylabel("Maximum Diff. of Means")
-    # plt.xlabel("Key Hypothesis")
-    # plt.show()
   r = deriveKey(tm)
+  if CONFIG_PLOT:
+    plt.title("%s Power Leakage v Hypothesis Overview" % CONFIG_LEAKMODEL)
+    plt.ylabel("Maximum Diff. of Means")
+    plt.xlabel("Key Hypothesis")
+    plt.show()
   out = ""
   for i in range(0,leakmodel.keyLength):
     out += "%02x " % int(r[i])
   print("Done: %s" % out)
   out = ""
   out = ""
-  if CONFIG_PLOT:
-    resultViz.render()
-    resultViz.mainloop()
+
