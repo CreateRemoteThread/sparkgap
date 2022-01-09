@@ -22,10 +22,14 @@ class AttackModel:
   def loadCiphertextArray(self,ct):
     self.ct = ct
 
+  def genIVal(self,tnum,bnum,kguess):
+    global HW_LUT
+    st10 = self.ct[tnum][self.INVSHIFT_undo[bnum]]
+    st9 = inv_sbox(self.ct[tnum][bnum] ^ kguess)
+    return bin(st9).count("1")
+
   def distinguisher(self,tnum,bnum,kguess):
     global HW_LUT
     st10 = self.ct[tnum][self.INVSHIFT_undo[bnum]]
     st9 = inv_sbox(self.ct[tnum][bnum] ^ kguess)
-    # return st9 % 2 == 0
-    # return bin(st9).count("1") >= 2
     return bin(st9).count("1") >= 3

@@ -42,6 +42,7 @@ def deriveKey(tm,OptionManager):
   else:
     print("LeakModel '%s' doesn't have loadOptions, ignoring" % CONFIG_LEAKMODEL)
   leakmodel.loadPlaintextArray(tm.loadPlaintexts())
+  leakmodel.loadCiphertextArray(tm.loadCiphertexts())
   bestguess = [0] * leakmodel.keyLength
   meant = tm.getMeant()[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH]
   print(meant)

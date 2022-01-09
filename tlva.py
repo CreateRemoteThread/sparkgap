@@ -63,9 +63,8 @@ def distinguisher_hw(data,ct,round,keyguess):
 
 def distinguisher_hw_cryp(data,ct,round,keyguess):
   bc = 0
-  for i in range(0,4):
-    bc += bin(ct[i]).count("1")
-  return bc >= 16
+  bc += bin(ct[round]).count("1")
+  return bc >= 4
 
 # keeloq is 66 bits...
 def unpackKeeloq(plaintext):
