@@ -287,28 +287,33 @@ class model:
   def leak(self, value):
     return self.hw_table[value & 0xffff] + self.hw_table[value >> 16 & 0xffff]
 
-
 class AttackModel:
   def __init__(self):
-    self.keyLength = 16
-    self.fragmentMax = 256
+    print("=== MODIFY THIS TO DO A PARTIAL TTABLE (OTHERWISE ITS JUST FULL ROUND1) ==="
+    self.keyLength = 4
+    self.fragmentMax = 0xFFFFFFFF
     self.ttable_model = model()
 
   def loadPlaintextArray(self,pt):
     print("Loading plaintext array for AES TTable Out HW Attack...")
     self.pt = pt
 
+  def loadCiphertextArray(self,ct):
+    print("AES TTable Out HW doesn't need a ciphertext array (yet!)")
+    self.ct = ct
+
   def genIVal(self,tnum,bnum,kguess):
-    global tset
-    value = self.pt[tnum, bnum] ^ kguess
-    intval = tset[bnum % 4][value]
-    return self.ttable_model.leak(intval)
+    return self.ttable_model.leak(self.genIValRaw(tnum,bnum,kguess))
 
   def genIValRaw(self,tnum,bnum,kguess):
-    print("TODO: I don't know how to use a TTable out as a distinguisher...")
-    sys.exit(0)
+    global tset
+    intval = 0
+    kguess_array = [(kguess & 0xFF000000) >> 24,(kguess & 0xFF0000) >> 16,(kguess & 0xFF00) >> 8, kguess & 0xFF]
+    for i in range(0,4):
+      value = self.pt[tnum, (bnum * 4) + i] ^ kguess_array[i]
+      intval ^= tset[bnum % 4][value]
+    return intval
 
   def distinguisher(self,tnum,bnum,kguess):
-    print("TODO: I don't know how to use a TTable out as a distinguisher...")
-    sys.exit(0)
+    return self.ttable_model.leak(self.genIValRaw(tnum,bnum,kguess)) >= 16
 

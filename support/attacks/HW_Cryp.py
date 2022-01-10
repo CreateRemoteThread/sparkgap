@@ -121,13 +121,10 @@ class AESHelper:
     self.knownKey = knownKey
 
   def convertToRound2(self,pt):
-    # print(pt)
     tempState = [DEFAULT_AES_SBOX[self.knownKey[i] ^ pt[i]] for i in range(0,16)]
     tempState = self.shiftRows(tempState)
     tempState = self.mixColumns(tempState,False)
-    # print(np.array(tempState))
     return np.array(tempState)
-    # sys.exit(0)
 
   def subBytes(self,state):
     return [DEFAULT_AES_SBOX[i] for i in state]
@@ -207,7 +204,6 @@ class AttackModel:
     return DEFAULT_AES_SBOX[self.pt[tnum,bnum]  ^ kguess]
 
   def distinguisher(self,tnum,bnum,kguess):
-    self.knownKey = 0x11223344
     self.lut_total = 0
     for i in range(bnum * 4,(bnum + 1) * 4):
       self.lut_total += HW_LUT[self.pt[tnum,i]]
