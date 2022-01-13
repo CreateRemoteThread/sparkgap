@@ -54,8 +54,11 @@ class CaptureInterface():
     data = self.ps.getDataV("A",self.config["samplecount"],returnOverflow=False)
     if self.config["DEBUG"]:
       data2 = self.ps.getDataV("B",self.config["samplecount"],returnOverflow=False)
-      plt.plot(data)
-      plt.plot(data2)
+      fig,ax1 = plt.subplots()
+      ax1.plot(data2)
+      ax2 = ax1.twinx()
+      # plt.plot(data)
+      ax2.plot(data)
       plt.show()
     return data
 

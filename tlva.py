@@ -83,6 +83,20 @@ def distinguisher_keeloq(data,round):
 def distinguisher_random(data,ct,round,keyguess):
   return random.randint(0,10) % 2 == 0
 
+def distinguisher_pt32(pt,ct,round,key):
+  # return out
+  out = 0
+  for i in range(round * 4 + 0,round * 4 + 4):
+    out += bin(pt[i]).count("1")
+  return out >= 16
+
+def distinguisher_ct32(pt,ct,round,key):
+  # return out
+  out = 0
+  for i in range(round * 4 + 0,round * 4 + 4):
+    out += bin(ct[i]).count("1")
+  return out >= 16
+
 CONFIG_DISTINGUISHER = distinguisher_fixed
 
 # plaintext dpa "t-test"
@@ -132,9 +146,16 @@ class SpecialLeakModel:
     return self.customDistinguisher(self.plaintexts[xindex],self.ciphertexts[xindex],byte,key)
 
 OptionManager = {}
+SpecialDistinguisherList = {}
+SpecialDistinguisherList["EVEN"] = (distinguisher_even,"Even and odd, first byte of plaintext")
+SpecialDistinguisherList["HW"] = (distinguisher_hw,"HW >= 4, first byte of plaintext")
+SpecialDistinguisherList["FIXED"] = (distinguisher_fixed,"Most common PT and all other PT's")
+SpecialDistinguisherList["RANDOM"] = (distinguisher_random,"Randomly sorts two piles")
+SpecialDistinguisherList["PT32"] = (distinguisher_pt32,"HW >= 16, first dword of plaintext")
+SpecialDistinguisherList["CT32"] = (distinguisher_ct32,"HW >= 16, first dword of ciphertext")
 
 if __name__ == "__main__":
-  optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:b:k:",["byte=","key=","distinguisher=","writefile=","round=","dpa","opt="])
+  optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:b:k:h",["help","byte=","key=","distinguisher=","writefile=","round=","dpa","opt="])
   CONFIG_ROUND = 0
   CONFIG_BYTE = 0
   CONFIG_KEY = 0
@@ -152,30 +173,26 @@ if __name__ == "__main__":
       except:
         print("Fatal: could not split '%s' on ':'" % arg)
         sys.exit(0)
-    elif arg in ["--dpa"]:
+    elif arg == "--dpa":
       print("* Using raw plaintext DPA technique")
       CONFIG_STRATEGY = DO_DPA
+    elif arg in ["-h","--help"]:
+      print("usage: ./tlva.py -f [file] -d [distinguisher]")
+      print("supported custom distinguishers:")
+      for k in SpecialDistinguisherList.keys():
+        print("  %s : %s" % (k,SpecialDistinguisherList[k][1]))
+      sys.exit(0)
     elif arg in ["-r","--round"]:
       CONFIG_ROUND = int(value)
     elif arg in ["-d","--distinguisher"]:
-      if value.upper() == "EVEN":
+      # CONFIG_STRATEGY = DO_DPA
+      if value.upper() in SpecialDistinguisherList.keys():
+        print("Using special distinguisher '%s'" % value.upper())
         leakmodel = SpecialLeakModel()
-        leakmodel.customDistinguisher =distinguisher_even
-      # elif value.upper() == "HW_CRYP_SPEC":
-      #   leakmodel = SpecialLeakModel()
-      #   leakmodel.customDistinguisher = distinguisher_hw_cryp
-      elif value.upper() == "HW":
-        leakmodel = SpecialLeakModel()
-        leakmodel.customDistinguisher = distinguisher_hw
-      elif value.upper() == "FIXED":
-        leakmodel = SpecialLeakModel()
-        leakmodel.customDistinguisher =distinguisher_fixed
-      elif value.upper() == "RANDOM":
-        leakmodel = SpecialLeakModel()
-        leakmodel.customDistinguisher =distinguisher_random
+        (d,t) = SpecialDistinguisherList[value.upper()]
+        leakmodel.customDistinguisher = d
       else:
         print("Attempting to use distinguisher '%s'" % value)
-        print("Otherwise, use 'even', 'hw', 'fixed' or 'random'")
         leakmodel = support.attack.fetchModel(value)
     elif arg in ["-w","--writefile"]:
       CONFIG_WRITEFILE = value
