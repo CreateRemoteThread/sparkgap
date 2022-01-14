@@ -289,7 +289,7 @@ class model:
 
 class AttackModel:
   def __init__(self):
-    print("=== MODIFY THIS TO DO A PARTIAL TTABLE (OTHERWISE ITS JUST FULL ROUND1) ==="
+    print("=== MODIFY THIS TO DO A PARTIAL TTABLE (OTHERWISE ITS JUST FULL ROUND1) ===")
     self.keyLength = 4
     self.fragmentMax = 0xFFFFFFFF
     self.ttable_model = model()

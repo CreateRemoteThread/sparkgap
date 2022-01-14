@@ -2,11 +2,12 @@
 
 from picoscope import ps2000a
 import binascii
+import time
 
 plt = None
 
-# self.config["pico_offset"] = -2.39
-# self.config["pico_vrange"] = 0.2
+# self.config["pico_offset"] = 0
+# self.config["pico_vrange"] = 0.5
 # self.config["samplerate"] = 125000000
 # self.config["pico_atten"] = 10.0
 
@@ -21,6 +22,7 @@ class CaptureInterface():
     self.config["pico_offset"] = -2.39
     self.config["pico_vrange"] = 0.2
     self.config["pico_atten"] = 10.0
+    self.config["pico_coupling"] = "DC"
     self.config["samplerate"] = 125000000
     self.config["DEBUG"] = False
     print("== REMEMBER TO SET samplerate, pico_voffset, pico_vrange == ")
@@ -35,10 +37,14 @@ class CaptureInterface():
       plt = pltx
     self.ps = None
     self.ps = ps2000a.PS2000a()
-    self.ps.setChannel('A','DC',VRange=self.config["pico_vrange"],VOffset=self.config["pico_offset"],enabled=True,BWLimited=False,probeAttenuation=self.config["pico_atten"])
+    self.ps.setChannel('A',self.config["pico_coupling"],VRange=self.config["pico_vrange"],VOffset=self.config["pico_offset"],enabled=True,BWLimited=False,probeAttenuation=self.config["pico_atten"])
     self.ps.setChannel('B','DC',VRange=10.0,VOffset=0.0,enabled=True,BWLimited=False,probeAttenuation=self.config["pico_atten"])
     nSamples = self.config["samplecount"]
     (freq,maxSamples) = self.ps.setSamplingFrequency(self.config["samplerate"],nSamples)
+    if self.config["pico_coupling"] == "AC":
+      print("Firing block to flush DC offset...")
+      self.ps.runBlock()
+      time.sleep(3.0)
     print("ps2000: got frequency %d Hz, %d max samples" % (freq,maxSamples))
     self.freq = freq
     self.maxSamples = maxSamples
