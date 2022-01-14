@@ -85,3 +85,13 @@ def save(fn,traces=None,data=None,data_out=None,freq=0,additionalParams={}):
 if __name__ == "__main__":
   if len(sys.argv) != 2:
     print("This is not meant to be called directly :)")
+  tm = TraceManager(sys.argv[1])
+  f1 = open("inputs.txt","w")
+  f2 = open("outputs.txt","w")
+  for i in range(0,len(tm.data_in)):
+    d1 = tm.data_in[i]
+    f1.write("".join(["%02x" % x for x in d1]) + "\n")
+    d2 = tm.data_out[i]
+    f2.write("".join(["%02x" % x for x in d2]) + "\n")
+  f1.close()
+  f2.close()

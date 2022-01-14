@@ -23,6 +23,12 @@ import support.filemanager
 import support.attack
 import time
 
+def getHammingWeight(x):
+  return bin(x).count("1")
+
+print("Initializing HW LUT")
+HW_LUT = [getHammingWeight(x) for x in range(0,256)]
+
 CONFIG_FILE = None
 
 lastTime = 0.0
@@ -58,13 +64,15 @@ def distinguisher_even(data,ct,round,keyguess):
   return data[round] % 2 == 0
 
 def distinguisher_hw(data,ct,round,keyguess):
-  # print("%02x" % data[round])
-  return bin(data[round]).count("1") >= 4
+  return HW_LUT[data[round]] >= 4
+
+def distinguisher_cthw(data,ct,round,keyguess):
+  return HW_LUT[ct[round]] >= 4
 
 def distinguisher_hw_cryp(data,ct,round,keyguess):
   bc = 0
   for i in range(0,4):
-    bc += bin(data[i]).count("1")
+    bc += HW_LUT[data[i]]
   return bc >= 16
 
 # keeloq is 66 bits...
@@ -87,14 +95,14 @@ def distinguisher_pt32(pt,ct,round,key):
   # return out
   out = 0
   for i in range(round * 4 + 0,round * 4 + 4):
-    out += bin(pt[i]).count("1")
+    out += HW_LUT[pt[i]]
   return out >= 16
 
 def distinguisher_ct32(pt,ct,round,key):
   # return out
   out = 0
   for i in range(round * 4 + 0,round * 4 + 4):
-    out += bin(ct[i]).count("1")
+    out += HW_LUT[ct[i]]
   return out >= 16
 
 CONFIG_DISTINGUISHER = distinguisher_fixed
@@ -149,6 +157,7 @@ OptionManager = {}
 SpecialDistinguisherList = {}
 SpecialDistinguisherList["EVEN"] = (distinguisher_even,"Even and odd, first byte of plaintext")
 SpecialDistinguisherList["HW"] = (distinguisher_hw,"HW >= 4, first byte of plaintext")
+SpecialDistinguisherList["CTHW"] = (distinguisher_cthw,"HW >= 4, first byte of ciphertext")
 SpecialDistinguisherList["FIXED"] = (distinguisher_fixed,"Most common PT and all other PT's")
 SpecialDistinguisherList["RANDOM"] = (distinguisher_random,"Randomly sorts two piles")
 SpecialDistinguisherList["PT32"] = (distinguisher_pt32,"HW >= 16, first dword of plaintext")

@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
-# developing this first
-
 import chipwhisperer.analyzer as cwa
-from chipwhisperer.analyzer.attacks.models.aes.funcs import inv_sbox, inv_shiftrows
+from chipwhisperer.analyzer.attacks.models.aes.funcs import inv_sbox
 
 def getHammingWeight(x):
   return bin(x).count("1")
@@ -27,8 +25,10 @@ class AttackModel:
   def genIVal(self,tnum,bnum,kguess):
     global HW_LUT
     # st10 = self.ct[tnum][self.INVSHIFT_undo[bnum]]
+    st10 = self.ct[tnum][bnum]
     st9 = inv_sbox(self.ct[tnum][bnum] ^ kguess)
-    return HW_LUT[st9]
+    return HW_LUT[st9 ^ st10]
 
   def distinguisher(self,tnum,bnum,kguess):
+    global HW_LUT
     return self.genIVal(tnum,bnum,kguess) >= 4

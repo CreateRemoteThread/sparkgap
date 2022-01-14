@@ -40,7 +40,11 @@ class DriverInterface(base.BaseDriverInterface):
       next_ct = f[17:49]
       next_ct = [int(next_ct[i:i+2],16) for i in range(0,len(next_ct),2)]
     else:
-      next_ct = [0x00] * 16
+      next_ct = f[1:33]
+      next_ct = [int(next_ct[i:i+2],16) for i in range(0,len(next_ct),2)]
+    text_rand = "".join(["%02x" % nr for nr in next_rand])
+    text_ct = "".join(["%02x" % nr for nr in next_ct])
+    print("Ok, saving %s:%s" % (text_rand,text_ct)) 
     return (next_rand,next_ct)
 
 
