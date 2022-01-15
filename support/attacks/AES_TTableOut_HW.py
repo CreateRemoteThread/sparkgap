@@ -291,7 +291,7 @@ class AttackModel:
   def __init__(self):
     print("=== MODIFY THIS TO DO A PARTIAL TTABLE (OTHERWISE ITS JUST FULL ROUND1) ===")
     self.keyLength = 4
-    self.fragmentMax = 0xFFFFFFFF
+    self.fragmentMax = 0xFF
     self.ttable_model = model()
 
   def loadPlaintextArray(self,pt):
@@ -309,7 +309,7 @@ class AttackModel:
     global tset
     intval = 0
     kguess_array = [(kguess & 0xFF000000) >> 24,(kguess & 0xFF0000) >> 16,(kguess & 0xFF00) >> 8, kguess & 0xFF]
-    for i in range(0,4):
+    for i in [0]:
       value = self.pt[tnum, (bnum * 4) + i] ^ kguess_array[i]
       intval ^= tset[bnum % 4][value]
     return intval

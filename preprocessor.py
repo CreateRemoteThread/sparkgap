@@ -9,6 +9,7 @@ import sys
 import readline
 import support.filemanager
 import support.slipnslide
+import support.preprocessor
 import numpy as np
 # import matplotlib.pyplot as plt
 import pywt
@@ -61,11 +62,11 @@ def getSingleSAD(array1,array2):
 
 def getMaxCorrCoeff(trace1,trace2):
   maxCf = -1.0
-  CONFIG_CLKADJUST_MAX = getOptionalVariable("clkadjust_max",0)
-  CONFIG_CLKADJUST = getOptionalVariable("clkadjust",10000)
-  CONFIG_WINDOW_OFFSET = getVariable("window_offset")
-  CONFIG_WINDOW_LENGTH = getVariable("window_length")
-  CONFIG_WINDOW_SLIDE = getVariable("window_slide")
+  CONFIG_CLKADJUST_MAX = varMgr.getOptionalVariable("clkadjust_max",0)
+  CONFIG_CLKADJUST = varMgr.getOptionalVariable("clkadjust",10000)
+  CONFIG_WINDOW_OFFSET = varMgr.getVariable("window_offset")
+  CONFIG_WINDOW_LENGTH = varMgr.getVariable("window_length")
+  CONFIG_WINDOW_SLIDE = varMgr.getVariable("window_slide")
   maxCfIndex = 0
   for cadjust in range(0,CONFIG_CLKADJUST_MAX + 1):
     if cadjust == 0:
@@ -101,11 +102,11 @@ def getMaxCorrCoeff(trace1,trace2):
 def getMinimalSAD(trace1,trace2):
   minimalSAD = 500.0
   minimalSADIndex = 0.0
-  CONFIG_CLKADJUST_MAX = getOptionalVariable("clkadjust_max",0)
-  CONFIG_CLKADJUST = getOptionalVariable("clkadjust",10000)
-  CONFIG_WINDOW_OFFSET = getVariable("window_offset")
-  CONFIG_WINDOW_LENGTH = getVariable("window_length")
-  CONFIG_WINDOW_SLIDE = getVariable("window_slide")
+  CONFIG_CLKADJUST_MAX = varMgr.getOptionalVariable("clkadjust_max",0)
+  CONFIG_CLKADJUST = varMgr.getOptionalVariable("clkadjust",10000)
+  CONFIG_WINDOW_OFFSET = varMgr.getVariable("window_offset")
+  CONFIG_WINDOW_LENGTH = varMgr.getVariable("window_length")
+  CONFIG_WINDOW_SLIDE = varMgr.getVariable("window_slide")
   for cadjust in range(0,CONFIG_CLKADJUST_MAX + 1):
     if cadjust == 0:
       cAdjustNeg = [0]
@@ -133,47 +134,34 @@ def getMinimalSAD(trace1,trace2):
             minimalSADIndex = i
   return (minimalSADIndex,minimalSAD)
 
-CFG_GLOBALS = {}
 CFG_OPTIONAL_WARNINGS = []
 
-def requireTokens(tokens):
-  global CFG_GLOBALS
-  for t in tokens:
-    if t not in CFG_GLOBALS.keys():
-      return False
-  return True
+class VariableManager:
+  def __init__(self):
+    self.config = {}
 
-def getOptionalVariable(varname, default):
-  global CFG_GLOBALS, CFG_OPTIONAL_WARNINGS
-  if varname not in CFG_GLOBALS.keys():
-    if varname not in CFG_OPTIONAL_WARNINGS:
-      print("Could not retrieve variable '%s'" % varname)
-      CFG_OPTIONAL_WARNINGS.append(varname)
-    return default
-  else:
-    return CFG_GLOBALS[varname]
+  def list(self):
+    for k in self.config.keys():
+      print("%s=%s" % (k,self.config[k]))
 
-def getVariable(varname):
-  global CFG_GLOBALS
-  if varname not in CFG_GLOBALS.keys():
-    print("Could not retrieve mandatory variable '%s'" % varname)
-    sys.exit(0)
-  else:
-    return CFG_GLOBALS[varname]
+  def unset(self,var):
+    if var in self.config.keys():
+      del self.config[var]
+ 
+  def setVariable(self,var,arg):
+    self.config[var] = arg
 
-def getLowpass():
-  global CFG_GLOBALS
-  if "lowpass" not in CFG_GLOBALS.keys():
-    return None
-  else:
-    return CFG_GLOBALS["lowpass"]
+  def getVariable(self,var):
+    return self.config[var]
 
-def getBandpass():
-  global CFG_GLOBALS
-  if "bandpass" not in CFG_GLOBALS.keys():
-    return None
-  else:
-    return CFG_GLOBALS["bandpass"]
+  def getOptionalVariable(self,var,opt):
+    if var in self.config.keys():
+      return self.config[var]
+    else:
+      print("Could not retrieve variable '%s', supplying default" % var)
+      return opt
+
+varMgr = VariableManager()
 
 def doCORR(tm_in):
   numTraces = tm_in.traceCount
@@ -181,14 +169,14 @@ def doCORR(tm_in):
   traces = zeros((numTraces,sampleCnt),float32)
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
-  CONFIG_REFTRACE = getVariable("ref")
-  CONFIG_LOWPASS = getLowpass()
-  CONFIG_MCF_CUTOFF = getVariable("corr_cutoff")
-  CONFIG_WINDOW_SLIDE = getVariable("window_slide")
-  CONFIG_WRITEFILE = getVariable("writefile")
+  CONFIG_REFTRACE = varMgr.getVariable("ref")
+  CONFIG_LOWPASS = varMgr.getOptionalVariable("lowpass",None)
+  CONFIG_MCF_CUTOFF = varMgr.getVariable("corr_cutoff")
+  CONFIG_WINDOW_SLIDE = varMgr.getVariable("window_slide")
+  CONFIG_WRITEFILE = varMgr.getVariable("writefile")
   savedDataIndex = 0
   if CONFIG_LOWPASS is not None:
-    (CONFIG_CUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER) = getLowpass()
+    (CONFIG_CUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER) = varMgr.getOptionalVariable("lowpass",None)
     ref = butter_lowpass_filter(tm_in.getSingleTrace(CONFIG_REFTRACE),CONFIG_CUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER)
   else:
     ref = tm_in.getSingleTrace(CONFIG_REFTRACE)
@@ -235,7 +223,7 @@ def doCWTDenoise(tm_in):
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   savedDataIndex = 0
-  CONFIG_WRITEFILE = getVariable("writefile")
+  CONFIG_WRITEFILE = varMgr.getVariable("writefile")
   for i in range(0,numTraces):
     x = tm_in.getSingleTrace(i)
     dn = doSingleCWTDenoise(tm_in.getSingleTrace(i))
@@ -274,7 +262,7 @@ def doFlipKeeloqIO(tm_in):
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   savedDataIndex = 0
-  CONFIG_WRITEFILE = getVariable("writefile")
+  CONFIG_WRITEFILE = varMgr.getVariable("writefile")
   for i in range(0,numTraces):
     print("Flipping IO for trace %d..." % i)
     traces[savedDataIndex,:] = tm_in.getSingleTrace(i)
@@ -296,8 +284,8 @@ def doLowpass(tm_in):
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   savedDataIndex = 0
-  CONFIG_WRITEFILE = getVariable("writefile")
-  (CONFIG_LCUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER) = getLowpass()
+  CONFIG_WRITEFILE = varMgr.getVariable("writefile")
+  (CONFIG_LCUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER) = varMgr.getOptionalVariable("lowpass",None)
   for i in range(0,numTraces):
     print("Lowpassed traced %d..." % i)
     x = tm_in.getSingleTrace(i)
@@ -318,8 +306,8 @@ def doBandpass(tm_in):
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   savedDataIndex = 0
-  CONFIG_WRITEFILE = getVariable("writefile")
-  (CONFIG_LCUTOFF,CONFIG_HCUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER) = getBandpass()
+  CONFIG_WRITEFILE = varMgr.getVariable("writefile")
+  (CONFIG_LCUTOFF,CONFIG_HCUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER) = varMgr.getOptionalVariable("bandpass",None)
   for i in range(0,numTraces):
     print("Bandpassed traced %d..." % i)
     x = tm_in.getSingleTrace(i)
@@ -339,8 +327,8 @@ def doEarthquake(tm_in):
   traces = zeros((numTraces,sampleCnt),float32)
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
-  CONFIG_WRITEFILE = getVariable("writefile")
-  CONFIG_SLIDEAMOUNT = int(getOptionalVariable("slidemax",1500))
+  CONFIG_WRITEFILE = varMgr.getVariable("writefile")
+  CONFIG_SLIDEAMOUNT = int(varMgr.getOptionalVariable("slidemax",1500))
   savedDataIndex = 0
   for i in range(0,numTraces):
     x = tm_in.getSingleTrace(i)
@@ -356,14 +344,14 @@ def doEarthquake(tm_in):
   # support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
 def doSlicer(tm_in):
-  CONFIG_REFTRACE = getVariable("ref")
-  CONFIG_REF_OFFSET = getVariable("ref_offset")
-  CONFIG_REF_LENGTH = getVariable("ref_length")
-  CONFIG_SLICE_DIST = getVariable("slicedist")
-  CONFIG_WRITEFILE = getVariable("writefile")
-  CONFIG_SAD_CUTOFF = getVariable("sad_cutoff")
-  maxSlicesBackwards = getVariable("slices_backwards")
-  maxSlicesForwards = getVariable("slices_forwards")
+  CONFIG_REFTRACE = varMgr.getVariable("ref")
+  CONFIG_REF_OFFSET = varMgr.getVariable("ref_offset")
+  CONFIG_REF_LENGTH = varMgr.getVariable("ref_length")
+  CONFIG_SLICE_DIST = varMgr.getVariable("slicedist")
+  CONFIG_WRITEFILE = varMgr.getVariable("writefile")
+  CONFIG_SAD_CUTOFF = varMgr.getVariable("sad_cutoff")
+  maxSlicesBackwards = varMgr.getVariable("slices_backwards")
+  maxSlicesForwards = varMgr.getVariable("slices_forwards")
   newSampleCount = (maxSlicesBackwards + maxSlicesForwards) * (3 + CONFIG_REF_LENGTH)
   numTraces = tm_in.traceCount
   traces = zeros((numTraces,newSampleCount),float32)
@@ -386,7 +374,7 @@ def doVerticalAlign(tm_in):
   traces = zeros((numTraces,sampleCnt),float32)
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
-  CONFIG_REFTRACE = getVariable("ref")
+  CONFIG_REFTRACE = varMgr.getVariable("ref")
   ref = tm_in.getSingleTrace(CONFIG_REFTRACE)
 
 def doSAD(tm_in):
@@ -395,14 +383,14 @@ def doSAD(tm_in):
   traces = zeros((numTraces,sampleCnt),float32)
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
-  CONFIG_REFTRACE = getVariable("ref")
-  CONFIG_LOWPASS = getLowpass()
-  CONFIG_SAD_CUTOFF = getVariable("sad_cutoff")
-  CONFIG_WRITEFILE = getVariable("writefile")
-  CONFIG_WINDOW_SLIDE = getVariable("window_slide")
+  CONFIG_REFTRACE = varMgr.getVariable("ref")
+  CONFIG_LOWPASS = varMgr.getOptionalVariable("lowpass",None)
+  CONFIG_SAD_CUTOFF = varMgr.getVariable("sad_cutoff")
+  CONFIG_WRITEFILE = varMgr.getVariable("writefile")
+  CONFIG_WINDOW_SLIDE = varMgr.getVariable("window_slide")
   savedDataIndex = 0
   if CONFIG_LOWPASS is not None:
-    (CONFIG_CUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER) = getLowpass()
+    (CONFIG_CUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER) = varMgr.getOptionalVariable("lowpass",None)
     ref = butter_lowpass_filter(tm_in.getSingleTrace(CONFIG_REFTRACE),CONFIG_CUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER)
   else:
     ref = tm_in.getSingleTrace(CONFIG_REFTRACE)
@@ -432,8 +420,7 @@ def doSAD(tm_in):
   # support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
 def dispatchAlign(tm_in):
-  global CFG_GLOBALS
-  CONFIG_STRATEGY = getVariable("strategy")
+  CONFIG_STRATEGY = varMgr.getVariable("strategy")
   if CONFIG_STRATEGY in ("sad","SAD"):
     print("Using strategy: Align by Sum of Absolute Differences")
     (traces,data_in,data_out) = doSAD(tm_in)
@@ -443,6 +430,8 @@ def dispatchAlign(tm_in):
   elif CONFIG_STRATEGY in ("corr","CORR"):
     print("Using strategy: Align by Maximum Correlation")
     (traces,data_in,data_out) = doCORR(tm_in)
+  elif CONFIG_STRATEGY.upper() == "VALIGN":
+    (traces,data_in,data_out) = support.preprocessor.VAlign(tm_in,varMgr)
   elif CONFIG_STRATEGY in ("wavelet","WAVELET"):
     print("Using strategy: Wavelet Denoise")
     (traces,data_in,data_out) = doCWTDenoise(tm_in)
@@ -469,21 +458,18 @@ def dispatchAlign(tm_in):
 needsCommit = False
 
 def doSingleCommand(cmd,tm_in_raw):
-  global needsCommit,CFG_GLOBALS
-  CONFIG_WRITEFILE = getVariable("writefile")
+  global needsCommit
+  CONFIG_WRITEFILE = varMgr.getVariable("writefile")
   tm_in = tm_in_raw
   tokens = cmd.split(" ")
   if tokens[0] == "set" and len(tokens) >= 2:
     tx = " ".join(tokens[1:])
     (argname,argval) = tx.split("=")
-    CFG_GLOBALS[argname] = eval(argval)
-    return None
+    varMgr.setVariable(argname,eval(argval))
   elif tokens[0] == "unset" and len(tokens) == 2:
-    if tokens[1] in CFG_GLOBALS.keys():
-      del CFG_GLOBALS[tokens[1]]
+    varMgr.unset(argname)
   elif tokens[0] == "vars":
-    for k in CFG_GLOBALS.keys():
-      print("%s=%s" % (k,CFG_GLOBALS[k]))
+    varMgr.list()
   elif tokens[0] == "savecw":
     if needsCommit:
       print("Commit your changes first. No operation performed")
@@ -525,7 +511,6 @@ def doSingleCommand(cmd,tm_in_raw):
     return None
 
 def doCommands(CONFIG_READFILE,CONFIG_CMDFILE):
-  global CFG_GLOBALS
   tm_in = support.filemanager.TraceManager(CONFIG_READFILE)
   if CONFIG_CMDFILE is not None:
     f = open(CONFIG_CMDFILE)
@@ -547,7 +532,7 @@ if __name__ == "__main__":
     if arg in ("-f","--infile"):
       CONFIG_READFILE = opt
     elif arg in ("-w","--writefile"):
-      CFG_GLOBALS["writefile"] = opt
+      varMgr.setVariable("writefile",opt)
     elif arg in ("-c","--cmdfile"):
       CONFIG_CMDFILE = opt
   if CONFIG_READFILE is None:
