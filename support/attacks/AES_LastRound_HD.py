@@ -18,7 +18,7 @@ class AttackModel:
     self.fragmentMax = 256
 
   def loadPlaintextArray(self,pt):
-    print("Loading plaintext array for AES SBox Out HW Attack...")
+    print("Loading plaintext array for AES Last Round State Diff HD Attack...")
     self.pt = pt
 
   def loadCiphertextArray(self,ct):
@@ -26,6 +26,7 @@ class AttackModel:
 
   def genIVal(self,tnum,bnum,kguess):
     global HW_LUT
+    # st10 = self.ct[tnum][bnum]
     st10 = self.ct[tnum][self.INVSHIFT_undo[bnum]]
     st9 = inv_sbox(self.ct[tnum][bnum] ^ kguess)
     return HW_LUT[st9 ^ st10]
