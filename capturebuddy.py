@@ -97,8 +97,13 @@ def runCaptureTask():
   else:
     support.filemanager.save(config["writefile"],traces=traces,data=data,data_out=data_out)
     
-
 trig = None
+
+def strfix(var):
+  if isinstance(var,str):
+    return "\"%s\"" % var
+  else:
+    return var
 
 def processCommand(c):
   global fe, drv, trig, config
@@ -135,11 +140,34 @@ def processCommand(c):
     runCaptureTask()
   elif tokens[0] == "vars":
     for i in config.keys():
-      print("%s=%s" % (i,config[i]))
+      print("%s=%s" % (i,strfix(config[i])))
     for i in fe.config.keys():
-      print("%s=%s" % (i,fe.config[i]))
+      print("%s=%s" % (i,strfix(fe.config[i])))
     for i in drv.config.keys():
-      print("%s=%s" % (i,drv.config[i]))
+      print("%s=%s" % (i,strfix(drv.config[i])))
+  elif tokens[0] == "savevars" and len(tokens) == 2:
+    print("Saving config to %s" % tokens[1])
+    f = open(tokens[1],"w")
+    for i in config.keys():
+      f.write("c:%s=%s\n" % (i,strfix(config[i])))
+    for i in fe.config.keys():
+      f.write("f:%s=%s\n" % (i,strfix(fe.config[i])))
+    for i in drv.config.keys():
+      f.write("d:%s=%s\n" % (i,strfix(drv.config[i])))
+    f.close()
+  elif tokens[0] == "loadvars" and len(tokens) == 2:
+    print("Loading config from %s" % tokens[1])
+    f = open(tokens[1],"r")
+    for x in f.readlines():
+      (var,arg) = x[2:].rstrip().split("=")
+      if x[0] == 'c':
+        config[var] = eval(arg)
+      elif x[0] == 'f':
+        fe.config[var] = eval(arg)
+      elif x[0] == 'd':
+        drv.config[var] = eval(arg)
+      # print("%c,%s,%s" % (x[0],var,arg))
+    f.close()
   elif tokens[0] == "set":
     cmdx = " ".join(tokens[1:])
     (varname,varval) = cmdx.split("=")
@@ -152,6 +180,11 @@ def processCommand(c):
       config[varname] = p
       fe.config[varname] = p
       drv.config[varname] = p
+      if varname == "DEBUG" and p is True:
+        print("DEBUG set, forcing tracecount to 1")
+        config["tracecount"] = 1
+        fe.config["tracecount"] = 1
+        drv.config["tracecount] = 1
   elif tokens[0] == "fe.set":
     cmdx = " ".join(tokens[1:])
     (varname,varval) = cmdx.split("=")
