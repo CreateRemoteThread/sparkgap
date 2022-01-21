@@ -10,7 +10,7 @@ We must configure the Rigol scope with an IP address, and program this into fron
 
 We can begin capture with the following commands:
 
-- set tracefile=filename_goes_here
+- set writefile=filename_goes_here
 - set samplecount=50000 (enough to capture 1 round at your sample rate)
 - set tracecount=250
 

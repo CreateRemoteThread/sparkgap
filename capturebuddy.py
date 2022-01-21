@@ -145,7 +145,7 @@ def processCommand(c):
       print("%s=%s" % (i,strfix(fe.config[i])))
     for i in drv.config.keys():
       print("%s=%s" % (i,strfix(drv.config[i])))
-  elif tokens[0] == "savevars" and len(tokens) == 2:
+  elif tokens[0] in ["savevars","dumpvars"] and len(tokens) == 2:
     print("Saving config to %s" % tokens[1])
     f = open(tokens[1],"w")
     for i in config.keys():
