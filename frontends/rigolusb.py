@@ -91,9 +91,9 @@ class CaptureInterface():
     self.scope.write_raw(b":WAV:FORM BYTE")
     self.scope.write_raw(b":WAV:DATA?")
     pos = self.mdepth // 2
-    end = pos + self.config["samplecount"]
+    end = pos + self.config["samplecount"] - 1
     buff = b""
-    pnts = end - pos - 1
+    pnts = end - pos 
     max_byte_len = 250000
     while len(buff) < pnts:
       print("len(buff) is %d" % len(buff))
@@ -104,20 +104,20 @@ class CaptureInterface():
       self.scope.write_raw(b":WAV:STAR %d" % pos)
       self.scope.write_raw(b":WAV:STOP %d" % end_pos)
       self.scope.write_raw(b":WAV:DATA?")
-      time.sleep(0.5)
+      time.sleep(0.25)
       print("LOG: %d -> %d" % (pos,end_pos))
       data = self.scope.read_raw(-1)
       buff += self.decode_ieee_block(data)
       while not data.endswith(b"\n"):
-        time.sleep(0.5)
+        time.sleep(0.25)
         print("Reading")
         data += self.scope.read_raw(-1)
         buff += self.decode_ieee_block(data)
       pos += max_byte_len
-    print("STOP")
+    print("finished")
     # x = input(" > ")
     samples = list(struct.unpack(str(len(buff))+'B', buff))
-    return samples
+    return samples[0:self.config["samplecount"] ]
 
   def close(self):
     del self.scope
