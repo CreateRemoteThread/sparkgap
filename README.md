@@ -12,13 +12,17 @@ This toolkit contains:
 - preprocessor.py, a signal alignment tool
 - capturebuddy.py, wrapper for signal acquisition jobs
   - frontends/*, wrapper scripts for various acquisition frontends
+    - ps6000.py, for PicoScope 6xxx
+    - ps2000.py, for PicoScope 2xxx
+    - rigol.py, for Rigol DS1xxx over Ethernet
+    - rigolusb.py, for Rigol DS1xxx over USB (alot faster!)
+    - bladerf.py, EXPERIMENTAL DO NOT USE
   - drivers/*, wrapper scripts for logic control drivers
 - triggerbuddy.py, control script for TriggerBuddy FPGA module
 - support/*, a single support package for FI and SCA
 - support/attacks/*, distinguisher and correlation modeling
 - experiments/*, in-progress and successful attacks
 - docs/*, self-contained markdown documentation
-- fpga/*, the source code + bitstream for a TriggerBuddy (for Arty A7 35T variant)
 
 These tools should be used in a workflow. A quick start workflow is documented [here](docs/quickstart.md), and more documentation can be found in the docs/ folder. You should also read [this](docs/quickstart-dev.md) to extend the framework.
 
