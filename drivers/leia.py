@@ -74,13 +74,22 @@ class DriverInterface(base.BaseDriverInterface):
       print(ex)
       return (None,None)
 
+  def getRand(self):
+    return [random.randint(0,255) for _ in range(16)]
+    # if random.randint(0,255) % 2 == 0:
+    #   return [0xFF] * 16
+    # else:
+    #   return [0x00] * 16
+
   def drive_efdir(self,data_in = None):
     if data_in is None:
-      next_rand = [random.randint(0,255) for _ in range(16)]
+      # next_rand = [random.randint(0,255) for _ in range(16)]
+      next_rand = self.getRand()
     else:
       print("TLVA!")
       next_rand = data_in
-    next_autn = [random.randint(0,255) for _ in range(16)]
+    # next_autn = [random.randint(0,255) for _ in range(16)]
+    next_autn = self.getRand()
     print("GO")
     self.reader.reset()
     print(self.reader.get_ATR())

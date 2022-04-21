@@ -66,6 +66,13 @@ def distinguisher_even(data,ct,round,keyguess):
 def distinguisher_hw(data,ct,round,keyguess):
   return HW_LUT[data[round]] >= 4
 
+# def distinguisher_hw3232323232323232323232323232323232323232323232323232323232323232(data,ct,round,keyguess):
+def distinguisher_hw32(data,ct,round,keyguess):
+  out = 0 
+  for i in range(0,4):
+    out += HW_LUT[data[round * 4 + i]]
+  return out >= 16
+
 def distinguisher_cthw(data,ct,round,keyguess):
   return HW_LUT[ct[round]] >= 4
 
@@ -157,6 +164,7 @@ OptionManager = {}
 SpecialDistinguisherList = {}
 SpecialDistinguisherList["EVEN"] = (distinguisher_even,"Even and odd, first byte of plaintext")
 SpecialDistinguisherList["HW"] = (distinguisher_hw,"HW >= 4, first byte of plaintext")
+SpecialDistinguisherList["HW32"] = (distinguisher_hw32,"HW[0:4] >= 16, hamming weight 32-bit (first dword)")
 SpecialDistinguisherList["CTHW"] = (distinguisher_cthw,"HW >= 4, first byte of ciphertext")
 SpecialDistinguisherList["FIXED"] = (distinguisher_fixed,"Most common PT and all other PT's")
 SpecialDistinguisherList["RANDOM"] = (distinguisher_random,"Randomly sorts two piles")

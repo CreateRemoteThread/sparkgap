@@ -824,8 +824,8 @@ class CaptureInterface():
         print("Rigol: using saved offset of %s" % r_offset)
         self.scope.write(":CHAN1:OFFS %s" % r_offset)
       else:
-        print("Rigol: using default offset of -0.001")
-        self.scope.write(":CHAN1:OFFS -0.001")
+        print("Rigol: rigol_offset unassigned, assuming you don't need this.")
+        # self.scope.write(":CHAN1:OFFS -0.001")
     if "time_offset" in self.config.keys():
       self.halftime = int(self.config["time_offset"])
       print("Rigol: using time offset of %d" % self.halftime)

@@ -184,7 +184,7 @@ def processCommand(c):
         print("DEBUG set, forcing tracecount to 1")
         config["tracecount"] = 1
         fe.config["tracecount"] = 1
-        drv.config["tracecount] = 1
+        drv.config["tracecount"] = 1
   elif tokens[0] == "fe.set":
     cmdx = " ".join(tokens[1:])
     (varname,varval) = cmdx.split("=")
