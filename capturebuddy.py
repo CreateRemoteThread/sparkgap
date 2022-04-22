@@ -141,10 +141,10 @@ def processCommand(c):
   elif tokens[0] == "vars":
     for i in config.keys():
       print("%s=%s" % (i,strfix(config[i])))
-    for i in fe.config.keys():
-      print("%s=%s" % (i,strfix(fe.config[i])))
-    for i in drv.config.keys():
-      print("%s=%s" % (i,strfix(drv.config[i])))
+    # for i in fe.config.keys():
+    #   print("%s=%s" % (i,strfix(fe.config[i])))
+    # for i in drv.config.keys():
+    #   print("%s=%s" % (i,strfix(drv.config[i])))
   elif tokens[0] in ["savevars","dumpvars"] and len(tokens) == 2:
     print("Saving config to %s" % tokens[1])
     f = open(tokens[1],"w")
@@ -178,21 +178,21 @@ def processCommand(c):
       print("No variables set!")
     else:
       config[varname] = p
-      fe.config[varname] = p
-      drv.config[varname] = p
+      # fe.config[varname] = p
+      # drv.config[varname] = p
       if varname == "DEBUG" and p is True:
         print("DEBUG set, forcing tracecount to 1")
         config["tracecount"] = 1
-        fe.config["tracecount"] = 1
-        drv.config["tracecount"] = 1
-  elif tokens[0] == "fe.set":
-    cmdx = " ".join(tokens[1:])
-    (varname,varval) = cmdx.split("=")
-    fe.config[varname] = eval(varval)
-  elif tokens[0] == "drv.set":
-    cmdx = " ".join(tokens[1:])
-    (varname,varval) = cmdx.split("=")
-    drv.config[varname] = eval(varval)
+        # fe.config["tracecount"] = 1
+        # drv.config["tracecount"] = 1
+  # elif tokens[0] == "fe.set":
+  #   cmdx = " ".join(tokens[1:])
+  #   (varname,varval) = cmdx.split("=")
+  #   fe.config[varname] = eval(varval)
+  # elif tokens[0] == "drv.set":
+  #   cmdx = " ".join(tokens[1:])
+  #   (varname,varval) = cmdx.split("=")
+  #   drv.config[varname] = eval(varval)
   else:
     print("Unknown command %s" % cmd)
 
@@ -219,6 +219,8 @@ if __name__ == "__main__":
   elif drv is None:
     print("No driver backend, bye!")
     sys.exit(0)
+  fe.config = config
+  drv.config = config
   if CMDFILE is not None:
     f = open(CMDFILE,"r")
     cmd_array = [d.rstrip() for d in f.readlines()]

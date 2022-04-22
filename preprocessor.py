@@ -100,7 +100,7 @@ def getMaxCorrCoeff(trace1,trace2):
   return (maxCf,maxCfIndex)
 
 def getMinimalSAD(trace1,trace2):
-  minimalSAD = 500.0
+  minimalSAD = 1000.0
   minimalSADIndex = 0.0
   CONFIG_CLKADJUST_MAX = varMgr.getOptionalVariable("clkadjust_max",0)
   CONFIG_CLKADJUST = varMgr.getOptionalVariable("clkadjust",10000)
