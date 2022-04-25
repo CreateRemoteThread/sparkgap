@@ -100,8 +100,8 @@ def getMaxCorrCoeff(trace1,trace2):
   return (maxCf,maxCfIndex)
 
 def getMinimalSAD(trace1,trace2):
-  minimalSAD = 1000.0
-  minimalSADIndex = 0.0
+  minimalSAD = varMgr.getVariable("sad_cutoff") 
+  minimalSADIndex = 0
   CONFIG_CLKADJUST_MAX = varMgr.getOptionalVariable("clkadjust_max",0)
   CONFIG_CLKADJUST = varMgr.getOptionalVariable("clkadjust",10000)
   CONFIG_WINDOW_OFFSET = varMgr.getVariable("window_offset")
@@ -117,7 +117,9 @@ def getMinimalSAD(trace1,trace2):
         i += LOCAL_CLOCKADJUST
         try:
           ms = getSingleSAD(trace1[CONFIG_WINDOW_OFFSET + i:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH + i],trace2[CONFIG_WINDOW_OFFSET:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH])
+          # print(ms)
         except:
+          print("WTF")
           continue
         if ms < minimalSAD:
           minimalSAD = ms
@@ -128,6 +130,7 @@ def getMinimalSAD(trace1,trace2):
           try:
             ms = getSingleSAD(trace1[CONFIG_WINDOW_OFFSET + i:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH + i],trace2[CONFIG_WINDOW_OFFSET:CONFIG_WINDOW_OFFSET + CONFIG_WINDOW_LENGTH])
           except:
+            print("WTF")
             continue
           if ms < minimalSAD:
             minimalSAD = ms
@@ -467,7 +470,7 @@ def doSingleCommand(cmd,tm_in_raw):
     (argname,argval) = tx.split("=")
     varMgr.setVariable(argname,eval(argval))
   elif tokens[0] == "unset" and len(tokens) == 2:
-    varMgr.unset(argname)
+    varMgr.unset(tokens[1])
   elif tokens[0] == "vars":
     varMgr.list()
   elif tokens[0] == "savecw":

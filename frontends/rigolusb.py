@@ -32,7 +32,7 @@ class RigolUSBTMC:
 
   @property
   def waveform_preamble(self):
-    values = self.ask_raw(b":WAV:PRE?")
+    values = self.ask_raw(b":WAV:PRE?").rstrip()
     values = values.split(b",")
     print(values)
     assert len(values) == 10
@@ -95,6 +95,7 @@ class CaptureInterface():
     buff = b""
     pnts = end - pos 
     max_byte_len = 250000
+    failureCount = 0
     while len(buff) < pnts:
       print("len(buff) is %d" % len(buff))
       print("End: %d" % end)
@@ -108,15 +109,25 @@ class CaptureInterface():
       print("LOG: %d -> %d" % (pos,end_pos))
       data = self.scope.read_raw(-1)
       buff += self.decode_ieee_block(data)
+      failureCount += 1
+      if failureCount == 15:
+        print("DEBUG: Rigol USB edge case encountered (outer loop, failureCount = 15), skipping")
+        return []
       while not data.endswith(b"\n"):
         time.sleep(0.25)
         print("Reading")
         data += self.scope.read_raw(-1)
         buff += self.decode_ieee_block(data)
+        failureCount += 1
+        if failureCount == 15:
+          print("DEBUG: Rigol USB edge case encountered (inner loop, failureCount = 15), skipping")
+          return []
       pos += max_byte_len
     print("finished")
     # x = input(" > ")
+    fmt, typ, pnts, cnt, xinc, xorig, xref, yinc, yorig, yref = self.scope.waveform_preamble
     samples = list(struct.unpack(str(len(buff))+'B', buff))
+    samples = [(val - yorig - yref)*yinc for val in samples]
     return samples[0:self.config["samplecount"] ]
 
   def close(self):

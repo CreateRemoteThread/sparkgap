@@ -3,6 +3,7 @@
 import time
 import random
 from drivers import base
+import smartleia
 from smartleia import APDU,TriggerPoints,LEIA
 from smartleia import create_APDU_from_bytes
 
@@ -64,7 +65,7 @@ class DriverInterface(base.BaseDriverInterface):
     self.f = Fuck()
     self.scope = scope
     self.reader = LEIA("/dev/ttyACM0")
-    self.reader.configure_smartcard(protocol_to_use=0,freq_to_use=1000000)
+    self.reader.configure_smartcard(protocol_to_use=0,freq_to_use=10000000)
     print("LEIA: OK")
 
   def drive(self,data_in = None):
@@ -75,11 +76,12 @@ class DriverInterface(base.BaseDriverInterface):
       return (None,None)
 
   def getRand(self):
-    return [random.randint(0,255) for _ in range(16)]
-    # if random.randint(0,255) % 2 == 0:
-    #   return [0xFF] * 16
-    # else:
-    #   return [0x00] * 16
+    a = [random.randint(0,255) for _ in range(16)]
+    if random.randint(0,255) % 2 == 0:
+      a[0:4] = [0xFF] * 4
+    else:
+      a[0:4] = [0x00] * 4
+    return a
 
   def drive_efdir(self,data_in = None):
     if data_in is None:

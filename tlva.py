@@ -73,6 +73,12 @@ def distinguisher_hw32(data,ct,round,keyguess):
     out += HW_LUT[data[round * 4 + i]]
   return out >= 16
 
+def distinguisher_hw64(data,ct,round,keyguess):
+  out = 0 
+  for i in range(0,8):
+    out += HW_LUT[data[round * 4 + i]]
+  return out >= 32
+
 def distinguisher_cthw(data,ct,round,keyguess):
   return HW_LUT[ct[round]] >= 4
 
@@ -166,6 +172,7 @@ SpecialDistinguisherList["EVEN"] = (distinguisher_even,"Even and odd, first byte
 SpecialDistinguisherList["HW"] = (distinguisher_hw,"HW >= 4, first byte of plaintext")
 SpecialDistinguisherList["HW32"] = (distinguisher_hw32,"HW[0:4] >= 16, hamming weight 32-bit (first dword)")
 SpecialDistinguisherList["CTHW"] = (distinguisher_cthw,"HW >= 4, first byte of ciphertext")
+SpecialDistinguisherList["HW64"] = (distinguisher_hw64,"HW[0:8] >= 32, hamming weight 64-bit")
 SpecialDistinguisherList["FIXED"] = (distinguisher_fixed,"Most common PT and all other PT's")
 SpecialDistinguisherList["RANDOM"] = (distinguisher_random,"Randomly sorts two piles")
 SpecialDistinguisherList["PT32"] = (distinguisher_pt32,"HW >= 16, first dword of plaintext")
@@ -223,6 +230,9 @@ if __name__ == "__main__":
   if hasattr(leakmodel,"loadOptions"):
     print("Loading options for leakmodel")
     leakmodel.loadOptions(OptionManager)
+  if leakmodel is None:
+    print("You must specify a leak model")
+    sys.exit(0)
   leakmodel.loadPlaintextArray(fn.loadPlaintexts())
   leakmodel.loadCiphertextArray(fn.loadCiphertexts())
   if CONFIG_STRATEGY == DO_TLVA:
@@ -239,7 +249,7 @@ if __name__ == "__main__":
   ax1.set_xlabel("Sample")
   ax1.set_ylabel("T-Test Value")
   t = np.argmax(abs(tt))
-  print("Argmax is %d, tvalue is %d" % (t,tt[t]))
+  print("Argmax is %d, tvalue is %f" % (t,tt[t]))
   ax1.plot(tt)
   ax1.plot(t,tt[t],marker='x')
   tlen = numSamples
