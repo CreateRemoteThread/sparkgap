@@ -5,9 +5,23 @@
 import scipy.io
 import h5py
 import numpy
+import numpy as np
 import os
 import sys
 # import matplotlib.pyplot as plt
+
+class CaptureSet:
+  def __init__(self,tracecount=15000,samplecount=100000,in_len=16,out_len=16):
+    self.writeHead = 0
+    self.traces = np.zeros((tracecount,samplecount),np.float32)
+    self.data_in = np.zeros((tracecount,in_len),np.uint8)
+    self.data_out = np.zeros((tracecount,out_len),np.uint8)
+
+  def addTrace(self,trace,data_in,data_out):
+    self.traces[self.writeHead:] = trace
+    self.data_in[self.writeHead:] = data_in
+    self.data_out[self.writeHead:] = data_out
+    self.writeHead += 1
 
 class TraceSet:
   def __init__(self,key):

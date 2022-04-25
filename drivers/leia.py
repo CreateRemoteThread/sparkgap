@@ -3,6 +3,7 @@
 import time
 import random
 from drivers import base
+import support.filemanager
 import smartleia
 from smartleia import APDU,TriggerPoints,LEIA
 from smartleia import create_APDU_from_bytes
@@ -78,9 +79,9 @@ class DriverInterface(base.BaseDriverInterface):
   def getRand(self):
     a = [random.randint(0,255) for _ in range(16)]
     if random.randint(0,255) % 2 == 0:
-      a[0:4] = [0xFF] * 4
+      a = [0xFF] * 16
     else:
-      a[0:4] = [0x00] * 4
+      a = [0x00] * 16
     return a
 
   def drive_efdir(self,data_in = None):
@@ -105,8 +106,15 @@ class DriverInterface(base.BaseDriverInterface):
     time.sleep(0.1)
     self.reader.set_trigger_strategy(0, point_list=[TriggerPoints.TRIG_IRQ_PUTC],delay=len(l) - 1,single=1)
     self.scope.arm()
-    send_and_get_resp(self.reader,l)
-    return (next_rand,next_autn)
+    r = send_and_get_resp(self.reader,l)
+    if "leia_hack" in self.config.keys():
+      if r.delta_t_answer > 76000:
+        print(">> Type 2 <<")
+        return (next_rand,next_autn,2)
+      else:
+        return (next_rand,next_autn,1)
+    else:
+      return (next_rand,next_autn)
 
   def close(self):
     pass

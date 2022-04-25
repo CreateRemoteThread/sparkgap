@@ -58,20 +58,24 @@ def runCaptureTask():
   missedCount = 0
   fe.init()
   drv.init(fe)
-  traces = np.zeros((config["tracecount"],config["samplecount"]),np.float32)
-  data = np.zeros((config["tracecount"],config["len_in"]),np.uint8)         # RAND
-  data_out = np.zeros((config["tracecount"],config["len_out"]),np.uint8)     # AUTN
+  LEIA_Hack = False
+  if "leia_hack" in config.keys():
+    print("Capture: LEIA USIM Hack Enabled")
+    LEIA_Hack = True
+    hack_captureSet = support.filemanager.CaptureSet(tracecount=config["tracecount"],samplecount=config["samplecount"])
+  captureSet = support.filemanager.CaptureSet(tracecount=config["tracecount"],samplecount=config["samplecount"])
+  # traces = np.zeros((config["tracecount"],config["samplecount"]),np.float32)
+  # data = np.zeros((config["tracecount"],config["len_in"]),np.uint8)         # RAND
+  # data_out = np.zeros((config["tracecount"],config["len_out"]),np.uint8)     # AUTN
   for i in range(0,config["tracecount"]):
     print("=" * 80)
     print("[%s] Running job: %d/%d. %d missed" % (datetime.datetime.now(),i,config["tracecount"],missedCount))
     print("=" * 80)
-    if config["tlva"] is None:
-      (next_rand, next_autn) = drv.drive(None)
+    if LEIA_Hack:
+      print("Fetching extra parameter")
+      (next_rand, next_autn, resp_type) = drv.drive(None)
     else:
-      if random.randint(0,100) % 2 == 0:
-        (next_rand, next_autn) = drv.drive([0xAA] * 16)
-      else:
-        (next_rand, next_autn) = drv.drive(None)
+      (next_rand, next_autn) = drv.drive(None)
     time.sleep(3.0)
     if next_rand is None and next_autn is None:
       dataA = []
@@ -80,13 +84,14 @@ def runCaptureTask():
     if len(dataA) == 0:
       print("Missed a trace!")
       missedCount += 1
-      traces[i:] = np.zeros(config["samplecount"])
-      data[i:] = [0] * 16
-      data_out[i:] = [0] * 16
     else:
-      traces[i:] = dataA
-      data[i:] = next_rand
-      data_out[i:] = next_autn
+      if LEIA_Hack:
+        if resp_type == 2:
+          hack_captureSet.addTrace(dataA,next_rand,next_autn)
+        else:
+          captureSet.addTrace(dataA,next_rand,next_autn)
+      else:
+        captureSet.addTrace(dataA,next_rand,next_autn)
   vars = {}
   if config["writefile"] is None:
     print("Writefile is unconfigured, not saving results...")
@@ -95,7 +100,18 @@ def runCaptureTask():
     support.filemanager.save(tempfile,traces=traces,data=data,data_out=data_out)
     print("Saved to %s" % tempfile)
   else:
-    support.filemanager.save(config["writefile"],traces=traces,data=data,data_out=data_out)
+    if LEIA_Hack:
+      wHead = hack_captureSet.writeHead
+      save_traces = hack_captureSet.traces[0:wHead]
+      save_data_in = hack_captureSet.data_in[0:wHead]
+      save_data_out = hack_captureSet.data_out[0:wHead]
+      support.filemanager.save(config["writefile"] + ".leia_hack",traces=save_traces,data=save_data_in,data_out=save_data_out)
+      # support.filemanager.save(config["writefile"] + ".leia_hack",traces=leia_traces,data=leia_data,data_out=leia_data_out)
+    wHead = captureSet.writeHead
+    save_traces = captureSet.traces[0:wHead]
+    save_data_in = captureSet.data_in[0:wHead]
+    save_data_out = captureSet.data_out[0:wHead]
+    support.filemanager.save(config["writefile"],traces=save_traces,data=save_data_in,data_out=save_data_out)
     
 trig = None
 
