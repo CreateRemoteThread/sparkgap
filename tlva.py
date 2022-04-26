@@ -187,9 +187,9 @@ if __name__ == "__main__":
     if arg == "-f":
       CONFIG_FILE = value
     elif arg in ["--byte","-b"]:
-      CONFIG_BYTE = int(value)
+      CONFIG_BYTE = int(value,0)
     elif arg in ["--key","-k"]:
-      CONFIG_KEY = int(value)
+      CONFIG_KEY = int(value,0)
     elif arg == "--opt":
       try:
         (key,val) = value.split(":")
@@ -207,7 +207,7 @@ if __name__ == "__main__":
         print("  %s : %s" % (k,SpecialDistinguisherList[k][1]))
       sys.exit(0)
     elif arg in ["-r","--round"]:
-      CONFIG_ROUND = int(value)
+      CONFIG_ROUND = int(value,0)
     elif arg in ["-d","--distinguisher"]:
       # CONFIG_STRATEGY = DO_DPA
       if value.upper() in SpecialDistinguisherList.keys():
