@@ -53,6 +53,8 @@ config["len_out"] = 16
 config["writefile"] = None
 config["tlva"] = None
 
+CFG_SLEEP = 2.0
+
 def runCaptureTask():
   global fe,drv,config
   missedCount = 0
@@ -76,7 +78,7 @@ def runCaptureTask():
       (next_rand, next_autn, resp_type) = drv.drive(None)
     else:
       (next_rand, next_autn) = drv.drive(None)
-    time.sleep(3.0)
+    time.sleep(CFG_SLEEP)
     if next_rand is None and next_autn is None:
       dataA = []
     else:

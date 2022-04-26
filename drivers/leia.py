@@ -79,9 +79,9 @@ class DriverInterface(base.BaseDriverInterface):
   def getRand(self):
     a = [random.randint(0,255) for _ in range(16)]
     if random.randint(0,255) % 2 == 0:
-      a = [0xFF] * 16
+      a[0:4] = [0xFF] * 4
     else:
-      a = [0x00] * 16
+      a[0:4] = [0x00] * 4
     return a
 
   def drive_efdir(self,data_in = None):

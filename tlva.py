@@ -187,9 +187,9 @@ if __name__ == "__main__":
     if arg == "-f":
       CONFIG_FILE = value
     elif arg in ["--byte","-b"]:
-      CONFIG_BYTE = int(value,16)
+      CONFIG_BYTE = int(value)
     elif arg in ["--key","-k"]:
-      CONFIG_KEY = int(value,16)
+      CONFIG_KEY = int(value)
     elif arg == "--opt":
       try:
         (key,val) = value.split(":")
