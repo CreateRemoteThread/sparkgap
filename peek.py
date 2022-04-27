@@ -3,6 +3,10 @@
 import sys
 import support.filemanager
 import binascii
+import getopt
+
+if __name__ == "__main__":
+  print("./peek.py ")
 
 tm = support.filemanager.TraceManager(sys.argv[1])
 

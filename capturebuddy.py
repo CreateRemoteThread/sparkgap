@@ -53,7 +53,7 @@ config["len_out"] = 16
 config["writefile"] = None
 config["tlva"] = None
 
-CFG_SLEEP = 2.0
+CFG_SLEEP = 1.6
 
 def runCaptureTask():
   global fe,drv,config

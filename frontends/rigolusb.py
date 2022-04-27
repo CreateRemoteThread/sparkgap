@@ -67,6 +67,9 @@ class CaptureInterface():
     self.scope.write_raw(b":STOP")
     self.scope.write_raw(b":TRIG:MODE EDGE")
     self.scope.write_raw(b":TRIG:EDGE:SWE SING")
+    if "rigol_offset" in self.config.keys():
+      print("RigolUSB: Setting Rigol VOffset")
+      self.scope.write_raw(b":CHAN1:OFFS %.3f" % self.config["rigol_offset"])
 
   def arm(self):
     print("RigolUSB: get memory depth")
