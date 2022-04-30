@@ -23,6 +23,15 @@ class CaptureSet:
     self.data_out[self.writeHead:] = data_out
     self.writeHead += 1
 
+  def save(self,filename=None):
+    if filename is None:
+      print("CaptureSet: save needs a filename (update your code)")
+      return
+    tn = TraceManager(filename)
+    tn.f.create_dataset("traces",data=self.traces)
+    tn.f.create_dataset("data_in",data=self.data_in)
+    tn.f.create_dataset("data_out",data=self.data_out)  
+
 class TraceSet:
   def __init__(self,key):
     print("TraceSet: Initialized blank TraceSet with key %s" % key)
