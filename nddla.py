@@ -51,10 +51,9 @@ def deriveTrainingMetric(tm,leakmodel,byteGuess):
   globalCallback = PlotLearning()
   model.fit(tm.traces[:,0:8000],hyp,epochs=30,batch_size=12,validation_split=0.05,callbacks=[globalCallback])
   return globalCallback.getLastAccuracy()
-  # print("+ %f" % globalCallback.getLastAccuracy())i
 
 bguess = np.zeros(255,np.float)
-for byteGuess in range(0,0xFF):
+for byteGuess in range(0x20,0x30):
   bguess[byteGuess] = deriveTrainingMetric(tm,leakmodel,byteGuess)
 
 import matplotlib.pyplot as plt
@@ -62,6 +61,6 @@ plt.plot(bguess)
 plt.show()
 
 t = bguess
-i = np.argmin(t)
-print("Chosen key: %02x, Train_MSE: %f" % (i,bguess[i]))
+i = np.argmin(t[0x20:0x30])
+print("Chosen key: %02x, Train_MSE: %f" % (i + 0x20,bguess[i + 0x20]))
 print("Correct key: 0x2b, Train_MSE: %f" % bguess[0x2b])
