@@ -290,7 +290,7 @@ if __name__ == "__main__":
         ax2.set_xlabel("Time")
         ax2.specgram(d * 100,NFFT=1024,Fs=SPECGRAM_SR,noverlap=900)
         ax1.margins(0)
-        fig.canvas.set_window_title("plot.py")
+        fig.canvas.manager.set_window_title("plot.py")
         if CONFIG_WRITEFILE is not None:
           print("Saving to %s..." % CONFIG_WRITEFILE)
           plt.savefig(CONFIG_WRITEFILE)
@@ -304,7 +304,7 @@ if __name__ == "__main__":
     plt.ylabel(YAXIS)
     plt.xlabel(XAXIS)
     plt.grid()
-    fig.canvas.set_window_title("plot.py")
+    fig.canvas.manager.set_window_title("plot.py")
     if CONFIG_WRITEFILE is not None:
       print("Saving to %s..." % CONFIG_WRITEFILE)
       plt.savefig(CONFIG_WRITEFILE)
