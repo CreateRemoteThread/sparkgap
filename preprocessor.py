@@ -435,6 +435,8 @@ def dispatchAlign(tm_in):
     (traces,data_in,data_out) = doCORR(tm_in)
   elif CONFIG_STRATEGY.upper() == "VALIGN":
     (traces,data_in,data_out) = support.preprocessor.VAlign(tm_in,varMgr)
+  elif CONFIG_STRATEGY.upper() == "TWOPOINTCOMPRESS":
+    (traces,data_in,data_out) = support.preprocessor.TwoPointCompress(tm_in,varMgr)
   elif CONFIG_STRATEGY in ("wavelet","WAVELET"):
     print("Using strategy: Wavelet Denoise")
     (traces,data_in,data_out) = doCWTDenoise(tm_in)

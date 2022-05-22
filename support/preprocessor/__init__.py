@@ -3,6 +3,20 @@
 from numpy import *
 import numpy as np
 
+def TwoPointCompress(tm_in,varMgr):
+  numTraces = tm_in.traceCount
+  sampleCnt = tm_in.numPoints
+  cdist = varMgr.getVariable("compress_dist")
+  traces = zeros((numTraces,sampleCnt - cdist),float32)
+  data = zeros((numTraces,16),uint8)
+  data_out = zeros((numTraces,16),uint8)
+  for i in range(0,numTraces):
+    in_trace = tm_in.getSingleTrace(i)
+    traces[i,:] = [np.abs(in_trace[x] - in_trace[x+cdist]) for x in range(0,sampleCnt - cdist)]
+    data[i,:] = tm_in.getSingleData(i)
+    data_out[i,:] = tm_in.getSingleDataOut(i)
+  return (traces,data,data_out)
+
 def VAlign(tm_in,varMgr):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints

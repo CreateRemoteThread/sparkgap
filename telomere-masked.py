@@ -11,9 +11,10 @@ import support.filemanager
 import numpy as np
 
 TRACE = []
+TRACECOUNT = 2500
 
 cs = None
-for i in range(0,400):
+for i in range(0,TRACECOUNT):
   rand_key = np.array([random.randint(0,0xFF) for i in range(0,16)],dtype=np.uint8)
   emu = rainbow_arm(sca_mode=True)
   emu.load("experiments/ml/masked.elf")
@@ -24,7 +25,7 @@ for i in range(0,400):
   emu.start(0x08000254 | 1,0x08000262)
   new_trace = np.fromiter(map(hw,emu.sca_values_trace),dtype=np.float32)
   if cs is None:  
-    cs = support.filemanager.CaptureSet(tracecount=250,samplecount=len(new_trace),in_len=16,out_len=16)
+    cs = support.filemanager.CaptureSet(tracecount=TRACECOUNT,samplecount=len(new_trace),in_len=16,out_len=16)
   cs.addTrace(new_trace,rand_key,rand_key)
   print("Emulating run %d (saved %d samples) " % (i,len(new_trace)))
 
