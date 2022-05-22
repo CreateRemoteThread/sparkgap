@@ -11,7 +11,7 @@ import support.filemanager
 import numpy as np
 
 TRACE = []
-TRACECOUNT = 2500
+TRACECOUNT = 250
 
 cs = None
 for i in range(0,TRACECOUNT):
@@ -22,7 +22,7 @@ for i in range(0,TRACECOUNT):
   emu[0x20000000 + 4] = bytes(rand_key[4:8])
   emu[0x20000000 + 8] = bytes(rand_key[8:12])
   emu[0x20000000 + 12] = bytes(rand_key[12:16])
-  emu.start(0x08000254 | 1,0x08000262)
+  emu.start(emu.functions["doAES"] | 1,0x08000262)
   new_trace = np.fromiter(map(hw,emu.sca_values_trace),dtype=np.float32)
   if cs is None:  
     cs = support.filemanager.CaptureSet(tracecount=TRACECOUNT,samplecount=len(new_trace),in_len=16,out_len=16)
