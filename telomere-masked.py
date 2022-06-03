@@ -11,7 +11,7 @@ import support.filemanager
 import numpy as np
 
 TRACE = []
-TRACECOUNT = 250
+TRACECOUNT = 2500
 
 cs = None
 for i in range(0,TRACECOUNT):

@@ -11,7 +11,7 @@ import support.filemanager
 import numpy as np
 
 TRACE = []
-TRACECOUNT = 250
+TRACECOUNT = 2500
 
 random.seed()
 
@@ -31,4 +31,4 @@ for i in range(0,TRACECOUNT):
   cs.addTrace(new_trace,rand_key,rand_key)
   print("Emulating run %d (saved %d samples) " % (i,len(new_trace)))
 
-cs.save("emu_normal_TEST.hdf")
+cs.save("emu_normal.hdf")

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# todo work out how riscure(?) did theirs
+
 import support.filemanager
 import numpy as np
 import sys
@@ -26,15 +28,20 @@ if __name__ == "__main__":
 tm = support.filemanager.TraceManager(CONFIG_FILE)
 d = tm.getSingleTrace(0)
 
+if CONFIG_START is None:
+  CONFIG_START = 0
+if CONFIG_NUMSAMPLES is None:
+  CONFIG_NUMSAMPLES = len(d)
+
 baseSample = d[CONFIG_START:CONFIG_START + CONFIG_NUMSAMPLES]
 maxCorr = 0
 
 CONFIG_SLIDELEN = CONFIG_NUMSAMPLES * 2
 
-corrdb = np.zeros(CONFIG_SLIDELEN)
+corrdb = np.zeros(len(d))
 
-for i in range(1,CONFIG_SLIDELEN):
-  testSample = d[CONFIG_START + i:CONFIG_START + CONFIG_NUMSAMPLES + i]
+for i in range(1,len(d)):
+  testSample = np.roll(d,i)
   corrdb[i] = np.corrcoef(baseSample,testSample)[0,1]
 
 plt.plot(corrdb)
