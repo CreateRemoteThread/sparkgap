@@ -8,7 +8,9 @@ set rxvga1  10
 set rxvga2  0
 
 # Configure RX & TX operations
-rx config file=slave_rx.csv format=csv n=60000 timeout=60s
+rx config file=slave_rx.csv format=csv n=30000 timeout=30s
+
+set smb_mode output
 
 # Arm the trigger
 trigger j71-4 rx slave

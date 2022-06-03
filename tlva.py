@@ -244,7 +244,7 @@ if __name__ == "__main__":
     sys.exit(0)
   fig,ax1 = plt.subplots()
   fig.canvas.mpl_connect("button_press_event",onclick)
-  fig.canvas.set_window_title("Test Vector Leakage Assessment")
+  fig.canvas.manager.set_window_title("Test Vector Leakage Assessment")
   ax1.set_title("T-Value")
   ax1.set_xlabel("Sample")
   ax1.set_ylabel("T-Test Value")

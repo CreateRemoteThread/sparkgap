@@ -1,5 +1,5 @@
 # go away preprocessor files
-
+*.hdf
 *.cmd
 
 # Byte-compiled / optimized / DLL files
