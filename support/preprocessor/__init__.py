@@ -28,9 +28,9 @@ def VAlign(tm_in,varMgr):
   refct = varMgr.getVariable("ref")
   savedDataIndex = 0
   reftrace = tm_in.getSingleTrace(refct)
-  refmean = np.mean(reftrace[window_offset:window_length])
-  print(refmean)
-  input(">")
+  refmean = np.mean(reftrace[window_offset:window_offset+window_length])
+  # print(refmean)
+  # input(">")
   for i in range(0,numTraces):
     if i == refct:
       traces[savedDataIndex,:] = reftrace
@@ -39,7 +39,7 @@ def VAlign(tm_in,varMgr):
       savedDataIndex += 1
     else:
       x = tm_in.getSingleTrace(i)
-      x_mean = np.mean(x[window_offset:window_length])
+      x_mean = np.mean(x[window_offset:window_offset+window_length])
       print("Realigning trace %d, offset %f" % (i,refmean - x_mean))
       traces[savedDataIndex,:] = x + (refmean - x_mean)
       data[savedDataIndex,:] = tm_in.getSingleData(i)
