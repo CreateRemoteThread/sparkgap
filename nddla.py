@@ -3,6 +3,7 @@
 # Timon, 2019
 # Non Profiled Deep Learning SCA
 
+import getopt
 import sys
 import pandas as pd
 import keras
@@ -44,14 +45,14 @@ if SAMPLE_OFFSET is None:
   SAMPLE_OFFSET = 0
 
 if SAMPLE_OFFSET > len(t_test):
-  print("Sample offset must be within (0,%d)", % len(t_test))
+  print("Sample offset must be within (0,%d)" % len(t_test))
   sys.exit(0)
 
 if SAMPLE_COUNT is None:
   SAMPLE_COUNT = len(t_test) - SAMPLE_OFFSET
 
 if SAMPLE_OFFSET + SAMPLE_COUNT > len(t_test):
-  print("Sample count must be within (1,%d)", % (1,len(t_test)) )
+  print("Sample count must be within (1,%d)" % (len(t_test)) )
   sys.exit(0)
 
 leakmodel.loadPlaintextArray(tm.loadPlaintexts())
@@ -79,10 +80,10 @@ class PlotLearning(tf.keras.callbacks.Callback):
       else:
         self.metrics[metric] = [logs.get(metric)]
 
-def deriveTrainingMetric(tm,leakmodel,byteGuess):
+def deriveTrainingMetric(tm,leakmodel,roundNum,byteGuess):
   hyp = np.zeros(tm.traceCount,np.uint8)
   for tnum in range(0,tm.traceCount):
-    hyp[tnum] = leakmodel.genIVal(tnum,0,byteGuess) >= 4
+    hyp[tnum] = leakmodel.genIVal(tnum,roundNum,byteGuess) >= 4
   model = tf.keras.models.Sequential()
   model.add(tf.keras.layers.Flatten())
   model.add(tf.keras.layers.Dense(256,activation="relu"))
@@ -93,15 +94,24 @@ def deriveTrainingMetric(tm,leakmodel,byteGuess):
   model.fit(tm.traces[:,SAMPLE_OFFSET:SAMPLE_OFFSET + SAMPLE_COUNT],hyp,epochs=30,batch_size=12,validation_split=0.05,callbacks=[globalCallback])
   return globalCallback.getLastAccuracy()
 
-bguess = np.zeros(255,np.float)
-for byteGuess in range(0x20,0x30):
-  bguess[byteGuess] = deriveTrainingMetric(tm,leakmodel,byteGuess)
-
 import matplotlib.pyplot as plt
-plt.plot(bguess)
+
+outKey = [0] * 16
+
+for roundNum in range(0,16):
+  bguess = np.zeros(255,np.float)
+  for byteGuess in range(0,0xFF):
+    print(" --> Evaluating key: %02x <--" % byteGuess)
+    bguess[byteGuess] = deriveTrainingMetric(tm,leakmodel,roundNum,byteGuess)
+    plt.plot(bguess)
+    i = np.argmin(bguess)
+    print("Round %d, Chosen key: %02x, Train_MSE: %f" % (roundNum,i,bguess[i]))
+    outKey[roundNum] = i
+
+print("=" * 80)
+print("Final key: ")
+print(" ".join( ["%02x" % outKey[i] for i in range(0,16)]  ))
+print("=" * 80)
+
 plt.show()
 
-t = bguess
-i = np.argmin(t[0x20:0x30])
-print("Chosen key: %02x, Train_MSE: %f" % (i + 0x20,bguess[i + 0x20]))
-print("Correct key: 0x2b, Train_MSE: %f" % bguess[0x2b])
