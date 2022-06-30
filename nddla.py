@@ -16,6 +16,11 @@ SAMPLE_OFFSET = None
 SAMPLE_COUNT = None
 CFG_ATTACK = None
 
+BYTENUM_MIN = 1
+BYTENUM_MAX = 2
+KEYBYTE_MIN = 0x70
+KEYBYTE_MAX = 0x80
+
 if __name__ == "__main__":
   opts, args = getopt.getopt(sys.argv[1:],"f:o:n:a:",["file=","offset=","numsamples=","attack="])
   for opt,val in opts:
@@ -86,6 +91,7 @@ def deriveTrainingMetric(tm,leakmodel,roundNum,byteGuess):
     hyp[tnum] = leakmodel.genIVal(tnum,roundNum,byteGuess) >= 4
   model = tf.keras.models.Sequential()
   model.add(tf.keras.layers.Flatten())
+  model.add(tf.keras.layers.Normalization())
   model.add(tf.keras.layers.Dense(256,activation="relu"))
   model.add(tf.keras.layers.Dense(32,activation="relu"))
   model.add(tf.keras.layers.Dense(9,activation="softmax"))
@@ -98,15 +104,15 @@ import matplotlib.pyplot as plt
 
 outKey = [0] * 16
 
-for roundNum in range(0,16):
+for roundNum in range(BYTENUM_MIN,BYTENUM_MAX):
   bguess = np.zeros(255,np.float)
-  for byteGuess in range(0,0xFF):
+  for byteGuess in range(KEYBYTE_MIN,KEYBYTE_MAX):
     print(" --> Evaluating key: %02x <--" % byteGuess)
     bguess[byteGuess] = deriveTrainingMetric(tm,leakmodel,roundNum,byteGuess)
     plt.plot(bguess)
-    i = np.argmin(bguess)
-    print("Round %d, Chosen key: %02x, Train_MSE: %f" % (roundNum,i,bguess[i]))
-    outKey[roundNum] = i
+    i = np.argmin(bguess[KEYBYTE_MIN:KEYBYTE_MAX])
+    print("Round %d, Chosen key: %02x, Train_MSE: %f" % (roundNum,i + KEYBYTE_MIN,bguess[i + KEYBYTE_MIN]))
+    outKey[roundNum] = i + KEYBYTE_MIN
 
 print("=" * 80)
 print("Final key: ")
