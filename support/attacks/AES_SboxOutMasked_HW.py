@@ -203,7 +203,7 @@ class AttackModel:
 
   def genIValRaw(self,tnum,bnum,kguess):
     global DEFAULT_AES_SBOX
-    return DEFAULT_AES_SBOX[self.pt[tnum,bnum]  ^ (((kguess & 0xFF) ^ (kguess & 0xFF00)) >> 8)]
+    return DEFAULT_AES_SBOX[self.pt[tnum,bnum]  ^ (kguess & 0xFF)] ^ ((kguess & 0xFF00) >> 8)
 
   def distinguisher(self,tnum,bnum,kguess):
     global HW_LUT
