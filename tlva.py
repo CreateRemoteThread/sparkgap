@@ -10,6 +10,7 @@
 #     - (an attack name), same as dpa
 #  -b <bytenum:default 0>
 #  -k <keyguess:default 0>>
+#  --show-variance: show intra-group variance (glitchfinder)
 
 import scipy
 import scipy.stats
@@ -142,13 +143,16 @@ def do_tlva(fn,leakmodel,round,CONFIG_BYTE,CONFIG_KEYGUESS):
   with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     ttrace = scipy.stats.ttest_ind(tlva_random_traces,tlva_fixed_traces,axis=0,equal_var=False)
-  return (np.nan_to_num(ttrace[0]),np.nan_to_num(ttrace[1]),fn.numPoints)
+  variance_group1 = scipy.stats.variation(tlva_fixed_traces)
+  variance_group2 = scipy.stats.variation(tlva_random_traces)
+  return (np.nan_to_num(ttrace[0]),np.nan_to_num(ttrace[1]),fn.numPoints,variance_group1,variance_group2)
 
 CONFIG_WRITEFILE = None
 
 DO_TLVA  = 0
 DO_DPA   = 1
 CONFIG_STRATEGY = DO_TLVA
+SHOW_VARIANCE = False
 
 leakmodel = None
 
@@ -179,7 +183,7 @@ SpecialDistinguisherList["PT32"] = (distinguisher_pt32,"HW >= 16, first dword of
 SpecialDistinguisherList["CT32"] = (distinguisher_ct32,"HW >= 16, first dword of ciphertext")
 
 if __name__ == "__main__":
-  optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:b:k:h",["help","byte=","key=","distinguisher=","writefile=","round=","dpa","opt="])
+  optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:b:k:h",["help","byte=","key=","distinguisher=","writefile=","round=","dpa","opt=","show-variance"])
   CONFIG_ROUND = 0
   CONFIG_BYTE = 0
   CONFIG_KEY = 0
@@ -197,6 +201,8 @@ if __name__ == "__main__":
       except:
         print("Fatal: could not split '%s' on ':'" % arg)
         sys.exit(0)
+    elif arg == "--show-variance":
+      SHOW_VARIANCE = True
     elif arg == "--dpa":
       print("* Using raw plaintext DPA technique")
       CONFIG_STRATEGY = DO_DPA
@@ -236,13 +242,20 @@ if __name__ == "__main__":
   leakmodel.loadPlaintextArray(fn.loadPlaintexts())
   leakmodel.loadCiphertextArray(fn.loadCiphertexts())
   if CONFIG_STRATEGY == DO_TLVA:
-    (tt,tp,numSamples) = do_tlva(fn,leakmodel,CONFIG_ROUND,CONFIG_BYTE,CONFIG_KEY)
+    (tt,tp,numSamples,var_group1,var_group2) = do_tlva(fn,leakmodel,CONFIG_ROUND,CONFIG_BYTE,CONFIG_KEY)
   elif CONFIG_STRATEGY == DO_DPA:
     (tt,tp,numSamples) = do_dpatest(fn,leakmodel,CONFIG_ROUND,0,0)
   else:
     print("Unknown value of CONFIG_STRATEGY, %d" % CONFIG_STRATEGY)
     sys.exit(0)
-  fig,ax1 = plt.subplots()
+  if SHOW_VARIANCE:
+    fig,(ax1,ax2,ax3) = plt.subplots(3,1)
+    ax2.set_title("Variance, Group 1")
+    ax2.plot(var_group1)
+    ax3.set_title("Variance, Group 2")
+    ax3.plot(var_group2)
+  else:
+    fig,ax1 = plt.subplots()
   fig.canvas.mpl_connect("button_press_event",onclick)
   fig.canvas.manager.set_window_title("Test Vector Leakage Assessment")
   ax1.set_title("T-Value")

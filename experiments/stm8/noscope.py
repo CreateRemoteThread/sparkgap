@@ -5,7 +5,7 @@ import chipwhisperer as cw
 import subprocess
 import time
 import random
-import rigolusb
+#import rigolusb
 
 scope = cw.scope()
 scope.default_setup()
@@ -20,13 +20,11 @@ class STM8Flash():
     print("Using STM8Flash driver")
     self.scope.io.target_pwr = False
     self.scope.io.pdic = "high"
-    self.capture = rigolusb.CaptureInterface()
-    self.capture.init()
     pass
 
   def drive(self,in_text=None):
     next_rand = [0x00 for _ in range(0,16)]
-    self.capture.arm()
+    # self.capture.arm()
     self.scope.arm()
     time.sleep(0.5)
     self.scope.io.target_pwr = True
@@ -82,7 +80,7 @@ while True:
   for i in range(0,10):
     print("BASEOFFSET = %d" % BASEOFFSET)
     scope.glitch.ext_offset = random.randint(BASEOFFSET - 5,BASEOFFSET + 5)
-    scope.glitch.repeat = 7
+    scope.glitch.repeat = 3
     scope.glitch.width = random.randint(20,45)
     scope.glitch.offset = random.randint(5,45)
     print("Attempting glitch at %d:%d:%d" % (scope.glitch.ext_offset,scope.glitch.repeat,scope.glitch.width))

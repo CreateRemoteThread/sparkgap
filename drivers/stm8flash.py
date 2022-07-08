@@ -18,13 +18,32 @@ class DriverInterface(base.BaseDriverInterface):
     self.target = cw.target(self.scope)
     self.scope.io.target_pwr = False
     self.scope.io.pdic = "high"
-    pass
+    GLITCH_SETUP = True
+    if GLITCH_SETUP:
+      self.scope.gain.gain = 25
+      self.scope.adc.samples=3000
+      self.scope.adc.offset = 0
+      self.scope.adc.basic_mode = "falling_edge"
+      self.scope.clock.clkgen_freq = 80000000
+      self.scope.clock.adc_src = "clkgen_x4"
+      self.scope.trigger.triggers = "tio4"
+      self.scope.glitch.clk_src = "clkgen"
+      self.scope.glitch.output = "enable_only"
+      self.scope.glitch.trigger_src = 'ext_single'
+      self.scope.io.glitch_hp  = True
+      self.scope.io.glitch_lp = False
 
   def init(self,frontend=None):
     self.frontend = frontend
     pass
 
   def drive(self,in_text=None):
+    self.scope.glitch.width=10
+    self.scope.glitch.ext_offset = 45000
+    self.scope.glitch.repeat = 10
+    self.scope.glitch.width = 10
+    self.scope.glitch.offset = 5
+    self.scope.arm()
     next_rand = [0x00 for _ in range(0,16)]
     self.frontend.arm()
     time.sleep(0.5)
@@ -36,6 +55,7 @@ class DriverInterface(base.BaseDriverInterface):
     self.scope.io.pdic = "high"
     print("OK!")
     self.scope.io.target_pwr = False
+    self.scope.capture()
     return (next_rand,next_rand)
 
   def close(self):
