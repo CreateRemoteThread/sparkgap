@@ -16,10 +16,10 @@ SAMPLE_OFFSET = None
 SAMPLE_COUNT = None
 CFG_ATTACK = None
 
-BYTENUM_MIN = 0
-BYTENUM_MAX = 1
-KEYBYTE_MIN = 0x20
-KEYBYTE_MAX = 0x30
+BYTENUM_MIN = 5
+BYTENUM_MAX = 6
+KEYBYTE_MIN = 0x00
+KEYBYTE_MAX = 0xFF
 
 if __name__ == "__main__":
   opts, args = getopt.getopt(sys.argv[1:],"f:o:n:a:",["file=","offset=","numsamples=","attack="])
@@ -108,7 +108,7 @@ import matplotlib.pyplot as plt
 outKey = [0] * 16
 
 for roundNum in range(BYTENUM_MIN,BYTENUM_MAX):
-  bguess = np.zeros(255,np.float)
+  bguess = np.full(255,1.0,dtype=np.float)
   for byteGuess in range(KEYBYTE_MIN,KEYBYTE_MAX):
     print(" --> Evaluating key: %02x <--" % byteGuess)
     bguess[byteGuess] = deriveTrainingMetric(tm,leakmodel,roundNum,byteGuess)

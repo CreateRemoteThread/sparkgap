@@ -116,6 +116,7 @@ def doSingleCommand(cmd,tm_in_raw):
     (traces,data_in,data_out) = dispatchAlign(tm_in)
     needsCommit = True
     tm_in_new = TraceManagerStub(traces,data_in,data_out)
+    print("tm_in should be replaced")
     return tm_in_new
   elif tokens[0] in ["c","commit"]:
     if needsCommit:
@@ -154,7 +155,10 @@ def doCommands(CONFIG_READFILE,CONFIG_CMDFILE):
         tm_in = p
   while True:
     cmd = input(" > ").lstrip().rstrip()
-    doSingleCommand(cmd,tm_in)
+    p = doSingleCommand(cmd,tm_in)
+    if p is not None:
+      print("doCommands loop: Replacing tm_in")
+      tm_in = p
 
 if __name__ == "__main__":
   CONFIG_READFILE = None
