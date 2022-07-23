@@ -16,10 +16,10 @@ SAMPLE_OFFSET = None
 SAMPLE_COUNT = None
 CFG_ATTACK = None
 
-BYTENUM_MIN = 0
-BYTENUM_MAX = 1
-KEYBYTE_MIN = 0x20
-KEYBYTE_MAX = 0x30
+BYTENUM_MIN = 2
+BYTENUM_MAX = 3
+KEYBYTE_MIN = 0x10
+KEYBYTE_MAX = 0x20
 
 if __name__ == "__main__":
   opts, args = getopt.getopt(sys.argv[1:],"f:o:n:a:",["file=","offset=","numsamples=","attack="])
@@ -60,9 +60,6 @@ if SAMPLE_OFFSET + SAMPLE_COUNT > len(t_test):
   print("Sample count must be within (1,%d)" % (len(t_test)) )
   sys.exit(0)
 
-# snip snip
-tm.cutTraces(SAMPLE_OFFSET,SAMPLE_OFFSET + SAMPLE_COUNT)
-
 leakmodel.loadPlaintextArray(tm.loadPlaintexts())
 
 from sklearn.linear_model import LinearRegression
@@ -100,7 +97,7 @@ def deriveTrainingMetric(tm,leakmodel,roundNum,byteGuess):
   model.add(tf.keras.layers.Dense(9,activation="softmax"))
   model.compile(optimizer=tf.keras.optimizers.RMSprop(lr=0.001),loss="sparse_categorical_crossentropy",metrics=['accuracy'])
   globalCallback = PlotLearning()
-  model.fit(tm.traces,hyp,epochs=30,batch_size=12,validation_split=0.05,callbacks=[globalCallback])
+  model.fit(tm.traces[:,SAMPLE_OFFSET:SAMPLE_OFFSET + SAMPLE_COUNT],hyp,epochs=30,batch_size=12,validation_split=0.05,callbacks=[globalCallback])
   return globalCallback.getLastAccuracy()
 
 import matplotlib.pyplot as plt

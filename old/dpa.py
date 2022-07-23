@@ -41,8 +41,7 @@ def deriveKey(tm):
   global leakmodel
   leakmodel = support.attack.fetchModel(CONFIG_LEAKMODEL)
   leakmodel.loadPlaintextArray(tm.loadPlaintexts()) 
-  leakmodel.loadCiphertextArray(tm.loadCiphertexts())
-  tm.cutTraces(TRACE_OFFSET,TRACE_OFFSET + TRACE_LENGTH)
+  leakmodel.loadCiphertextArray(tm.loadCiphertexts()) 
   recovered = zeros(leakmodel.keyLength)
   for BYTE_POSN in range(0,leakmodel.keyLength):
     print("Attempting recovery of byte %d..." % BYTE_POSN)
@@ -63,10 +62,11 @@ def deriveKey(tm):
       for TRACE_NUM in range(0,trace_count):
         # hypothesis = leakmodel.genIValRaw(TRACE_NUM,BYTE_POSN,KEY_GUESS) # sbox[plaintexts[TRACE_NUM,BYTE_POSN] ^ KEY_GUESS]
         if leakmodel.distinguisher(TRACE_NUM,BYTE_POSN,KEY_GUESS): #if bin(hypothesis)[2:][-1] == "1":
-          group1[:] += tm.getSingleTrace(TRACE_NUM)
+          group1[:] += tm.getSingleTrace(TRACE_NUM)[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH] # )data[TRACE_NUM,TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH]
           numGroup1 += 1
         else:
-          group2[:] += tm.getSingleTrace(TRACE_NUM)
+          group2[:] += tm.getSingleTrace(TRACE_NUM)[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH] # )data[TRACE_NUM,TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH]
+          # group2[:] += data[TRACE_NUM,TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH]
           numGroup2 += 1
       group1[:] /= numGroup1
       group2[:] /= numGroup2

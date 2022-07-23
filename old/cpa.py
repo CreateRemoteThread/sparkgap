@@ -34,9 +34,9 @@ def deriveKey(tm,OptionManager):
   leakmodel.loadPlaintextArray(tm.loadPlaintexts())
   leakmodel.loadCiphertextArray(tm.loadCiphertexts())
   bestguess = [0] * leakmodel.keyLength
-  tm.cutTraces(TRACE_OFFSET,TRACE_OFFSET + TRACE_LENGTH)
-  meant = tm.getMeant()
+  meant = tm.getMeant()[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH]
   print(meant)
+  # meant = np.mean(data,axis=0,dtype=np.float64)[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH] # this should be static.
   for bnum in range(0,leakmodel.keyLength):
     cpaoutput = [0]  * leakmodel.fragmentMax
     maxcpa = [0] * leakmodel.fragmentMax
@@ -56,7 +56,7 @@ def deriveKey(tm,OptionManager):
       meanh = np.mean(hyp,dtype=np.float64)
       for tnum in range(0,trace_count):
         hdiff = (hyp[tnum] - meanh)
-        tdiff = tm.getSingleTrace(tnum) - meant
+        tdiff = tm.getSingleTrace(tnum)[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH] - meant
         sumnum = sumnum + (hdiff * tdiff)
         sumden1 = sumden1 + hdiff * hdiff
         sumden2 = sumden2 + tdiff * tdiff

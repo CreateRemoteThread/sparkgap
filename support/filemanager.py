@@ -79,6 +79,16 @@ class TraceManager:
   def getSingleTrace(self,key):
     return self.traces[key]
 
+  def cutTraces(self,start,end):
+    print("TraceManager2: Cutting traces from %d to %d" % (start,end))    
+    self.tracesNew = np.zeros((self.traceCount,end - start),np.float32)
+    for i in range(0,self.traceCount):
+      # print(len(self.traces[i]))
+      self.tracesNew[i] = self.traces[i,start:end]
+    print("TraceManager2: Deleting previous trace set")
+    del self.traces
+    self.traces = self.tracesNew
+
   def __init__(self,filename):
     print("TraceManager2: Initializing with filename %s" % filename)
     self.fn = filename
