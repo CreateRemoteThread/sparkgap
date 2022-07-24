@@ -16,8 +16,8 @@ SAMPLE_OFFSET = None
 SAMPLE_COUNT = None
 CFG_ATTACK = None
 
-BYTENUM_MIN = 5
-BYTENUM_MAX = 6
+BYTENUM_MIN = 6
+BYTENUM_MAX = 7
 KEYBYTE_MIN = 0x00
 KEYBYTE_MAX = 0xFF
 
@@ -78,8 +78,7 @@ class PlotLearning(tf.keras.callbacks.Callback):
       self.metrics[metric] = []
 
   def getLastAccuracy(self):
-    print(self.metrics["loss"])
-    return self.metrics['loss'][-1]
+    return (self.metrics['loss'],self.metrics['accuracy'])
 
   def on_epoch_end(self,epoch,logs={}):
     for metric in logs:
@@ -107,15 +106,36 @@ import matplotlib.pyplot as plt
 
 outKey = [0] * 16
 
+fig,(ax1,ax2) = plt.subplots(2,1)
+
+bguess = [[]   ] * 255
+bguess_last = [1.0] * 255
+aguess = [ [] ] * 255
+acc_last = [0.0] * 255
 for roundNum in range(BYTENUM_MIN,BYTENUM_MAX):
-  bguess = np.full(255,1.0,dtype=np.float)
+  # bguess = np.full(255,1.0,dtype=np.float)
   for byteGuess in range(KEYBYTE_MIN,KEYBYTE_MAX):
     print(" --> Evaluating key: %02x <--" % byteGuess)
-    bguess[byteGuess] = deriveTrainingMetric(tm,leakmodel,roundNum,byteGuess)
-    i = np.argmin(bguess[KEYBYTE_MIN:KEYBYTE_MAX])
-    print("Round %d, Chosen key: %02x, Train_MSE: %f" % (roundNum,i + KEYBYTE_MIN,bguess[i + KEYBYTE_MIN]))
+    (lastLoss,lastAcc) = deriveTrainingMetric(tm,leakmodel,roundNum,byteGuess)
+    bguess[byteGuess] = lastLoss
+    aguess[byteGuess] = lastAcc
+    bguess_last[byteGuess] = bguess[byteGuess][-1]
+    acc_last[byteGuess] = lastAcc[-1]   # don't need to plot this.
+    i = np.argmin(bguess_last[KEYBYTE_MIN:KEYBYTE_MAX])
+    i_acc = np.argmax(acc_last[KEYBYTE_MIN:KEYBYTE_MAX])
+    print("Round %d, Chosen key: %02x, Chosen key acc: %02x, Train_MSE: %f" % (roundNum,i + KEYBYTE_MIN,i_acc+KEYBYTE_MIN,bguess_last[i + KEYBYTE_MIN]))
     outKey[roundNum] = i + KEYBYTE_MIN
-  plt.plot(bguess)
+  for x in range(KEYBYTE_MIN,KEYBYTE_MAX):
+    if x == i:
+      ax1.plot(bguess[x],color="red")
+      ax2.plot(aguess[x],color="red")
+    elif x == i_acc:
+      ax1.plot(bguess[x],color="blue")
+      ax2.plot(aguess[x],color="blue")
+    else:
+      ax1.plot(bguess[x],color="grey")
+      ax2.plot(aguess[x],color="grey")
+  plt.show()   # todo: smarter plotting (to png?)
 
 print("=" * 80)
 print("Final key: ")
