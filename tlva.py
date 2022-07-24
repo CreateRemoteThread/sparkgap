@@ -123,9 +123,20 @@ CONFIG_DISTINGUISHER = distinguisher_fixed
 
 # plaintext dpa "t-test"
 def do_dpatest(fn,leakmodel,round,CONFIG_BYTE,CONFIG_KEYGUESS):
-  print("DPA Test rework WIP, come back later...")
-  sys.exit(0)
+  tlva_grp1 = []
+  tlva_grp2 = []
+  for tracenum in range(0,fn.traceCount):
+    if leakmodel.distinguisher(tracenum,CONFIG_BYTE,CONFIG_KEYGUESS):
+      tlva_grp1.append(fn.getSingleTrace(tracenum))
+    else:
+      tlva_grp2.append(fn.getSingleTrace(tracenum))
+  print("Group 1 count: %d" % len(tlva_grp2))
+  print("Group 2 count: %d" % len(tlva_grp1))
+  tlva_grp1_mean = np.mean(tlva_grp1,axis=0)
+  tlva_grp2_mean = np.mean(tlva_grp2,axis=0)
+  return np.abs(tlva_grp1_mean - tlva_grp2_mean)  
 
+ 
 def do_tlva(fn,leakmodel,round,CONFIG_BYTE,CONFIG_KEYGUESS):
   cf = [0xAA] * 16
   tlva_fixed_traces = []
@@ -182,8 +193,11 @@ SpecialDistinguisherList["RANDOM"] = (distinguisher_random,"Randomly sorts two p
 SpecialDistinguisherList["PT32"] = (distinguisher_pt32,"HW >= 16, first dword of plaintext")
 SpecialDistinguisherList["CT32"] = (distinguisher_ct32,"HW >= 16, first dword of ciphertext")
 
+CONFIG_SAMPLEOFFSET = None
+CONFIG_SAMPLECOUNT = None
+
 if __name__ == "__main__":
-  optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:b:k:h",["help","byte=","key=","distinguisher=","writefile=","round=","dpa","opt=","show-variance"])
+  optlist, args = getopt.getopt(sys.argv[1:],"f:d:w:r:b:k:a:o:n:h",["help","byte=","key=","distinguisher=","writefile=","round=","dpa","opt=","show-variance","attack="])
   CONFIG_ROUND = 0
   CONFIG_BYTE = 0
   CONFIG_KEY = 0
@@ -194,6 +208,10 @@ if __name__ == "__main__":
       CONFIG_BYTE = int(value,0)
     elif arg in ["--key","-k"]:
       CONFIG_KEY = int(value,0)
+    elif arg == "-o":
+      CONFIG_SAMPLEOFFSET = int(value,0)
+    elif arg == "-n":
+      CONFIG_SAMPLECOUNT = int(value,0)
     elif arg == "--opt":
       try:
         (key,val) = value.split(":")
@@ -214,7 +232,7 @@ if __name__ == "__main__":
       sys.exit(0)
     elif arg in ["-r","--round"]:
       CONFIG_ROUND = int(value,0)
-    elif arg in ["-d","--distinguisher"]:
+    elif arg in ["-d","--distinguisher","-a","--attack"]:
       # CONFIG_STRATEGY = DO_DPA
       if value.upper() in SpecialDistinguisherList.keys():
         print("Using special distinguisher '%s'" % value.upper())
@@ -244,7 +262,18 @@ if __name__ == "__main__":
   if CONFIG_STRATEGY == DO_TLVA:
     (tt,tp,numSamples,var_group1,var_group2) = do_tlva(fn,leakmodel,CONFIG_ROUND,CONFIG_BYTE,CONFIG_KEY)
   elif CONFIG_STRATEGY == DO_DPA:
-    (tt,tp,numSamples) = do_dpatest(fn,leakmodel,CONFIG_ROUND,0,0)
+    dpa_diff = do_dpatest(fn,leakmodel,CONFIG_ROUND,CONFIG_BYTE,CONFIG_KEY)
+    print(dpa_diff)
+    # needs different graph mechanism.
+    fig,(ax1,ax2) = plt.subplots(2,1)
+    if CONFIG_SAMPLECOUNT is not None and CONFIG_SAMPLEOFFSET is not None:
+      ax1.plot(fn.getSingleTrace(0)[CONFIG_SAMPLEOFFSET:CONFIG_SAMPLECOUNT+CONFIG_SAMPLEOFFSET],color="grey")
+      ax2.plot(dpa_diff[CONFIG_SAMPLEOFFSET:CONFIG_SAMPLECOUNT + CONFIG_SAMPLEOFFSET],color="red")
+    else:
+      ax1.plot(fn.getSingleTrace(0),color="grey")
+      ax2.plot(dpa_diff,color="red")
+    plt.show()
+    sys.exit(0)
   else:
     print("Unknown value of CONFIG_STRATEGY, %d" % CONFIG_STRATEGY)
     sys.exit(0)
