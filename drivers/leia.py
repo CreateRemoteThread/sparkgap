@@ -76,12 +76,15 @@ class DriverInterface(base.BaseDriverInterface):
       print(ex)
       return (None,None)
 
+  # chosen plaintext - fix a single byte.
   def getRand(self):
-    a = [random.randint(0,255) for _ in range(16)]
-    if random.randint(0,255) % 2 == 0:
-      a[0:4] = [0xFF] * 4
-    else:
-      a[0:4] = [0x00] * 4
+    a = [0xFF] * 16
+    a[0] = random.randint(0,255)
+    return a
+
+  def getAutn(self):
+    a = [0xFF] * 16
+    a[0] = random.randint(0,255)
     return a
 
   def drive_efdir(self,data_in = None):
@@ -92,7 +95,7 @@ class DriverInterface(base.BaseDriverInterface):
       print("TLVA!")
       next_rand = data_in
     # next_autn = [random.randint(0,255) for _ in range(16)]
-    next_autn = self.getRand()
+    next_autn = self.getAutn()
     print("GO")
     self.reader.reset()
     print(self.reader.get_ATR())

@@ -32,7 +32,7 @@ def getSingleSAD(array1,array2):
   totalSAD = 0.0
   return sum(abs(array1 - array2))
 
-def getMaxCorrCoeff(trace1,trace2):
+def getMaxCorrCoeff(trace1,trace2,varMgr):
   maxCf = -1.0
   CONFIG_CLKADJUST_MAX = varMgr.getOptionalVariable("clkadjust_max",0)
   CONFIG_CLKADJUST = varMgr.getOptionalVariable("clkadjust",10000)
@@ -132,7 +132,7 @@ def doCORR(tm_in,varMgr):
       r2 = butter_lowpass_filter(x,CONFIG_CUTOFF,CONFIG_SAMPLERATE,CONFIG_ORDER)
     else:
       r2 = x
-    (msv,msi) = getMaxCorrCoeff(r2,ref)
+    (msv,msi) = getMaxCorrCoeff(r2,ref,varMgr)
     if msv > CONFIG_MCF_CUTOFF:
       # if msi == -CONFIG_WINDOW_SLIDE or msi == CONFIG_WINDOW_SLIDE - 1:
       #   print(("Index %d, discarding (edge Max Coeff Index = not found, mcf is %f)" % (i,msv)))
