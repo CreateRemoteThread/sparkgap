@@ -7,7 +7,7 @@ phy = pw.Usb()
 phy.con(program_fpga=True)
 
 buttonState = 0
-PULSEWIDTH = 55
+PULSEWIDTH = 53
 
 def togglePin(in_bit):
   global buttonState
@@ -41,10 +41,8 @@ def enterFastboot():
   togglePin(PIN_PWR)
   print("enterFastboot: you should be in fastboot...") 
  
-# flashing unlock
-# capturemask = [0x75,0x6e,0x6c,0x6f,0x63,0x6b]
-# usb descriptor
-capturemask = [0x80, 0x06, 0x01, 0x03, 0x00, 0x00,0xFE,0x0F]
+# get flashing unlock too
+capturemask = [0x75,0x6e,0x6c,0x6f,0x63,0x6b]
 
 def resetFPGA():
   global phy,capturemask
@@ -59,25 +57,20 @@ c = None
 doResetAll = True
 import random
 
+delay_time = 16.5
 glitchCtr = 0
-while glitchCtr <=400:
+while glitchCtr <= 200:
   glitchCtr += 1
   ret = ""
-  PULSEWIDTH = random.randint(52,55)
-  # delay_time = int(4011 * random.uniform(0.995,1.005))
-  # delay_time = random.randint(280,320)
-  # delay_time = random.randint(,300)
-  # delay_time = phy.us_trigger(random.uniform(1.0,4.0))
-  delay_time = random.randint(700,739)
+  delay_time = random.uniform(15.0,17.0)
   if doResetAll:
     print("[%f] Resetting FPGA state" % delay_time)
     resetFPGA()
   print("[%f] Entering attempt %d" % (delay_time,glitchCtr))
   phy.set_pattern(capturemask,mask=[0xFF for c in capturemask])
-  us_delay = delay_time
-  print("True delay: %f, pulse width %d" % (us_delay,PULSEWIDTH))
+  us_delay = phy.us_trigger(delay_time)
   print("[%f] Resetting device and trying again" % delay_time)
-  # phy.set_usb_mode(mode="HS")
+  phy.set_usb_mode(mode="HS")
   if doResetAll:
     enterFastboot()
     time.sleep(1.5)
@@ -90,11 +83,10 @@ while glitchCtr <=400:
     phy.set_pattern(capturemask,mask=[0xFF for c in capturemask])
     phy.set_trigger(enable=True,delays=[us_delay],widths=[phy.ns_trigger(PULSEWIDTH)])
     phy.arm()
-    time.sleep(0.5)
-    ret = c.getDescr(slp=delay_time)
-    # ret = c.bulkTransfer(slp=delay_time)
+    time.sleep(0.25)
+    ret = c.bulkTransfer()
     doResetAll = False
-    time.sleep(0.5)
+    time.sleep(1.5)
   except Exception as e:
     print(e)
     doResetAll = True
@@ -102,12 +94,6 @@ while glitchCtr <=400:
     phy.set_power_source("off")
     togglePin(3) # PIN_FET
     time.sleep(1.0)
-    raw = phy.read_capture_data()
-    packets = phy.split_packets(raw)
-    for packet in packets:
-      if len(packet["contents"]) == 3 or len(packet["contents"]) == 1:
-        continue
-      packetPrinter.handle_usb_packet(ts=packet["timestamp"],buf=bytearray(packet["contents"]),flags=0)
     continue
   if ret is False:
     doResetAll = True
@@ -115,32 +101,15 @@ while glitchCtr <=400:
   if ret != False:
     if "OKAY" in ret:
       input("Got a successful glitch, waiting for user input...")
-    disarm_ctr = 0
-    while disarm_ctr < 150:
-      time.sleep(0.01)
-      if phy.armed() is False:
-        break
-      else:
-        disarm_ctr += 1
-        continue
-    if disarm_ctr == 150:
-      doResetAll = True
-      print("error: stalled on .armed(), don't know why, forcing reset")
-    else:
-      pass
-      # raw = phy.read_capture_data()
-      # packets = phy.split_packets(raw)
-      # for packet in packets:
-      #   if len(packet["contents"]) == 3 or len(packet["contents"]) == 1:
-      #     continue
-      #   packetPrinter.handle_usb_packet(ts=packet["timestamp"],buf=bytearray(packet["contents"]),flags=0)
+    phy.wait_disarmed()
+    raw = phy.read_capture_data()
+    packets = phy.split_packets(raw)
+    # for packet in packets:
+    #   if len(packet["contents"]) == 3 and packet["contents"][0] == 165:
+    #     continue
+    #   packetPrinter.handle_usb_packet(ts=packet["timestamp"],buf=bytearray(packet["contents"]),flags=0)
   if doResetAll:
     print("[%f] Hard powering off device" % delay_time)
     phy.set_power_source("off")
     togglePin(3) # PIN_FET
     time.sleep(1.0)
-
-while True:
-  x = input("enter 'quit' to exit (prevent mega fuckups like oct6)")
-  if x.rstrip() == "quit":
-    sys.exit(0)
