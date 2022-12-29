@@ -3,6 +3,25 @@
 import serial
 import time
 
+class TargetDevice:
+  def __init__(self):
+    self.ser = None
+    pass
+
+  def con(self):
+    self.ser = serial.Serial("/dev/ttyUSB0",9600)
+
+  def dis(self):
+    self.ser.close()
+
+  def fire(self):
+    self.ser.write(b"e")
+    time.sleep(0.1)
+    out = b""
+    while self.ser.inWaiting():
+      out += self.ser.read()
+    return out
+
 class MPDevice:
   def __init__(self,port="/dev/ttyACM0"):
     self.port = port
@@ -31,6 +50,15 @@ class MPDevice:
   def dis(self):
     self.ser.close()
 
+import sys
+
+td = TargetDevice()
+td.con()
+print(td.fire())
+print(td.fire())
+td.dis()
+sys.exit(0)
+
 mp = MPDevice()
 mp.con()
 mp.sendCommand(b"import glitcher")
@@ -47,10 +75,11 @@ time.sleep(0.1)
 mp.sendCommand(b"g.muxout(glitcher.SELECT_MUXA)") # off
 time.sleep(1.0)
 
-# for i in range(110,130):
-#   de = i
-#   mp.sendCommand(b"g.setrepeat(num=2,delay=9)")
-#   mp.sendCommand(b"g.rnr(delay=de,width=7)")
+for i in range(110,130):
+  de = i
+  mp.sendCommand(b"g.setrepeat(num=2,delay=9)")
+  mp.sendCommand(b"g.rnr(delay=%d,width=7)" % de)
+  
 
-print(mp.sendCommand(b"mp.writeOutput()",waitTime=0.25))
+# print(mp.sendCommand(b"mp.writeOutput()",waitTime=0.25))
 mp.dis()
