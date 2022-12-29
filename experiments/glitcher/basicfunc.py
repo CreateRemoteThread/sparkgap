@@ -10,6 +10,7 @@ class TargetDevice:
 
   def con(self):
     self.ser = serial.Serial("/dev/ttyUSB0",9600)
+    # self.ser.read()
 
   def dis(self):
     self.ser.close()
@@ -56,8 +57,6 @@ td = TargetDevice()
 td.con()
 print(td.fire())
 print(td.fire())
-td.dis()
-sys.exit(0)
 
 mp = MPDevice()
 mp.con()
@@ -65,21 +64,17 @@ mp.sendCommand(b"import glitcher")
 mp.sendCommand(b"g = glitcher.Glitcher()")
 mp.sendCommand(b"g.setmask(glitcher.SELECT_MOSFET)")
 mp.sendCommand(b"g.enablemux(True)")
-print("Switching off")
-mp.sendCommand(b"g.muxout(glitcher.SELECT_MUXA)") # off
-print("Switching on")
-time.sleep(0.1)
-mp.sendCommand(b"g.muxout(glitcher.SELECT_MUXB)") # on
-print("Switching off")
-time.sleep(0.1)
-mp.sendCommand(b"g.muxout(glitcher.SELECT_MUXA)") # off
-time.sleep(1.0)
 
 for i in range(110,130):
   de = i
   mp.sendCommand(b"g.setrepeat(num=2,delay=9)")
   mp.sendCommand(b"g.rnr(delay=%d,width=7)" % de)
+  print("Switching on")
+  mp.sendCommand(b"g.muxout(glitcher.SELECT_MUXA)") # off
+  print(td.fire())
+  time.sleep(1.0)
+  print("Switching off")
+  mp.sendCommand(b"g.muxout(glitcher.SELECT_NONE)") # on
   
-
-# print(mp.sendCommand(b"mp.writeOutput()",waitTime=0.25))
+td.dis()
 mp.dis()
