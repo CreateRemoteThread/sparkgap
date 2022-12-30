@@ -42,6 +42,29 @@ class MPDevice:
     self.ser = serial.Serial(self.port,115200)
     print("connected")
 
+  def initDefault(self):
+    self.sendCommand(b"import glitcher")
+    self.sendCommand(b"g = glitcher.Glitcher()")
+    self.sendCommand(b"g.setmask(glitcher.SELECT_MOSFET)")
+
+  def enablemux(self,status):
+    if status is True or status == 1:
+      self.sendCommand(b"g.enablemux(True)")
+    elif status is False or status == 0:
+      self.sendCommand(b"g.enablemux(False)")
+
+  def setmask(self,mask):
+    self.sendCommand(b"g.setmask(%s)" % mask.encode("utf-8"))
+ 
+  def muxout(self,muxselect):
+    self.sendCommand(b"g.muxout(%s)" % muxselect.encode("utf-8"))
+
+  def rnr(self,delay,width):
+    self.sendCommand(b"g.rnr(delay=%d,width=%d)" % (delay,width))
+  
+  def setrepeat(self,num,delay):
+    self.sendCommand(b"g.setrepeat(num=%d,delay=%d)" % (num, delay))
+
   # lol what the shit...
   def sendCommand(self,cmd,waitResp=True,waitTime=0.1):
     self.ser.write(cmd + b"\r")
@@ -71,29 +94,28 @@ td.con()
 
 mp = MPDevice()
 mp.con()
-mp.sendCommand(b"import glitcher")
-mp.sendCommand(b"g = glitcher.Glitcher()")
-mp.sendCommand(b"g.setmask(glitcher.SELECT_MOSFET)")
-mp.sendCommand(b"g.enablemux(True)")
+mp.initDefault()
+mp.enablemux(True)
 
 # delay = (80,90), (130,150)
 # w=3
 # 5 repeats, delay 1
 # seems to caues shortening of the loop (but fw bug = last good result)
+# 94 / 96
 
 validOut = 0
 resetOut = 0
 for i in range(1,100):
   # de = random.randint(10,20)
-  de = random.randint(93,95)
+  de = random.randint(1,15)
   w = 3
   # print("delay %d:width %d" % (de,w))
-  mp.sendCommand(b"g.setrepeat(num=5,delay=1)")
+  mp.setrepeat(num=5,delay=1)
   # print("Switching on")
-  mp.sendCommand(b"g.muxout(glitcher.SELECT_MUXA)") # off
+  mp.muxout("glitcher.SELECT_MUXA")
   td.ser.flush()
   time.sleep(0.1)
-  mp.sendCommand(b"g.rnr(delay=%d,width=%d)" % (de,w))
+  mp.rnr(delay=de,width=w)
   time.sleep(0.1)
   while td.ser.inWaiting():
     td.ser.read()
@@ -111,8 +133,7 @@ for i in range(1,100):
     # sys.exit(0)
   td.ser.flush()
   time.sleep(1.0)
-  # print("Switching off")
-  mp.sendCommand(b"g.muxout(glitcher.SELECT_NONE)") # on
+  mp.muxout("glitcher.SELECT_NONE")
 
 print("exiting, valid %d, reset %d" % (validOut,resetOut)) 
  
