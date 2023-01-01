@@ -1,3 +1,7 @@
+# go away py build artefacts
+lib/build/
+lib/sparkgap.egg-info/
+
 # go away preprocessor files
 *.hdf
 *.cmd
