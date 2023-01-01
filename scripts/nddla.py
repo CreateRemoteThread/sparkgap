@@ -8,8 +8,8 @@ import sys
 import pandas as pd
 import keras
 import numpy as np
-import support.filemanager
-import support.attack
+import sparkgap.filemanager
+import sparkgap.attack
 
 FN_IN = None
 SAMPLE_OFFSET = None
@@ -41,8 +41,8 @@ if CFG_ATTACK is None:
   print("You must specify an attack model with -a")
   sys.exit(0)
 
-leakmodel = support.attack.fetchModel(CFG_ATTACK)
-tm = support.filemanager.TraceManager(FN_IN)
+leakmodel = sparkgap.attack.fetchModel(CFG_ATTACK)
+tm = sparkgap.filemanager.TraceManager(FN_IN)
 
 t_test = tm.getSingleTrace(0)
 

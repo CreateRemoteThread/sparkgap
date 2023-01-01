@@ -2,14 +2,14 @@
 
 import numpy as np
 from scipy.signal import butter, lfilter, freqz
-import support.resultviz
+import sparkgap.resultviz
 from numpy import *
 import getopt
 import sys
 import glob
 import binascii
-import support.filemanager
-import support.attack
+import sparkgap.filemanager
+import sparkgap.attack
 
 TRACE_OFFSET = 0
 TRACE_LENGTH = 0
@@ -26,7 +26,7 @@ def deriveKey(tm,OptionManager):
   global CONFIG_PLOT
   global TRACE_MAX
   global leakmodel
-  leakmodel = support.attack.fetchModel(CONFIG_LEAKMODEL)
+  leakmodel = sparkgap.attack.fetchModel(CONFIG_LEAKMODEL)
   if hasattr(leakmodel,"loadOptions"):
     leakmodel.loadOptions(OptionManager)
   else:
@@ -34,9 +34,9 @@ def deriveKey(tm,OptionManager):
   leakmodel.loadPlaintextArray(tm.loadPlaintexts())
   leakmodel.loadCiphertextArray(tm.loadCiphertexts())
   bestguess = [0] * leakmodel.keyLength
-  meant = tm.getMeant()[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH]
+  tm.cutTraces(TRACE_OFFSET,TRACE_OFFSET + TRACE_LENGTH)
+  meant = tm.getMeant()
   print(meant)
-  # meant = np.mean(data,axis=0,dtype=np.float64)[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH] # this should be static.
   for bnum in range(0,leakmodel.keyLength):
     cpaoutput = [0]  * leakmodel.fragmentMax
     maxcpa = [0] * leakmodel.fragmentMax
@@ -56,7 +56,7 @@ def deriveKey(tm,OptionManager):
       meanh = np.mean(hyp,dtype=np.float64)
       for tnum in range(0,trace_count):
         hdiff = (hyp[tnum] - meanh)
-        tdiff = tm.getSingleTrace(tnum)[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH] - meant
+        tdiff = tm.getSingleTrace(tnum) - meant
         sumnum = sumnum + (hdiff * tdiff)
         sumden1 = sumden1 + hdiff * hdiff
         sumden2 = sumden2 + tdiff * tdiff
@@ -124,13 +124,13 @@ if __name__ == "__main__":
     print("You must specify a file with -f")
     sys.exit(0)
   print("Stage 1: Loading plaintexts...")
-  tm = support.filemanager.TraceManager(fn)
+  tm = sparkgap.filemanager.TraceManager(fn)
   # tm.mapBlocks()
   if TRACE_LENGTH == 0:
     TRACE_LENGTH = tm.numPoints
   print("Stage 2: Deriving key... wish me luck!")
   if CONFIG_PLOT:
-    resultViz = support.resultviz.VisualizerApp()
+    resultViz = sparkgap.resultviz.VisualizerApp()
   r = deriveKey(tm,OptionManager)
   out = ""
   for i in range(0,leakmodel.keyLength):

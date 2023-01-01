@@ -5,14 +5,14 @@ import csv
 import sys
 import glob
 import re
-import support
+import sparkgap
 import getopt
 
 crashes = 0
 entries = 0
 wins = 0
 
-report = support.ReportingCore()
+report = sparkgap.ReportingCore()
 
 PC_crashes = {}
 
@@ -31,10 +31,10 @@ for fn in glob.glob("logs/*.csv"):
       result = result[2:-1]
       if result == "Li90cnltZQ0KNjI1MDAwMA0KZ3JpOjEwMDAvMTAwMC8xMDAwcGlAcmFzcGJlcnJ5cGk6fiQg":
         # default-result
-        report.addResult(loc,len,status=support.Status.Expected)
+        report.addResult(loc,len,status=sparkgap.Status.Expected)
         continue
       elif result == "Li90cnltZQ0K":
-        report.addResult(loc,len,status=support.Status.Mute)
+        report.addResult(loc,len,status=sparkgap.Status.Mute)
         continue
       else:
         try:
@@ -49,9 +49,9 @@ for fn in glob.glob("logs/*.csv"):
           f = re.search("PC is at (.*?)\r",result)
           pc_result = f.groups(0)[0]
           if "commit_creds" in pc_result:
-            report.addResult(loc,len,status=support.Status.Glitch)
+            report.addResult(loc,len,status=sparkgap.Status.Glitch)
           else:
-            report.addResult(loc,len,status=support.Status.Mute)
+            report.addResult(loc,len,status=sparkgap.Status.Mute)
           if pc_result in PC_crashes.keys():
             PC_crashes[pc_result] += 1
             savedCrashes[pc_result].append( (loc,len) )

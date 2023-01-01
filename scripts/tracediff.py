@@ -6,13 +6,13 @@ import numpy as np
 import sys
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import support.filemanager
+import sparkgap.filemanager
 import getopt
 import copy
 from numpy import *
 
 def doCompareTraces_SINGLE(tn1):
-  tm_in1 = support.filemanager.TraceManager(tn1)
+  tm_in1 = sparkgap.filemanager.TraceManager(tn1)
   tlva_group1_traces = []
   tlva_group2_traces = []
   group1_avg = None
@@ -75,9 +75,9 @@ def doTLVA(tm_in1,tm_in2):
 
 def doCompareTraces(tn1,tn2):
   global CONFIG_OFFSET,CONFIG_SAMPLES
-  tm_in1 = support.filemanager.TraceManager(tn1)
+  tm_in1 = sparkgap.filemanager.TraceManager(tn1)
   trace_avg1 = tm_in1.getMeant()
-  tm_in2 = support.filemanager.TraceManager(tn2)
+  tm_in2 = sparkgap.filemanager.TraceManager(tn2)
   trace_avg2 = tm_in2.getMeant()
   if len(trace_avg1) != len(trace_avg2):
     print("The traces do not have equal lengths, I can't use this")

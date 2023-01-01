@@ -6,7 +6,7 @@ import chipwhisperer as cw
 import phywhisperer.usb as pw
 import time
 import pylink
-import support
+import sparkgap
 
 phy = pw.Usb()
 phy.con()
@@ -41,7 +41,7 @@ print("Configuring JLink")
 jlink = pylink.JLink()
 jlink.open()
 
-gc = support.GlitchCore()
+gc = sparkgap.GlitchCore()
 gc.setRepeatRange(1,1,1)
 gc.setWidthRange(1,2,1)
 gc.setOffsetRange(1,49,1)

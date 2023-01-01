@@ -3,13 +3,13 @@
 import numpy as np
 from numpy import *
 import sys
-import support.resultviz
+import sparkgap.resultviz
 import glob
 import getopt
 import matplotlib.pyplot as plt
 import binascii
-import support.filemanager
-import support.attack
+import sparkgap.filemanager
+import sparkgap.attack
 
 TRACE_OFFSET = 0
 TRACE_LENGTH = 17000
@@ -39,9 +39,10 @@ def deriveKey(tm):
   global CONFIG_PLOT
   global TRACE_MAX
   global leakmodel
-  leakmodel = support.attack.fetchModel(CONFIG_LEAKMODEL)
+  leakmodel = sparkgap.attack.fetchModel(CONFIG_LEAKMODEL)
   leakmodel.loadPlaintextArray(tm.loadPlaintexts()) 
-  leakmodel.loadCiphertextArray(tm.loadCiphertexts()) 
+  leakmodel.loadCiphertextArray(tm.loadCiphertexts())
+  tm.cutTraces(TRACE_OFFSET,TRACE_OFFSET + TRACE_LENGTH)
   recovered = zeros(leakmodel.keyLength)
   for BYTE_POSN in range(0,leakmodel.keyLength):
     print("Attempting recovery of byte %d..." % BYTE_POSN)
@@ -62,11 +63,10 @@ def deriveKey(tm):
       for TRACE_NUM in range(0,trace_count):
         # hypothesis = leakmodel.genIValRaw(TRACE_NUM,BYTE_POSN,KEY_GUESS) # sbox[plaintexts[TRACE_NUM,BYTE_POSN] ^ KEY_GUESS]
         if leakmodel.distinguisher(TRACE_NUM,BYTE_POSN,KEY_GUESS): #if bin(hypothesis)[2:][-1] == "1":
-          group1[:] += tm.getSingleTrace(TRACE_NUM)[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH] # )data[TRACE_NUM,TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH]
+          group1[:] += tm.getSingleTrace(TRACE_NUM)
           numGroup1 += 1
         else:
-          group2[:] += tm.getSingleTrace(TRACE_NUM)[TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH] # )data[TRACE_NUM,TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH]
-          # group2[:] += data[TRACE_NUM,TRACE_OFFSET:TRACE_OFFSET + TRACE_LENGTH]
+          group2[:] += tm.getSingleTrace(TRACE_NUM)
           numGroup2 += 1
       group1[:] /= numGroup1
       group2[:] /= numGroup2
@@ -121,10 +121,10 @@ if __name__ == "__main__":
     print("You must specify a file with -f")
     sys.exit(0)
   print("Stage 1: Loading plaintexts...")
-  tm = support.filemanager.TraceManager(fn)
+  tm = sparkgap.filemanager.TraceManager(fn)
   print("Deriving key... wish me luck!")
   if CONFIG_PLOT:
-    resultViz = support.resultviz.VisualizerApp()
+    resultViz = sparkgap.resultviz.VisualizerApp()
     # plt.title("%s Power Leakage v Hypothesis Overview" % CONFIG_LEAKMODEL)
     # plt.ylabel("Maximum Diff. of Means")
     # plt.xlabel("Key Hypothesis")

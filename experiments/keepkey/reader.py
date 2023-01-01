@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import support
+import sparkgap
 import phywhisperer.usb as pw
 import base64
 import pickle
@@ -31,7 +31,7 @@ def tryfix(char_array):
 
 phy = pw.Usb()
 
-c = support.ReportingCore()
+c = sparkgap.ReportingCore()
 
 f = open(sys.argv[1],"r")
 spamreader = csv.reader(f,delimiter=',')
@@ -50,25 +50,25 @@ for row in spamreader:
   printPackets=pw.USBSimplePrintSink(highspeed=1)
   for packet in packets:
     if len(q) == 0:
-      c.addResult(delay,width,status=support.Status.Mute)
+      c.addResult(delay,width,status=sparkgap.Status.Mute)
       muteFlag = True
     if packet["size"] > 30 and packet["size"] < 67 and muteFlag is False:
       print(tryhex(packet["contents"]))
       print(tryfix(packet["contents"]))
       print("%f:GLITCH:%s" % (delay,tryfix(q)))
-      c.addResult(delay,width,status=support.Status.Glitch)
+      c.addResult(delay,width,status=sparkgap.Status.Glitch)
       muteFlag = True
       # sys.exit(0)
     if packet["contents"] == [45,0,16] and muteFlag is False:
-      c.addResult(delay,width,status=support.Status.Mute)
+      c.addResult(delay,width,status=sparkgap.Status.Mute)
       muteFlag = True
     print(packet)
     # printPackets.handle_usb_packet(ts=packet['timestamp'],buf=bytearray(packet['contents']),flags=0)
   if base64.b64decode(output) == b'HelloHelloHelloHelloHello' and muteFlag is False:
-    c.addResult(delay,width,status=support.Status.Expected)
+    c.addResult(delay,width,status=sparkgap.Status.Expected)
     muteFlag = True
   if muteFlag is False:
     print("%f:GLITCH:%s" % (delay,tryfix(q)))
-    c.addResult(delay,width,status=support.Status.Glitch)
+    c.addResult(delay,width,status=sparkgap.Status.Glitch)
 
 c.startPlot()

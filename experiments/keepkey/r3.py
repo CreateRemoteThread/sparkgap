@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import support
+import sparkgap
 import phywhisperer.usb as pw
 import base64
 import pickle
@@ -37,7 +37,7 @@ phy = pw.Usb()
 
 
 
-c = support.ReportingCore()
+c = sparkgap.ReportingCore()
 # sanity = [75, 16, 3, 75, 0, 101, 0, 101, 0, 112, 0, 75, 0, 101, 0, 121, 0, 238, 104]
 f = open(sys.argv[1],"r")
 spamreader = csv.reader(f,delimiter=',')
@@ -57,18 +57,18 @@ for row in spamreader:
     printPackets.handle_usb_packet(ts=packet["timestamp"],buf=bytearray(packet["contents"]),flags=0)
     if packet["size"] == 3 and packet["contents"][0] == 45:
       print("MUTE-SETUP")
-      c.addResult(delay,width,status=support.Status.Mute)
+      c.addResult(delay,width,status=sparkgap.Status.Mute)
       muteFlag = True
     if (len(packet["contents"]) == 3 and packet["contents"][0] == 165):
       continue
   if MUTE_EXPECTED in output and muteFlag is False:
-    c.addResult(delay,width,status=support.Status.Mute)
+    c.addResult(delay,width,status=sparkgap.Status.Mute)
     muteFlag = True
   if DATA_EXPECTED in output and muteFlag is False:
-    c.addResult(delay,width,status=support.Status.Expected)
+    c.addResult(delay,width,status=sparkgap.Status.Expected)
     muteFlag = True
   if muteFlag is False:
     print("%f:GLITCH-UNKNOWN:%s" % (delay,tryhex(packet["contents"])))
-    c.addResult(delay,width,status=support.Status.Glitch)
+    c.addResult(delay,width,status=sparkgap.Status.Glitch)
 
 c.startPlot()

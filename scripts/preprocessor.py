@@ -6,13 +6,13 @@ from numpy import *
 import getopt
 import sys
 import readline
-import support.filemanager
-import support.slipnslide
-import support.preprocessor
-import support.preprocessor.filtering
-import support.preprocessor.alignment
-import support.preprocessor.keeloq
-import support.preprocessor.slicer
+import sparkgap.filemanager
+import sparkgap.slipnslide
+import sparkgap.preprocessor
+import sparkgap.preprocessor.filtering
+import sparkgap.preprocessor.alignment
+import sparkgap.preprocessor.keeloq
+import sparkgap.preprocessor.slicer
 import numpy as np
 import random
 
@@ -65,16 +65,16 @@ class VariableManager:
 varMgr = VariableManager()
 
 dispatchLookup = {}
-dispatchLookup["sad"] = ("Align by sum of absolute differences",support.preprocessor.alignment.doSAD)
-dispatchLookup["earthquake"] = ("Horizontal misalign",support.preprocessor.alignment.doEarthquake)
-dispatchLookup["corr"] = ("Align by Pearson correlation",support.preprocessor.alignment.doCORR)
-dispatchLookup["valign"] = ("Vertical align",support.preprocessor.VAlign)
-dispatchLookup["two_point_compress"] = ("Vertical align",support.preprocessor.TwoPointCompress)
-dispatchLookup["wavelet"] = ("Wavelet transform denoise",support.preprocessor.filtering.doCWTDenoise)
-dispatchLookup["bandpass"] = ("Band pass filter",support.preprocessor.filtering.doBandpass)
-dispatchLookup["lowpass"] = ("Low pass filter",support.preprocessor.filtering.doLowpass)
-dispatchLookup["keeloq"] = ("Flip Keeloq IO Special",support.preprocessor.keeloq.doFlipKeeloqIO)
-dispatchLookup["slicer"] = ("Signal slicer",support.preprocessor.slicer.doSlicer)
+dispatchLookup["sad"] = ("Align by sum of absolute differences",sparkgap.preprocessor.alignment.doSAD)
+dispatchLookup["earthquake"] = ("Horizontal misalign",sparkgap.preprocessor.alignment.doEarthquake)
+dispatchLookup["corr"] = ("Align by Pearson correlation",sparkgap.preprocessor.alignment.doCORR)
+dispatchLookup["valign"] = ("Vertical align",sparkgap.preprocessor.VAlign)
+dispatchLookup["two_point_compress"] = ("Vertical align",sparkgap.preprocessor.TwoPointCompress)
+dispatchLookup["wavelet"] = ("Wavelet transform denoise",sparkgap.preprocessor.filtering.doCWTDenoise)
+dispatchLookup["bandpass"] = ("Band pass filter",sparkgap.preprocessor.filtering.doBandpass)
+dispatchLookup["lowpass"] = ("Low pass filter",sparkgap.preprocessor.filtering.doLowpass)
+dispatchLookup["keeloq"] = ("Flip Keeloq IO Special",sparkgap.preprocessor.keeloq.doFlipKeeloqIO)
+dispatchLookup["slicer"] = ("Signal slicer",sparkgap.preprocessor.slicer.doSlicer)
 
 def dispatchAlign(tm_in):
   CONFIG_STRATEGY = varMgr.getVariable("strategy").lower()
@@ -120,7 +120,7 @@ def doSingleCommand(cmd,tm_in_raw):
     return tm_in_new
   elif tokens[0] in ["c","commit"]:
     if needsCommit:
-      support.filemanager.save(CONFIG_WRITEFILE,traces=tm_in.traces,data=tm_in.data_in,data_out=tm_in.data_out) 
+      sparkgap.filemanager.save(CONFIG_WRITEFILE,traces=tm_in.traces,data=tm_in.data_in,data_out=tm_in.data_out) 
       needsCommit = False
     else:
       print("No changes need committing")
@@ -144,7 +144,7 @@ def doSingleCommand(cmd,tm_in_raw):
     return None
 
 def doCommands(CONFIG_READFILE,CONFIG_CMDFILE):
-  tm_in = support.filemanager.TraceManager(CONFIG_READFILE)
+  tm_in = sparkgap.filemanager.TraceManager(CONFIG_READFILE)
   if CONFIG_CMDFILE is not None:
     f = open(CONFIG_CMDFILE)
     cmds = [d.rstrip() for d in f.readlines()]

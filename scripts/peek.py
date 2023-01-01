@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
 import sys
-import support.filemanager
+import sparkgap.filemanager
 import binascii
 import getopt
 
 if __name__ == "__main__":
   print("./peek.py")
 
-tm = support.filemanager.TraceManager(sys.argv[1])
+tm = sparkgap.filemanager.TraceManager(sys.argv[1])
 
 tc = len(tm.traces)
 for i in range(0,min(10,tc)):

@@ -2,7 +2,7 @@
 
 # todo work out how riscure(?) did theirs
 
-import support.filemanager
+import sparkgap.filemanager
 import numpy as np
 import sys
 import getopt
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     print("error: you must supply a file via -f")
     sys.exit(0)
 
-tm = support.filemanager.TraceManager(CONFIG_FILE)
+tm = sparkgap.filemanager.TraceManager(CONFIG_FILE)
 d = tm.getSingleTrace(0)
 
 if CONFIG_START is None:
