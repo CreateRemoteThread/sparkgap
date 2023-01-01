@@ -8,7 +8,6 @@ import uuid
 import time
 import random
 import numpy as np
-import triggerbuddy
 import traceback
 import readline
 import datetime
@@ -131,17 +130,6 @@ def processCommand(c):
     drv.close()
     print("bye!")
     sys.exit(0)
-  elif tokens[0] in ("t","trig","trigger"):
-    if trig is None:
-      trig = triggerbuddy.TriggerBuddy()
-      config["trigger"] = trig
-      fe.config["trigger"] = trig
-      drv.config["trigger"] = trig
-    if len(tokens) == 1:
-      return
-    else:
-      tcmd = " ".join(tokens[1:])
-      trig.processCommand(tcmd)
   elif cmd in ("r","run"):
     if config["writefile"] is not None:
       if "~" in config["writefile"]:
