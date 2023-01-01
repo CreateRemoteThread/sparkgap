@@ -1,7 +1,26 @@
 # sparkgap
 
-HAPPYMEAL EXPERIMENTAL BRANCH
+_documentation is wip_
 
-These tools should be used in a workflow. A quick start workflow is documented [here](docs/quickstart.md), and more documentation can be found in the docs/ folder. You should also read [this](docs/quickstart-dev.md) to extend the framework.
+Sparkgap is a set of scripts and a python library to assist in hardware control and execution of side channel and fault injection attacks. It includes the following components:
+
+- lib/: the sparkgap library
+- scripts/
+  - cpa.py: executes standard correlation power analysis
+  - dpa.py: executes standard differential power analysis
+  - nddla.py: executes Benjamin Timon's 2019 attack (https://tches.iacr.org/index.php/TCHES/article/view/7387)
+  - capturebuddy.py: helper to capture data from different frontends
+  - plot.py: inspect captured waves, plot various aspects of them for manual analysis
+  - preprocessor.py: scripted preprocessor engine for aligning and noise removal etc
+- experiments/
+  - *.cmd: preprocessor scripting files
+  - files in here are work in progress, and may arbitrarily not work / brick things
+
+This can be installed like a standard Python library:
+
+```
+cd lib/
+python3 setup.py install --user
+```
 
 The code is provided as-is, pull requests welcome :)
