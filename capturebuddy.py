@@ -176,7 +176,12 @@ def processCommand(c):
     f.close()
   elif tokens[0] == "set":
     cmdx = " ".join(tokens[1:])
-    (varname,varval) = cmdx.split("=")
+    try:
+      (varname,varval) = cmdx.split("=")
+    except:
+      var_tok = cmdx.split(" ")
+      varname = var_tok[0]
+      varval = " ".join(var_tok[1:])
     try:
       p = eval(varval)
     except Exception as ex:

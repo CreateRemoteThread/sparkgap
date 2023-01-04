@@ -23,8 +23,11 @@ class DriverInterface(base.BaseDriverInterface):
   def drive(self,in_text=None):
     next_rand = [random.randint(0,255) for _ in range(0,16)]
     self.frontend.arm()
+    if "stm32_fix" in self.config.keys():
+      print("using stm32 fix")
+      wait_time = float(self.config["stm32_fix"])
+      time.sleep(wait_time)
     time.sleep(0.5)
-    # fucking stm32
     self.ser.write(b"e")
     self.ser.write(b"".join([b"%02x" % nr for nr in next_rand]))
     self.ser.write(b"\n")
