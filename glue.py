@@ -25,9 +25,9 @@ def doGlue():
   # TEXT_1 = [0xAA] * 16
   # TEXT_2 = [0x00] * 16
   for i in range(0,tm1.traceCount):
-    cs_out.addTrace(tm1.traces[i],tm1.data_in[i],tm1.data_out[i])
+    cs_out.addTrace(tm1.traces[i],[0xFF] * 16,tm1.data_out[i])
   for i in range(0,tm2.traceCount):
-    cs_out.addTrace(tm2.traces[i],tm2.data_in[i],tm2.data_out[i])
+    cs_out.addTrace(tm2.traces[i],[0xF0] * 16,tm2.data_out[i])
   cs_out.save(FILE_OUT)
 
 if __name__ == "__main__":

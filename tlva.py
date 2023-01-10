@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#  TVLA leakfinder
+#  leakfinder (tlva.py)
 # -----------------
 #  -f <traceset>
 #  -d <distinguisher>
