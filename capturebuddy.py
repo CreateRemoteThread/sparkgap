@@ -174,6 +174,13 @@ def processCommand(c):
         drv.config[var] = eval(arg)
       # print("%c,%s,%s" % (x[0],var,arg))
     f.close()
+  elif tokens[0] == "unset":
+    varname = tokens[1]
+    if varname in config.keys():
+      del(config[varname])
+      print("Deleted variable '%s'" % varname)
+    else:
+      print("Could not find variable '%s'" % varname)
   elif tokens[0] == "set":
     cmdx = " ".join(tokens[1:])
     try:
@@ -189,13 +196,9 @@ def processCommand(c):
       print("No variables set!")
     else:
       config[varname] = p
-      # fe.config[varname] = p
-      # drv.config[varname] = p
       if varname == "DEBUG" and p is True:
         print("DEBUG set, forcing tracecount to 1")
         config["tracecount"] = 1
-        # fe.config["tracecount"] = 1
-        # drv.config["tracecount"] = 1
   # elif tokens[0] == "fe.set":
   #   cmdx = " ".join(tokens[1:])
   #   (varname,varval) = cmdx.split("=")
