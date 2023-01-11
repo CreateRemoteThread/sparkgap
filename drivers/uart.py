@@ -5,6 +5,10 @@ import random
 import time
 import serial
 
+# standard uart interface
+# k[hexstring] = set key, return k[newkey]
+# e[hexstring] = do encrypt, return e[result]
+
 class DriverInterface(base.BaseDriverInterface):
   def __init__(self):
     super().__init__()
@@ -21,7 +25,19 @@ class DriverInterface(base.BaseDriverInterface):
     pass
 
   def drive(self,in_text=None):
-    next_rand = [random.randint(0,255) for _ in range(0,16)]
+    next_rand = [int(random.uniform(0,256)) for _ in range(0,16)]
+    next_key = [int(random.uniform(0,256)) for _ in range(0,16)]
+    if "rekey" in self.config.keys():
+      print("Re-keying...")
+      self.ser.write(b"k")  
+      self.ser.write(b"".join([b"%02x" % nr for nr in next_key]))
+      self.ser.write(b"\n")
+      time.sleep(0.25)
+      f = self.ser.read(16+36)
+      while self.ser.in_waiting:
+        f += self.ser.read(1)
+        time.sleep(0.01)
+      print("KEY: %s" % f)
     self.frontend.arm()
     if "stm32_fix" in self.config.keys():
       print("using stm32 fix")
@@ -47,8 +63,13 @@ class DriverInterface(base.BaseDriverInterface):
       next_ct = [int(next_ct[i:i+2],16) for i in range(0,len(next_ct),2)]
     text_rand = "".join(["%02x" % nr for nr in next_rand])
     text_ct = "".join(["%02x" % nr for nr in next_ct])
-    print("Ok, saving %s:%s" % (text_rand,text_ct)) 
-    return (next_rand,next_ct)
+    if "rekey" in self.config.keys():
+      text_key = "".join(["%02x" % nr for nr in next_key])
+      print("Ok (rekey), saving %s:%s" % (text_rand,text_key)) 
+      return (next_rand,next_key)
+    else:
+      print("Ok (samekey), saving %s:%s" % (text_rand,text_ct)) 
+      return (next_rand,next_ct)
 
 
   def close(self):

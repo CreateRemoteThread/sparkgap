@@ -32,9 +32,9 @@ def generateTemplate(tm_in,model,attackByte=1):
     for j in range(i):
       sumCnt += 1
       tempSumDiff += np.abs(tempMeans[i] - tempMeans[j])
-  POI_BRACKET_MIN = 0
-  POI_BRACKET_MAX = 10000
-  tempSumDiff = tempSumDiff[POI_BRACKET_MIN:POI_BRACKET_MAX]
+  # POI_BRACKET_MIN = 0
+  # POI_BRACKET_MAX = 15000
+  # tempSumDiff = tempSumDiff[POI_BRACKET_MIN:POI_BRACKET_MAX]
   numPOIs = 5
   POIspacing = 5
   POIs = []
@@ -80,8 +80,21 @@ def applyTemplate(tm_in,model,meanmatrix,covmatrix,POIs,attackByte=1):
       P_k[k] += p_kj
     print(" ".join(["%02x" % j for j in P_k.argsort()[-5:]]))
 
+def usage():
+  print("template.py: manual templating attack")
+  print(" -f: trace set to build template")
+  print(" --holdout: trace set to apply template")
+  print(" -a: specify attack model")
+  sys.exit(0)
+
 if __name__ == "__main__":
-  opts, remainder = getopt.getopt(sys.argv[1:],"f:h:a:",["help","file=","holdout=","attack="])
+  try:
+    opts, remainder = getopt.getopt(sys.argv[1:],"f:h:a:",["help","file=","holdout=","attack="])
+  except:
+    usage()
+  tm_template = None
+  tm_holdout = None
+  leakmodel = None
   for opt,arg in opts:
     if opt in ("--help"):
       usage()
@@ -92,6 +105,15 @@ if __name__ == "__main__":
       tm_holdout = sparkgap.filemanager.TraceManager(arg)
     elif opt in ("-a","--attack"):
       leakmodel = sparkgap.attack.fetchModel(arg)
+  if tm_template is None:
+    print("You must specify a template dataset with -f")
+    sys.exit(0)
+  elif tm_holdout is None:
+    print("You must specify a holdout dataset with --holdout")
+    sys.exit(0)
+  elif leakmodel is None:
+    print("You must specify a leak model with -a")
+    sys.exit(0)
   print("ok, attempting to generate template")
   (mm,cm,POIs) = generateTemplate(tm_template,leakmodel)
   applyTemplate(tm_holdout,leakmodel,mm,cm,POIs)
