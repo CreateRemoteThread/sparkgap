@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# TODO FIX BRACKETING
-# ITS TURBOFUCKED ATM
-
 import sys
 import getopt
 import sparkgap.filemanager

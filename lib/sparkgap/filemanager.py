@@ -65,7 +65,11 @@ class TraceManager:
   def loadPlaintexts(self):
     print("TraceManager2: loadPlaintexts called")
     return self.f["data_in"]
-    # pass
+
+  # should've called it this from the start fml
+  @property
+  def numTraces(self):
+    return self.traceCount
 
   def getTraceCount(self):
     return self.traceCount
