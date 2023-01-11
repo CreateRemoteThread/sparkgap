@@ -2,6 +2,7 @@
 
 from numpy import *
 import numpy as np
+import matplotlib.pyplot as plt
 
 def TwoPointCompress(tm_in,varMgr):
   numTraces = tm_in.traceCount
@@ -10,6 +11,10 @@ def TwoPointCompress(tm_in,varMgr):
   traces = zeros((numTraces,sampleCnt - cdist),float32)
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
+  print("="*64)
+  print("TwoPointCompress:")
+  print("new[x] = old[x] - old[x+compress_dist]")
+  print("="*64)
   for i in range(0,numTraces):
     in_trace = tm_in.getSingleTrace(i)
     traces[i,:] = [np.abs(in_trace[x] - in_trace[x+cdist]) for x in range(0,sampleCnt - cdist)]
