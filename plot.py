@@ -309,5 +309,6 @@ if __name__ == "__main__":
       print("Saving to %s..." % CONFIG_WRITEFILE)
       plt.savefig(CONFIG_WRITEFILE)
     else:
+      print("Connecting Event - Focus the window to activate")
       fig.canvas.mpl_connect("button_press_event",onclick)
       plt.show()

@@ -7,7 +7,12 @@ import sparkgap.attack
 import numpy as np
 import matplotlib.pyplot as plt
 
+displayCfg = {}
+CONFIG_TM_OFFSET = None
+CONFIG_TM_NUMSAMPLES = None
+
 def generateTemplate(tm_in,model,attackByte=1):
+  global displayCfg
   model.loadPlaintextArray(tm_in.loadPlaintexts())
   # ciphertext is known key (uart driver with rekey opt)
   model.loadCiphertextArray(tm_in.loadCiphertexts())
@@ -42,10 +47,10 @@ def generateTemplate(tm_in,model,attackByte=1):
     poiMax = min(nextPOI + POIspacing,len(tempSumDiff))
     for j in range(poiMin,poiMax):
       tempSumDiff[j] = 0
-  # print("POI's")
-  # print(POIs)
-  # plt.plot(tempSumDiff)
-  # plt.show()
+  if "pois" in displayCfg.keys():
+    plt.plot(tempSumDiff)
+    plt.title("Points of Interest")
+    plt.show()
   meanMatrix = np.zeros((9,numPOIs))
   for HW in range(9):
     for i in range(numPOIs):
@@ -82,11 +87,12 @@ def usage():
   print(" -f: trace set to build template")
   print(" --holdout: trace set to apply template")
   print(" -a: specify attack model")
+  print(" -d: display a specific graph")
   sys.exit(0)
 
 if __name__ == "__main__":
   try:
-    opts, remainder = getopt.getopt(sys.argv[1:],"f:h:a:",["help","file=","holdout=","attack="])
+    opts, remainder = getopt.getopt(sys.argv[1:],"f:h:a:d:o:n:",["help","file=","holdout=","attack=","display="])
   except:
     usage()
   tm_template = None
@@ -96,18 +102,27 @@ if __name__ == "__main__":
     if opt in ("--help"):
       usage()
       sys.exit(0)
+    elif opt == "-o":
+      CONFIG_TM_OFFSET = int(arg)
+    elif opt == "-n":
+      CONFIG_TM_NUMSAMPLES = int(arg)
     elif opt in ("-f","--file"):
       tm_template = sparkgap.filemanager.TraceManager(arg)
     elif opt == "--holdout":
       tm_holdout = sparkgap.filemanager.TraceManager(arg)
     elif opt in ("-a","--attack"):
       leakmodel = sparkgap.attack.fetchModel(arg)
+    elif opt in ("-d","--display"):
+      displayCfg[arg] = True
   if tm_template is None:
     print("You must specify a template dataset with -f")
     sys.exit(0)
   elif tm_holdout is None:
     print("You must specify a holdout dataset with --holdout")
     sys.exit(0)
+  if (CONFIG_TM_OFFSET is not None) and (CONFIG_TM_NUMSAMPLES is not None):
+    tm_template.slice(CONFIG_TM_OFFSET,CONFIG_TM_NUMSAMPLES)
+    tm_holdout.slice(CONFIG_TM_OFFSET,CONFIG_TM_NUMSAMPLES)
   elif leakmodel is None:
     print("You must specify a leak model with -a")
     sys.exit(0)

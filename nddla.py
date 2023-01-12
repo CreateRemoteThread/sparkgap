@@ -17,9 +17,9 @@ SAMPLE_OFFSET = None
 SAMPLE_COUNT = None
 CFG_ATTACK = None
 
-BYTENUM_MIN = 1
-BYTENUM_MAX = 2
-KEYBYTE_MIN = 0x20
+BYTENUM_MIN = 0
+BYTENUM_MAX = 1
+KEYBYTE_MIN = 0x28
 KEYBYTE_MAX = 0x30
 
 if __name__ == "__main__":
@@ -130,16 +130,21 @@ for roundNum in range(BYTENUM_MIN,BYTENUM_MAX):
     i_acc = np.argmax(acc_last[KEYBYTE_MIN:KEYBYTE_MAX])
     print("Round %d, Chosen key: %02x, Chosen key acc: %02x, Train_MSE: %f" % (roundNum,i + KEYBYTE_MIN,i_acc+KEYBYTE_MIN,bguess_last[i + KEYBYTE_MIN]))
     outKey[roundNum] = i + KEYBYTE_MIN
+  ax1.set_title("Training Loss vs Time")
   for x in range(KEYBYTE_MIN,KEYBYTE_MAX):
     if x == i:
       ax1.plot(bguess[x],color="red")
-      ax2.plot(aguess[x],color="red")
+      # ax2.plot(aguess[x],color="red")
     elif x == i_acc:
       ax1.plot(bguess[x],color="blue")
-      ax2.plot(aguess[x],color="blue")
+      # ax2.plot(aguess[x],color="blue")
     else:
       ax1.plot(bguess[x],color="grey")
-      ax2.plot(aguess[x],color="grey")
+      # ax2.plot(aguess[x],color="grey")
+  ax2.set_title("Last Loss (Red) / Last Acc (Blue)  vs Character")
+  ax2.plot(bguess_last,color="red")
+  ax3 = ax2.twinx()
+  ax3.plot(acc_last,color="blue")
   plt.show()   # todo: smarter plotting (to png?)
 
 print("=" * 80)

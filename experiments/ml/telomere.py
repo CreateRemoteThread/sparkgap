@@ -9,26 +9,32 @@ from rainbow.generics import rainbow_arm
 from rainbow.utils import hw
 import sparkgap.filemanager
 import numpy as np
+import gc
 
 TRACE = []
 TRACECOUNT = 2500
 
 random.seed()
+emu = rainbow_arm(sca_mode=True)
 
 cs = None
 for i in range(0,TRACECOUNT):
   rand_key = np.array([random.randint(0,0xFF) for i in range(0,16)],dtype=np.uint8)
-  emu = rainbow_arm(sca_mode=True)
-  emu.load("experiments/ml/target.elf")
+  emu.load("target.elf")
   emu[0x20000000] = bytes(rand_key[0:4])
   emu[0x20000000 + 4] = bytes(rand_key[4:8])
   emu[0x20000000 + 8] = bytes(rand_key[8:12])
   emu[0x20000000 + 12] = bytes(rand_key[12:16])
+  emu.sca_values_trace = []
   emu.start(emu.functions["doAES"] | 1,0x08000268)
   new_trace = np.fromiter(map(hw,emu.sca_values_trace),dtype=np.float32)
-  if cs is None:  
+  if cs is None:
+    print("Emulating run %d, skip first trace " % i)
     cs = sparkgap.filemanager.CaptureSet(tracecount=TRACECOUNT,samplecount=len(new_trace),in_len=16,out_len=16)
-  cs.addTrace(new_trace,rand_key,rand_key)
-  print("Emulating run %d (saved %d samples) " % (i,len(new_trace)))
+    cs.addTrace(new_trace,rand_key,rand_key)
+  else:
+    cs.addTrace(new_trace,rand_key,rand_key)
+    print("Emulating run %d (saved %d samples) " % (i,len(new_trace)))
+  gc.collect()
 
 cs.save("emu_normal.hdf")
