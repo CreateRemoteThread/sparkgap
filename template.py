@@ -11,7 +11,7 @@ displayCfg = {}
 CONFIG_TM_OFFSET = None
 CONFIG_TM_NUMSAMPLES = None
 
-def generateTemplate(tm_in,model,attackByte=1):
+def generateTemplate(tm_in,model,attackByte=0):
   global displayCfg
   model.loadPlaintextArray(tm_in.loadPlaintexts())
   # ciphertext is known key (uart driver with rekey opt)
@@ -34,9 +34,6 @@ def generateTemplate(tm_in,model,attackByte=1):
     for j in range(i):
       sumCnt += 1
       tempSumDiff += np.abs(tempMeans[i] - tempMeans[j])
-  # POI_BRACKET_MIN = 0
-  # POI_BRACKET_MAX = 15000
-  # tempSumDiff = tempSumDiff[POI_BRACKET_MIN:POI_BRACKET_MAX]
   numPOIs = 5
   POIspacing = 5
   POIs = []
@@ -51,6 +48,7 @@ def generateTemplate(tm_in,model,attackByte=1):
     plt.plot(tempSumDiff)
     plt.title("Points of Interest")
     plt.show()
+  # POI's are ponts
   meanMatrix = np.zeros((9,numPOIs))
   for HW in range(9):
     for i in range(numPOIs):
@@ -64,12 +62,10 @@ def generateTemplate(tm_in,model,attackByte=1):
         y = np.array(tempTracesHW[HW])[:,POIs[j]]
         covMatrix[HW,i,j] = np.cov(x,y)[0][1]
   return (meanMatrix,covMatrix,POIs)
-  # print(meanMatrix)
-  # print(covMatrix[0])
 
 from scipy.stats import multivariate_normal
 
-def applyTemplate(tm_in,model,meanmatrix,covmatrix,POIs,attackByte=1):
+def applyTemplate(tm_in,model,meanmatrix,covmatrix,POIs,attackByte=0):
   P_k = np.zeros(256)
   model.loadPlaintextArray(tm_in.loadPlaintexts())
   model.loadCiphertextArray(tm_in.loadCiphertexts())
