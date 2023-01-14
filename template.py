@@ -11,6 +11,9 @@ displayCfg = {}
 CONFIG_TM_OFFSET = None
 CONFIG_TM_NUMSAMPLES = None
 
+# alot of this is copied from chipwhisperer's template tutorial
+# modified to fit into this new dataflow
+
 def generateTemplate(tm_in,model,attackByte=0):
   global displayCfg
   model.loadPlaintextArray(tm_in.loadPlaintexts())
