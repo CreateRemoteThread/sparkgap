@@ -116,6 +116,9 @@ if __name__ == "__main__":
   elif tm_holdout is None:
     print("You must specify a holdout dataset with --holdout")
     sys.exit(0)
+  elif leakmodel is None:
+    print("You must specify a leakage model with -a")
+    sys.exit(0)
   if (CONFIG_TM_OFFSET is not None) and (CONFIG_TM_NUMSAMPLES is not None):
     tm_template.slice(CONFIG_TM_OFFSET,CONFIG_TM_NUMSAMPLES)
     tm_holdout.slice(CONFIG_TM_OFFSET,CONFIG_TM_NUMSAMPLES)
