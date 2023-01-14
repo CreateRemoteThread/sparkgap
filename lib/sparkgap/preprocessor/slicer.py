@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import support.slipnslide
+import sparkgap.slipnslide
 from numpy import *
 import numpy as np
 
@@ -19,7 +19,7 @@ def doSlicer(tm_in,varMgr):
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   numTraces = tm_in.traceCount
-  se = support.slipnslide.SliceEngine(tm_in)
+  se = sparkgap.slipnslide.SliceEngine(tm_in)
   for i in range(0,numTraces):
     print("Slicing trace %d" % i)
     traces[i:] = se.FindSlices(i, CONFIG_REF_OFFSET, CONFIG_REF_LENGTH,CONFIG_SLICE_DIST,CONFIG_SAD_CUTOFF,maxSlicesBackwards,maxSlicesForwards)
@@ -27,5 +27,5 @@ def doSlicer(tm_in,varMgr):
     data_out[i,:] = tm_in.getSingleDataOut(i)
   print("Returning data, don't forget to commit!")
   return (traces,data,data_out)
-  # support.filemanager.save(CONFIG_WRITEFILE,traces=traces,data=data,data_out=data_out)
+  # sparkgap.filemanager.save(CONFIG_WRITEFILE,traces=traces,data=data,data_out=data_out)
 

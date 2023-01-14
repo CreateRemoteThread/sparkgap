@@ -1,29 +1,27 @@
 # sparkgap
 
-[quickstart](docs/quickstart.md) | [develop](docs/quickstart-dev.md) | [noise_preprocessing](docs/noisesim.md)
+Sparkgap is a set of scripts and a python library to assist in hardware control and execution of side channel and fault injection attacks. It includes the following components:
 
-Sparkgap is a major refactor of my previous SCA and FI code. This provides a more consistent UI experience (console instead of paragraph-length command-lines), better self-contained documentation and a single unified support module for both FI and SCA tasks.
+- lib/: the sparkgap library
+- analysis tools:
+  - cpa.py: executes standard correlation power analysis
+  - dpa.py: executes standard differential power analysis
+  - nddla.py: executes Benjamin Timon's 2019 attack (https://tches.iacr.org/index.php/TCHES/article/view/7387).
+- utilities:
+  - capturebuddy.py: helper to capture data from different frontends
+  - plot.py: inspect captured waves, plot various aspects of them for manual analysis
+  - traceutil.py: trace-set manipulation utility (e.g. join hdfs, split, etc)
+  - preprocessor.py: scripted preprocessor engine for aligning and noise removal
+- experiments/
+  - *.cmd: preprocessor scripting files
+  - files in here are work in progress, and may arbitrarily not work / brick things
 
-This toolkit contains:
+This can be installed like a standard Python library:
 
-- cpa.py, wrapper for correlation attacks
-- dpa.py, wrapper for differential attacks
-- plot.py, a simple trace visualizer
-- preprocessor.py, a signal alignment tool
-- capturebuddy.py, wrapper for signal acquisition jobs
-  - frontends/*, wrapper scripts for various acquisition frontends
-    - ps6000.py, for PicoScope 6xxx
-    - ps2000.py, for PicoScope 2xxx
-    - rigol.py, for Rigol DS1xxx over Ethernet
-    - rigolusb.py, for Rigol DS1xxx over USB (alot faster!)
-    - bladerf.py, EXPERIMENTAL DO NOT USE
-  - drivers/*, wrapper scripts for logic control drivers
-- triggerbuddy.py, control script for TriggerBuddy FPGA module
-- support/*, a single support package for FI and SCA
-- support/attacks/*, distinguisher and correlation modeling
-- experiments/*, in-progress and successful attacks
-- docs/*, self-contained markdown documentation
-
-These tools should be used in a workflow. A quick start workflow is documented [here](docs/quickstart.md), and more documentation can be found in the docs/ folder. You should also read [this](docs/quickstart-dev.md) to extend the framework.
+```
+python3 -m pip install -r requirements.txt
+cd lib/
+python3 setup.py install --user
+```
 
 The code is provided as-is, pull requests welcome :)

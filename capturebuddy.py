@@ -8,11 +8,10 @@ import uuid
 import time
 import random
 import numpy as np
-import triggerbuddy
 import traceback
 import readline
 import datetime
-import support.filemanager
+import sparkgap.filemanager
 
 fe = None
 drv = None
@@ -64,8 +63,8 @@ def runCaptureTask():
   if "leia_hack" in config.keys():
     print("Capture: LEIA USIM Hack Enabled")
     LEIA_Hack = True
-    hack_captureSet = support.filemanager.CaptureSet(tracecount=config["tracecount"],samplecount=config["samplecount"])
-  captureSet = support.filemanager.CaptureSet(tracecount=config["tracecount"],samplecount=config["samplecount"])
+    hack_captureSet = sparkgap.filemanager.CaptureSet(tracecount=config["tracecount"],samplecount=config["samplecount"])
+  captureSet = sparkgap.filemanager.CaptureSet(tracecount=config["tracecount"],samplecount=config["samplecount"])
   # traces = np.zeros((config["tracecount"],config["samplecount"]),np.float32)
   # data = np.zeros((config["tracecount"],config["len_in"]),np.uint8)         # RAND
   # data_out = np.zeros((config["tracecount"],config["len_out"]),np.uint8)     # AUTN
@@ -99,7 +98,7 @@ def runCaptureTask():
     print("Writefile is unconfigured, not saving results...")
   elif config["writefile"] == "/tmp":
     tempfile = "/tmp/%s" % uuid.uuid4()
-    support.filemanager.save(tempfile,traces=traces,data=data,data_out=data_out)
+    sparkgap.filemanager.save(tempfile,traces=traces,data=data,data_out=data_out)
     print("Saved to %s" % tempfile)
   else:
     if LEIA_Hack:
@@ -107,13 +106,13 @@ def runCaptureTask():
       save_traces = hack_captureSet.traces[0:wHead]
       save_data_in = hack_captureSet.data_in[0:wHead]
       save_data_out = hack_captureSet.data_out[0:wHead]
-      support.filemanager.save(config["writefile"] + ".leia_hack",traces=save_traces,data=save_data_in,data_out=save_data_out)
-      # support.filemanager.save(config["writefile"] + ".leia_hack",traces=leia_traces,data=leia_data,data_out=leia_data_out)
+      sparkgap.filemanager.save(config["writefile"] + ".leia_hack",traces=save_traces,data=save_data_in,data_out=save_data_out)
+      # sparkgap.filemanager.save(config["writefile"] + ".leia_hack",traces=leia_traces,data=leia_data,data_out=leia_data_out)
     wHead = captureSet.writeHead
     save_traces = captureSet.traces[0:wHead]
     save_data_in = captureSet.data_in[0:wHead]
     save_data_out = captureSet.data_out[0:wHead]
-    support.filemanager.save(config["writefile"],traces=save_traces,data=save_data_in,data_out=save_data_out)
+    sparkgap.filemanager.save(config["writefile"],traces=save_traces,data=save_data_in,data_out=save_data_out)
     
 trig = None
 
@@ -131,17 +130,6 @@ def processCommand(c):
     drv.close()
     print("bye!")
     sys.exit(0)
-  elif tokens[0] in ("t","trig","trigger"):
-    if trig is None:
-      trig = triggerbuddy.TriggerBuddy()
-      config["trigger"] = trig
-      fe.config["trigger"] = trig
-      drv.config["trigger"] = trig
-    if len(tokens) == 1:
-      return
-    else:
-      tcmd = " ".join(tokens[1:])
-      trig.processCommand(tcmd)
   elif cmd in ("r","run"):
     if config["writefile"] is not None:
       if "~" in config["writefile"]:
@@ -186,9 +174,21 @@ def processCommand(c):
         drv.config[var] = eval(arg)
       # print("%c,%s,%s" % (x[0],var,arg))
     f.close()
+  elif tokens[0] == "unset":
+    varname = tokens[1]
+    if varname in config.keys():
+      del(config[varname])
+      print("Deleted variable '%s'" % varname)
+    else:
+      print("Could not find variable '%s'" % varname)
   elif tokens[0] == "set":
     cmdx = " ".join(tokens[1:])
-    (varname,varval) = cmdx.split("=")
+    try:
+      (varname,varval) = cmdx.split("=")
+    except:
+      var_tok = cmdx.split(" ")
+      varname = var_tok[0]
+      varval = " ".join(var_tok[1:])
     try:
       p = eval(varval)
     except Exception as ex:
@@ -196,13 +196,9 @@ def processCommand(c):
       print("No variables set!")
     else:
       config[varname] = p
-      # fe.config[varname] = p
-      # drv.config[varname] = p
       if varname == "DEBUG" and p is True:
         print("DEBUG set, forcing tracecount to 1")
         config["tracecount"] = 1
-        # fe.config["tracecount"] = 1
-        # drv.config["tracecount"] = 1
   # elif tokens[0] == "fe.set":
   #   cmdx = " ".join(tokens[1:])
   #   (varname,varval) = cmdx.split("=")

@@ -168,7 +168,7 @@ def doEarthquake(tm_in,varMgr):
   print("Returning data, don't forget to commit!")
   return (traces[0:savedDataIndex],data[0:savedDataIndex],data_out[0:savedDataIndex])
   # print("Saving...")
-  # support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+  # sparkgap.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 
 
 def doSAD(tm_in,varMgr):
@@ -211,5 +211,5 @@ def doSAD(tm_in,varMgr):
       print(("Index %d, discarding (MSV is %f)" % (i,msv)))
   print("Returning data, don't forget to commit!")
   return (traces[0:savedDataIndex],data[0:savedDataIndex],data_out[0:savedDataIndex])
-  # support.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
+  # sparkgap.filemanager.save(CONFIG_WRITEFILE,traces=traces[0:savedDataIndex],data=data[0:savedDataIndex],data_out=data_out[0:savedDataIndex])
 

@@ -6,13 +6,13 @@ import numpy as np
 import sys
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import support.filemanager
+import sparkgap.filemanager
 import getopt
 import copy
 from numpy import *
 
 def doCompareTraces_SINGLE(tn1):
-  tm_in1 = support.filemanager.TraceManager(tn1)
+  tm_in1 = sparkgap.filemanager.TraceManager(tn1)
   tlva_group1_traces = []
   tlva_group2_traces = []
   group1_avg = None
@@ -20,7 +20,7 @@ def doCompareTraces_SINGLE(tn1):
   group2_avg = None
   group2_avg_cnt = 0
   for f in range(0,tm_in1.getTraceCount()):
-    if tm_in1.getSingleData(f)[0] == 0x00:
+    if tm_in1.getSingleData(f)[0] == 0xF0:
       tlva_group1_traces.append(tm_in1.getSingleTrace(f))
       if group1_avg is None:
         group1_avg = tm_in1.getSingleTrace(f) * 1.0
@@ -40,8 +40,11 @@ def doCompareTraces_SINGLE(tn1):
   group1_avg /= group1_avg_cnt
   group2_avg /= group2_avg_cnt
   fig,(ax1,ax2) = plt.subplots(2,1)
+  ax1.set_title("Difference of Means")
   ax1.plot(abs(group1_avg - group2_avg))
+  ax2.set_title("Avg Std (Noise)")
   ax2.plot(np.std(tlva_group1_traces,axis=0,keepdims=True)[0])
+  ax2.plot(np.std(tlva_group2_traces,axis=0,keepdims=True)[0])
   plt.show()
   return
   ttrace = scipy.stats.ttest_ind(tlva_group1_traces, tlva_group2_traces,axis=0,equal_var=False)
@@ -75,9 +78,9 @@ def doTLVA(tm_in1,tm_in2):
 
 def doCompareTraces(tn1,tn2):
   global CONFIG_OFFSET,CONFIG_SAMPLES
-  tm_in1 = support.filemanager.TraceManager(tn1)
+  tm_in1 = sparkgap.filemanager.TraceManager(tn1)
   trace_avg1 = tm_in1.getMeant()
-  tm_in2 = support.filemanager.TraceManager(tn2)
+  tm_in2 = sparkgap.filemanager.TraceManager(tn2)
   trace_avg2 = tm_in2.getMeant()
   if len(trace_avg1) != len(trace_avg2):
     print("The traces do not have equal lengths, I can't use this")
@@ -93,7 +96,7 @@ def doCompareTraces(tn1,tn2):
   a1.plot(trace_avg2)
   a2.set_title("Difference of Means")
   a2.plot(abs(trace_avg1 - trace_avg2))
-  a3.set_title("Standard Deviation")
+  a3.set_title("Avg Standard Deviation (Noise)")
   # (nn0,nn1,points) = doTLVA(tm_in1,tm_in2)
   group1_traces = []
   for f in range(0,tm_in1.getTraceCount()):

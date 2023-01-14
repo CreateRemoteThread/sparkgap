@@ -2,7 +2,7 @@
 
 import tkinter as tk
 import numpy as np
-import support.filemanager
+import sparkgap.filemanager
 import preprocessor
 
 def doMergeNumpy(dataItems):
@@ -28,8 +28,8 @@ def doMergeTraces(dataItems):
     if f not in dataItems.keys():
       print("doMergeTraces: could not find critical parameter %s" % f)
       return
-  tm_in1 = support.filemanager.TraceManager(dataItems["file1"])
-  tm_in2 = support.filemanager.TraceManager(dataItems["file2"])
+  tm_in1 = sparkgap.filemanager.TraceManager(dataItems["file1"])
+  tm_in2 = sparkgap.filemanager.TraceManager(dataItems["file2"])
   if tm_in1.numPoints != tm_in2.numPoints:
     print("doMergeTraces: tm_in1.numPoints != tm_in2.numPoints")
     tm_in1.cleanup()
@@ -57,7 +57,7 @@ def doMergeTraces(dataItems):
     data_out[counter:] = tm_in2.getSingleDataOut(i)
     counter += 1
   print("doMergeTraces: OK, %d traces merged" % counter)
-  support.filemanager.save(dataItems["outfile"],traces=traces,data=data_in,data_out=data_out)
+  sparkgap.filemanager.save(dataItems["outfile"],traces=traces,data=data_in,data_out=data_out)
 
 def getTraceConfig(r_str):
   r = []

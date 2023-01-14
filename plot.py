@@ -12,7 +12,7 @@ from numpy import *
 import time
 import getopt
 import matplotlib as mpl
-import support.filemanager
+import sparkgap.filemanager
 
 TRIGGERS = 0
 
@@ -224,7 +224,7 @@ if __name__ == "__main__":
     if not os.path.isfile(f):
       print("Fatal: could not open %s" % f)
       sys.exit(0)
-    tm = support.filemanager.TraceManager(f)
+    tm = sparkgap.filemanager.TraceManager(f)
     if len(TRACES) == 0:
       print("You must specify at least one trace with -c")
       sys.exit(0)
@@ -309,5 +309,6 @@ if __name__ == "__main__":
       print("Saving to %s..." % CONFIG_WRITEFILE)
       plt.savefig(CONFIG_WRITEFILE)
     else:
+      print("Connecting Event - Focus the window to activate")
       fig.canvas.mpl_connect("button_press_event",onclick)
       plt.show()

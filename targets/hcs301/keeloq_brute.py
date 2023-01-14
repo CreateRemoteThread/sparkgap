@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import support.filemanager
+import sparkgap.filemanager
 import sys
 
 def keeloqNLF_SLOW(a, b, c, d, e):
@@ -39,7 +39,7 @@ def unpackKeeloqInt(plaintext):
   nextstep = ival[0:32]
   return int(nextstep[::-1],2)
 
-fn = support.filemanager.TraceManager(sys.argv[1])
+fn = sparkgap.filemanager.TraceManager(sys.argv[1])
 transmits = fn.loadPlaintexts()
 
 CT0 = unpackKeeloqInt(transmits[0])

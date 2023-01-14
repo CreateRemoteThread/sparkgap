@@ -4,7 +4,7 @@
 
 import sys
 import random
-import support.attacks.support.keeloq as keeloq
+import sparkgap.attacks.sparkgap.keeloq as keeloq
 
 def getHammingWeight(x):
   return bin(x).count("1")

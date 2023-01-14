@@ -3,13 +3,13 @@
 import numpy as np
 from numpy import *
 import sys
-import support.resultviz
+import sparkgap.resultviz
 import glob
 import getopt
 import matplotlib.pyplot as plt
 import binascii
-import support.filemanager
-import support.attack
+import sparkgap.filemanager
+import sparkgap.attack
 
 TRACE_OFFSET = 0
 TRACE_LENGTH = 17000
@@ -39,7 +39,7 @@ def deriveKey(tm):
   global CONFIG_PLOT
   global TRACE_MAX
   global leakmodel
-  leakmodel = support.attack.fetchModel(CONFIG_LEAKMODEL)
+  leakmodel = sparkgap.attack.fetchModel(CONFIG_LEAKMODEL)
   leakmodel.loadPlaintextArray(tm.loadPlaintexts()) 
   leakmodel.loadCiphertextArray(tm.loadCiphertexts())
   tm.cutTraces(TRACE_OFFSET,TRACE_OFFSET + TRACE_LENGTH)
@@ -121,10 +121,10 @@ if __name__ == "__main__":
     print("You must specify a file with -f")
     sys.exit(0)
   print("Stage 1: Loading plaintexts...")
-  tm = support.filemanager.TraceManager(fn)
+  tm = sparkgap.filemanager.TraceManager(fn)
   print("Deriving key... wish me luck!")
   if CONFIG_PLOT:
-    resultViz = support.resultviz.VisualizerApp()
+    resultViz = sparkgap.resultviz.VisualizerApp()
     # plt.title("%s Power Leakage v Hypothesis Overview" % CONFIG_LEAKMODEL)
     # plt.ylabel("Maximum Diff. of Means")
     # plt.xlabel("Key Hypothesis")

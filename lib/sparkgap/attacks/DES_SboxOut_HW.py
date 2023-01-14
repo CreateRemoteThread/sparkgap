@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import support.attacks.support.dessupport as dessupport
+import sparkgap.attacks.sparkgap.dessupport as dessupport
 
 class AttackModel:
   def __init__(self):
@@ -14,7 +14,7 @@ class AttackModel:
     trace_count = plaintexts[:,0].size
     print("Pre-scheduling %d keys, this might take a while..." % trace_count)
     for tnum in range(0,trace_count):
-      self.desManager[tnum] = dessupport.desIntermediateValue()
+      self.desManager[tnum] = dessparkgap.desIntermediateValue()
       self.desManager[tnum].preprocess(plaintexts[tnum])
 
   def loadCiphertextArray(self,ct):

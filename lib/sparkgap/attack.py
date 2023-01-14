@@ -16,7 +16,7 @@ def usage():
 
 def fetchModel(modelname):
   try:
-    exec("from support.attacks.%s import AttackModel; fe = AttackModel()" % modelname,globals())
+    exec("from sparkgap.attacks.%s import AttackModel; fe = AttackModel()" % modelname,globals())
     return fe
   except Exception as ex:
     print(ex)

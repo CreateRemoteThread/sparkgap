@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#  TVLA leakfinder
+#  leakfinder (tlva.py)
 # -----------------
 #  -f <traceset>
 #  -d <distinguisher>
@@ -20,8 +20,8 @@ import sys
 import numpy as np
 import warnings
 import matplotlib as mpl
-import support.filemanager
-import support.attack
+import sparkgap.filemanager
+import sparkgap.attack
 import time
 
 def getHammingWeight(x):
@@ -241,7 +241,7 @@ if __name__ == "__main__":
         leakmodel.customDistinguisher = d
       else:
         print("Attempting to use distinguisher '%s'" % value)
-        leakmodel = support.attack.fetchModel(value)
+        leakmodel = sparkgap.attack.fetchModel(value)
     elif arg in ["-w","--writefile"]:
       CONFIG_WRITEFILE = value
   if CONFIG_WRITEFILE is not None:
@@ -250,7 +250,7 @@ if __name__ == "__main__":
   if CONFIG_FILE is None:
     print("You must specify a file")
     sys.exit(0)
-  fn = support.filemanager.TraceManager(CONFIG_FILE)
+  fn = sparkgap.filemanager.TraceManager(CONFIG_FILE)
   if hasattr(leakmodel,"loadOptions"):
     print("Loading options for leakmodel")
     leakmodel.loadOptions(OptionManager)

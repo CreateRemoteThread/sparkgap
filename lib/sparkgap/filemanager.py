@@ -49,6 +49,21 @@ class TraceManager:
     if self.f is not None:
       self.f.close()
 
+  def slice(self,offset,numsamples):
+    print("TraceManager: vertical slicing keeping %d:%d")
+    if numsamples <= 0:
+      print("TraceManager: numsamples must be positive nonzero")
+      return
+    if (offset <= 0) or (offset + numsamples >= self.numPoints):
+      print("TraceManager: offset + numsamples must be less than %d" % self.numPoints)
+      return
+    newtraces = np.zeros((self.numTraces,numsamples),np.float32)
+    for i in range(0,len(self.traces)):
+      newtraces[i] = self.traces[i][offset:offset+numsamples]
+    self.traces = newtraces
+    self.numPoints = numsamples
+    print("TraceManager: vertical slicing complete")
+
   # this needed to use weights in the old trace format, this is
   def getMeant(self):
     print("TraceManager2: getMeant called")
@@ -65,7 +80,11 @@ class TraceManager:
   def loadPlaintexts(self):
     print("TraceManager2: loadPlaintexts called")
     return self.f["data_in"]
-    # pass
+
+  # should've called it this from the start fml
+  @property
+  def numTraces(self):
+    return self.traceCount
 
   def getTraceCount(self):
     return self.traceCount
