@@ -11,11 +11,14 @@ import sys
 # import matplotlib.pyplot as plt
 
 class CaptureSet:
-  def __init__(self,tracecount=15000,samplecount=100000,in_len=16,out_len=16):
+  def __init__(self,tracecount=15000,samplecount=100000,in_len=16,out_len=16,migrateData=False):
     self.writeHead = 0
-    self.traces = np.zeros((tracecount,samplecount),np.float32)
-    self.data_in = np.zeros((tracecount,in_len),np.uint8)
-    self.data_out = np.zeros((tracecount,out_len),np.uint8)
+    if migrateData is False:
+      self.traces = np.zeros((tracecount,samplecount),np.float32)
+      self.data_in = np.zeros((tracecount,in_len),np.uint8)
+      self.data_out = np.zeros((tracecount,out_len),np.uint8)
+    else:
+      print("CaptureSet: migrating data, not creating trace sets")
 
   def addTrace(self,trace,data_in,data_out):
     self.traces[self.writeHead:] = trace
@@ -27,6 +30,9 @@ class CaptureSet:
     if filename is None:
       print("CaptureSet: save needs a filename (update your code)")
       return
+    while os.path.exists(filename):
+      print("CaptureSet: file overwrite, use a new name")
+      filename = input(" > ").rstrip()
     tn = TraceManager(filename)
     tn.f.create_dataset("traces",data=self.traces)
     tn.f.create_dataset("data_in",data=self.data_in)
@@ -129,10 +135,12 @@ class TraceManager:
     self.numPoints = numPoints
 
 def save(fn,traces=None,data=None,data_out=None,freq=0,additionalParams={}):
-  tn = TraceManager(fn)
-  tn.f.create_dataset("traces",data=traces)
-  tn.f.create_dataset("data_in",data=data)
-  tn.f.create_dataset("data_out",data=data_out)
+  print("FileManager: Call to legacy save(). Migrate this to CaptureSet")
+  sys.exit(0) 
+  # tn = TraceManager(fn)
+  # tn.f.create_dataset("traces",data=traces)
+  # tn.f.create_dataset("data_in",data=data)
+  # tn.f.create_dataset("data_out",data=data_out)
 
 if __name__ == "__main__":
   if len(sys.argv) != 2:
