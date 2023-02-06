@@ -6,6 +6,12 @@ import serial
 import time
 import sys
 
+# so we don't have to use strings in setmask or muxout
+SELECT_MOSFET = "glitcher.SELECT_MOSFET"
+SELECT_MUXA = "glitcher.SELECT_MUXA"
+SELECT_MUXB = "glitcher.SELECT_MUXB"
+SELECT_MUXC = "glitcher.SELECT_MUXC"
+
 class MPDevice:
   def __init__(self,port="/dev/ttyACM0"):
     self.port = port
@@ -16,30 +22,31 @@ class MPDevice:
     print("connected")
 
   def initDefault(self):
-    self.sendCommand(b"import glitcher")
-    self.sendCommand(b"g = glitcher.Glitcher()")
-    self.sendCommand(b"g.setmask(glitcher.SELECT_MOSFET)")
+    self.raw(b"import glitcher")
+    self.raw(b"g = glitcher.Glitcher()")
+    self.raw(b"g.setmask(glitcher.SELECT_MOSFET)")
 
   def enablemux(self,status):
     if status is True or status == 1:
-      self.sendCommand(b"g.enablemux(True)")
+      self.raw(b"g.enablemux(True)")
     elif status is False or status == 0:
-      self.sendCommand(b"g.enablemux(False)")
+      self.raw(b"g.enablemux(False)")
+  muxenable = enablemux
 
   def setmask(self,mask):
-    self.sendCommand(b"g.setmask(%s)" % mask.encode("utf-8"))
+    self.raw(b"g.setmask(%s)" % mask.encode("utf-8"))
  
   def muxout(self,muxselect):
-    self.sendCommand(b"g.muxout(%s)" % muxselect.encode("utf-8"))
+    self.raw(b"g.muxout(%s)" % muxselect.encode("utf-8"))
 
   def rnr(self,delay,width):
-    self.sendCommand(b"g.rnr(delay=%d,width=%d)" % (delay,width))
+    self.raw(b"g.rnr(delay=%d,width=%d)" % (delay,width))
   
   def setrepeat(self,num,delay):
-    self.sendCommand(b"g.setrepeat(num=%d,delay=%d)" % (num, delay))
+    self.raw(b"g.setrepeat(num=%d,delay=%d)" % (num, delay))
 
   # lol what the shit...
-  def sendCommand(self,cmd,waitResp=True,waitTime=0.1):
+  def raw(self,cmd,waitResp=True,waitTime=0.1):
     self.ser.write(cmd + b"\r")
     if waitTime is not None:
       time.sleep(waitTime)
