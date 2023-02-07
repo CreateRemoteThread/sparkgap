@@ -13,6 +13,7 @@ import sys
 class CaptureSet:
   def __init__(self,tracecount=15000,samplecount=100000,in_len=16,out_len=16,migrateData=False):
     self.writeHead = 0
+    self.tracecount = tracecount
     if migrateData is False:
       self.traces = np.zeros((tracecount,samplecount),np.float32)
       self.data_in = np.zeros((tracecount,in_len),np.uint8)
@@ -26,7 +27,12 @@ class CaptureSet:
     self.data_out[self.writeHead:] = data_out
     self.writeHead += 1
 
-  def save(self,filename=None):
+  def save(self,filename=None,writeHeadFix=True):
+    if self.writeHead < self.tracecount - 1:
+      print("CaptureSet: expecting %d traces, got %d traces, fixing" % (self.tracecount,self.writeHead + 1))
+      self.traces = self.traces[0:self.writeHead]
+      self.data_in = self.data_in[0:self.writeHead]
+      self.data_out = self.data_out[0:self.writeHead]
     if filename is None:
       print("CaptureSet: save needs a filename (update your code)")
       return

@@ -14,9 +14,13 @@ class DriverInterface(base.BaseDriverInterface):
     print("Using glitcher_rst")
     self.ser = serial.Serial("/dev/ttyACM0",115200)
     self.ser.write(b"from machine import Pin\r")
-    # cuz i'm a lazy shit
+    self.ser.write(b"import glitcher\r")
+    self.ser.write(b"g = glitcher.Glitcher()\r")
+    self.ser.write(b"g.enablemux(True)\r")
+    self.ser.write(b"g.muxout(glitcher.SELECT_MUXA)\r")
     self.ser.write(b"cs = Pin(14,Pin.OUT)\r")
     self.ser.write(b"cs.value(1)\r")
+    # input(">")
     time.sleep(0.25)
     out = b""
     dc = self.ser.inWaiting()
@@ -29,12 +33,13 @@ class DriverInterface(base.BaseDriverInterface):
 
   def init(self,scope):
     self.scope = scope
-    print("glitcher_rst initialization: nothing needed")
+    print("default initialization")
    
   def drive(self,data_in = None):
     next_rand = [1 for _ in range(16)]
     next_autn = [1 for _ in range(16)]
     self.scope.arm()
+    # input(">")
     time.sleep(0.25)
     self.ser.write(b"cs.value(0)\r")
     time.sleep(0.5)

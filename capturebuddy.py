@@ -98,7 +98,8 @@ def runCaptureTask():
     print("Writefile is unconfigured, not saving results...")
   elif config["writefile"] == "/tmp":
     tempfile = "/tmp/%s" % uuid.uuid4()
-    sparkgap.filemanager.save(tempfile,traces=traces,data=data,data_out=data_out)
+    captureSet.save(tempfile)
+    # sparkgap.filemanager.save(tempfile,traces=traces,data=data,data_out=data_out)
     print("Saved to %s" % tempfile)
   else:
     if LEIA_Hack:
@@ -106,13 +107,13 @@ def runCaptureTask():
       save_traces = hack_captureSet.traces[0:wHead]
       save_data_in = hack_captureSet.data_in[0:wHead]
       save_data_out = hack_captureSet.data_out[0:wHead]
-      sparkgap.filemanager.save(config["writefile"] + ".leia_hack",traces=save_traces,data=save_data_in,data_out=save_data_out)
+      hack_captureSet.save(config["writefile"] + ".leia_hack") # ,traces=save_traces,data=save_data_in,data_out=save_data_out)
       # sparkgap.filemanager.save(config["writefile"] + ".leia_hack",traces=leia_traces,data=leia_data,data_out=leia_data_out)
     wHead = captureSet.writeHead
     save_traces = captureSet.traces[0:wHead]
     save_data_in = captureSet.data_in[0:wHead]
     save_data_out = captureSet.data_out[0:wHead]
-    sparkgap.filemanager.save(config["writefile"],traces=save_traces,data=save_data_in,data_out=save_data_out)
+    captureSet.save(config["writefile"]) # ,traces=save_traces,data=save_data_in,data_out=save_data_out)
     
 trig = None
 

@@ -17,6 +17,18 @@ class MPDevice:
     self.port = port
     self.ser = None
 
+  def serInit(self,txpin=4,rxpin=5,baudrate=9600):
+    self.raw(b"from machine import UART, Pin")
+    print(self.raw(b"uart1 = UART(1,tx=Pin(%d),rx=Pin(%d),baudrate=%d)" % (txpin,rxpin,baudrate)))
+
+  def serTxn(self,msg):
+    self.raw(b"uart1.write(b\"%s\")" % msg)
+    print("PRINTING READ")
+    print(self.raw(b"uart1.read()"))
+  
+  def serClose(self):
+    print(self.raw(b"uart1.close()"))
+
   def con(self):
     self.ser = serial.Serial(self.port,115200)
     print("connected")
