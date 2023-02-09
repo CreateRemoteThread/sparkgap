@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import time
 import scipy
 import scipy.stats
 import numpy as np
@@ -76,6 +77,35 @@ def doTLVA(tm_in1,tm_in2):
   ttrace = scipy.stats.ttest_ind(tlva_group1_traces, tlva_group2_traces,axis=0,equal_var=False)
   return (np.nan_to_num(ttrace[0]),np.nan_to_num(ttrace[1]),tm_in1.numPoints)
 
+lastTime = 0.0
+lastX = 0
+
+def onclick(event):
+  global lastTime, lastX, CONFIG_OFFSET
+  OFFSET = CONFIG_OFFSET
+  t = time.time()
+  if t - lastTime < 0.200:
+    print("debounce - nope")
+    return
+  elif event.xdata is None:
+    print("skip - event.xdata (click on graph) is none")
+    return
+  else:
+    lastTime = t
+    if lastX == 0:
+      lastX = int(event.xdata)
+      lastX += OFFSET
+      print("MARK: %d" % lastX)
+    else:
+      localX = int(event.xdata)
+      fromX = min(lastX,localX)
+      toX = max(lastX,localX)
+      dist = toX - fromX
+      fromX += OFFSET
+      toX += OFFSET
+      print("FROM %d TO %d DIST %d" % (fromX,toX,dist))
+      lastX = localX
+
 def doCompareTraces(tn1,tn2):
   global CONFIG_OFFSET,CONFIG_SAMPLES
   tm_in1 = sparkgap.filemanager.TraceManager(tn1)
@@ -91,6 +121,7 @@ def doCompareTraces(tn1,tn2):
   trace_avg1 = trace_avg1[CONFIG_OFFSET:CONFIG_OFFSET + CONFIG_SAMPLES]
   trace_avg2 = trace_avg2[CONFIG_OFFSET:CONFIG_OFFSET + CONFIG_SAMPLES]
   fig,(a1,a2,a3) = plt.subplots(3,1)
+  fig.canvas.mpl_connect("button_press_event",onclick)
   a1.set_title("Averaged Traces")
   a1.plot(trace_avg1)
   a1.plot(trace_avg2)
