@@ -13,11 +13,11 @@ class DriverInterface(base.BaseDriverInterface):
     self.config["trigger"] = None
     print("Using glitcher_rst")
     self.ser = serial.Serial("/dev/ttyACM0",115200)
-    self.ser.write(b"from machine import Pin\r")
     self.ser.write(b"import glitcher\r")
+    self.ser.write(b"from machine import Pin\r")
     self.ser.write(b"g = glitcher.Glitcher()\r")
     self.ser.write(b"g.enablemux(True)\r")
-    self.ser.write(b"g.muxout(glitcher.SELECT_MUXA)\r")
+    self.ser.write(b"g.muxout(glitcher.SELECT_MUXB)\r")
     self.ser.write(b"cs = Pin(14,Pin.OUT)\r")
     self.ser.write(b"cs.value(1)\r")
     # input(">")
