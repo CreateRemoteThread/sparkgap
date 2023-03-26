@@ -120,7 +120,15 @@ def doSingleCommand(cmd,tm_in_raw):
     return tm_in_new
   elif tokens[0] in ["c","commit"]:
     if needsCommit:
-      sparkgap.filemanager.save(CONFIG_WRITEFILE,traces=tm_in.traces,data=tm_in.data_in,data_out=tm_in.data_out) 
+      s = sparkgap.filemanager.CaptureSet(migrateData  = True)
+      s.tracecount = len(tm_in.traces)
+      s.writeHead = s.tracecount
+      print("Converted %d traces" % s.tracecount)
+      s.traces   = tm_in.traces
+      s.data_in  = tm_in.data_in
+      s.data_out = tm_in.data_out
+      s.save(CONFIG_WRITEFILE)
+      # sparkgap.filemanager.save(CONFIG_WRITEFILE,traces=tm_in.traces,data=tm_in.data_in,data_out=tm_in.data_out) 
       needsCommit = False
     else:
       print("No changes need committing")
