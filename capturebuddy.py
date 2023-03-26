@@ -144,7 +144,10 @@ def processCommand(c):
       else:
         f.close()
         os.unlink(config["writefile"])
-    runCaptureTask()
+    if config["writefile"] is None and config["tracecount"] >= 50:
+      print("Sanity check failed: 50+ traces and no writefile")
+    else:
+      runCaptureTask()
   elif tokens[0] == "vars":
     for i in config.keys():
       print("%s=%s" % (i,strfix(config[i])))

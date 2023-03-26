@@ -64,6 +64,10 @@ def distinguisher_even(data,ct,round,keyguess):
   # print("%02x" % data[round])
   return data[round] % 2 == 0
 
+def distinguisher_lsb2(data,ct,round,keyguess):
+  # print("%02x" % data[round])
+  return (data[round] >> 1) % 2 == 0
+
 def distinguisher_hw(data,ct,round,keyguess):
   return HW_LUT[data[round]] >= 4
 
@@ -184,6 +188,7 @@ class SpecialLeakModel:
 OptionManager = {}
 SpecialDistinguisherList = {}
 SpecialDistinguisherList["EVEN"] = (distinguisher_even,"Even and odd, first byte of plaintext")
+SpecialDistinguisherList["LSB2"] = (distinguisher_lsb2,"LSB2 even or odd, first byte of plaintext")
 SpecialDistinguisherList["HW"] = (distinguisher_hw,"HW >= 4, first byte of plaintext")
 SpecialDistinguisherList["HW32"] = (distinguisher_hw32,"HW[0:4] >= 16, hamming weight 32-bit (first dword)")
 SpecialDistinguisherList["CTHW"] = (distinguisher_cthw,"HW >= 4, first byte of ciphertext")
