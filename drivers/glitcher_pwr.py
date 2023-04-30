@@ -29,7 +29,7 @@ class DriverInterface(base.BaseDriverInterface):
     time.sleep(0.5)
     self.g.muxout("glitcher.SELECT_MUXA")
     time.sleep(0.5)
-    self.g.muxout("glitcher.SELECT_MUX0")
+    self.g.muxout("glitcher.SELECT_NONE")
     return (next_rand,next_autn)
 
   def close(self):
