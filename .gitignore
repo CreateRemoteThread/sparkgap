@@ -1,4 +1,5 @@
 # go away py build artefacts
+lib/dist/
 lib/build/
 lib/sparkgap.egg-info/
 

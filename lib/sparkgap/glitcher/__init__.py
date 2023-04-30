@@ -29,8 +29,8 @@ class MPDevice:
   def serClose(self):
     print(self.raw(b"uart1.close()"))
 
-  def con(self):
-    self.ser = serial.Serial(self.port,115200)
+  def con(self,baudrate=115200):
+    self.ser = serial.Serial(self.port,baudrate)
     print("connected")
 
   def initDefault(self):
@@ -59,7 +59,8 @@ class MPDevice:
 
   # lol what the shit...
   def raw(self,cmd,waitResp=True,waitTime=0.1):
-    self.ser.write(cmd + b"\r")
+    self.ser.write(cmd + b"\x04")
+    print(cmd)
     if waitTime is not None:
       time.sleep(waitTime)
     if waitResp:
@@ -70,8 +71,10 @@ class MPDevice:
       if b"Traceback" in out:
         print(outTokens)
       # print(outTokens)
+      print(out)
       return outTokens
     else:
+      print(out)
       return None
 
   def dis(self):

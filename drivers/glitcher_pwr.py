@@ -15,6 +15,7 @@ class DriverInterface(base.BaseDriverInterface):
     self.g = sparkgap.glitcher.MPDevice()
     self.g.con()
     self.g.initDefault()
+    self.g.muxout("glitcher.SELECT_NONE")
     self.g.enablemux(1)
     print("OK, mux enabled")
 
@@ -29,7 +30,7 @@ class DriverInterface(base.BaseDriverInterface):
     time.sleep(0.5)
     self.g.muxout("glitcher.SELECT_MUXA")
     time.sleep(0.5)
-    self.g.muxout("glitcher.SELECT_NONE")
+    # self.g.muxout("glitcher.SELECT_NONE")
     return (next_rand,next_autn)
 
   def close(self):
