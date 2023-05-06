@@ -52,7 +52,9 @@ for i in range(0,TRACECOUNT):
   emu[0x20000010 + 4] = bytes(rand_key[4:8])
   emu[0x20000010 + 8] = bytes(rand_key[8:12])
   emu[0x20000010 + 12] = bytes(rand_key[12:16])
+  print("stop1")
   emu.start(emu.functions["doAES"] | 1,0x08000262)
+  print("stop2")
   new_trace = np.fromiter(map(hw,emu.sca_values_trace),dtype=np.float32)
   if cs is None: 
     print("Creating CaptureSet")

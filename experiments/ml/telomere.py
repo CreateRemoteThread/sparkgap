@@ -17,6 +17,7 @@ TRACE = []
 TRACECOUNT = 1500
 WRITEFILE = "emu_normal.hdf"
 
+print("telomere")
 random.seed()
 
 rekey = False

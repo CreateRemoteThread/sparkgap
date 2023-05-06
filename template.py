@@ -14,7 +14,7 @@ CONFIG_TM_NUMSAMPLES = None
 # alot of this is copied from chipwhisperer's template tutorial
 # modified to fit into this new dataflow
 
-def generateTemplate(tm_in,model,attackByte=0):
+def generateTemplate(tm_in,model,attackByte=1):
   global displayCfg
   model.loadPlaintextArray(tm_in.loadPlaintexts())
   # ciphertext is known key (uart driver with rekey opt)
@@ -68,7 +68,7 @@ def generateTemplate(tm_in,model,attackByte=0):
 
 from scipy.stats import multivariate_normal
 
-def applyTemplate(tm_in,model,meanmatrix,covmatrix,POIs,attackByte=0):
+def applyTemplate(tm_in,model,meanmatrix,covmatrix,POIs,attackByte=1):
   P_k = np.zeros(256)
   model.loadPlaintextArray(tm_in.loadPlaintexts())
   model.loadCiphertextArray(tm_in.loadCiphertexts())
