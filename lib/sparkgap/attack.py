@@ -2,6 +2,9 @@
 
 import sys
 import glob
+import os
+import importlib.machinery
+import importlib.util
 
 # ['attacks/__init__.py', 'attacks/AES_SboxOut_HW.py', 'attacks/DES_SboxOut_HW.py', 'attacks/AES_TTableOut_HW.py', 'attacks/XorOut_HW.py']
 def usage():
@@ -15,6 +18,20 @@ def usage():
     print(" - %s" % fx2)
 
 def fetchModel(modelname):
+  if "." in modelname:
+    print("Loading external module from path '%s'" % modelname)
+    if not os.path.isfile(modelname):
+      print("Fatal: '%s' isn't a file")
+      sys.exit(0)
+    loader = importlib.machinery.SourceFileLoader( "extmodule" , modelname)
+    spec = importlib.util.spec_from_loader("extmodule",loader)
+    fe = importlib.util.module_from_spec(spec)
+    loader.exec_module(fe)
+    print("Loading OK, instantiating AttackModel()...")
+    am = fe.AttackModel()
+    print("Loading OK, returning AttackModel")
+    return am
+  print("Loading internal module from name '%s'" % modelname)
   try:
     exec("from sparkgap.attacks.%s import AttackModel; fe = AttackModel()" % modelname,globals())
     return fe
