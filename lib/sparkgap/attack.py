@@ -33,8 +33,8 @@ def fetchModel(modelname):
     return am
   print("Loading internal module from name '%s'" % modelname)
   try:
-    exec("from sparkgap.attacks.%s import AttackModel; fe = AttackModel()" % modelname,globals())
-    return fe
+    f = importlib.import_module("sparkgap.attacks.%s" % modelname)    
+    return f.AttackModel()
   except Exception as ex:
     print(ex)
     print("Could not load attack model '%s'" % modelname)
