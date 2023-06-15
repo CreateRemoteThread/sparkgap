@@ -19,8 +19,11 @@ CFG_ATTACK = None
 
 BYTENUM_MIN = 0
 BYTENUM_MAX = 1
-KEYBYTE_MIN = 0x28
-KEYBYTE_MAX = 0x30
+# KEYBYTE_MIN = 0xb0
+# KEYBYTE_MAX = 0xc0
+
+KEYBYTE_MIN = 0xea
+KEYBYTE_MAX = 0xef
 
 if __name__ == "__main__":
   opts, args = getopt.getopt(sys.argv[1:],"f:o:n:a:",["file=","offset=","numsamples=","attack="])
@@ -44,6 +47,8 @@ if CFG_ATTACK is None:
 
 leakmodel = sparkgap.attack.fetchModel(CFG_ATTACK)
 tm = sparkgap.filemanager.TraceManager(FN_IN)
+
+# import shap
 
 t_test = tm.getSingleTrace(0)
 
@@ -91,21 +96,26 @@ class PlotLearning(tf.keras.callbacks.Callback):
 def deriveTrainingMetric(tm,leakmodel,roundNum,byteGuess):
   hyp = np.zeros(tm.traceCount,np.uint8)
   for tnum in range(0,tm.traceCount):
-    hyp[tnum] = leakmodel.genIVal(tnum,roundNum,byteGuess) >= 4
+    hyp[tnum] = leakmodel.distinguisher(tnum,roundNum,byteGuess) is True
   model = tf.keras.models.Sequential()
   model.add(tf.keras.layers.Flatten())
   model.add(tf.keras.layers.Normalization())
-  model.add(tf.keras.layers.Dense(256,activation="relu"))
-  model.add(tf.keras.layers.Dense(32,activation="relu"))
+  # model.add(tf.keras.layers.Dense(32,activation="relu"))
+  # model.add(tf.keras.layers.Dense(12,activation="relu"))
+  # model.add(tf.keras.layers.Dense(2,activation="softmax"))
+  model.add(tf.keras.layers.Dense(128,activation="relu"))
+  model.add(tf.keras.layers.Dense(30,activation="relu"))
   model.add(tf.keras.layers.Dense(9,activation="softmax"))
   if platform.system() == "Darwin":
-    model.compile(optimizer=tf.keras.optimizers.legacy.RMSprop(lr=0.001),loss="sparse_categorical_crossentropy",metrics=['accuracy'])
+    model.compile(optimizer=tf.keras.optimizers.legacy.RMSprop(lr=0.005),loss="sparse_categorical_crossentropy",metrics=['accuracy'])
     # see https://developer.apple.com/forums/thread/721619
   else:
-    model.compile(optimizer=tf.keras.optimizers.RMSprop(lr=0.001),loss="sparse_categorical_crossentropy",metrics=['accuracy'])
+    model.compile(optimizer=tf.keras.optimizers.RMSprop(lr=0.005),loss="sparse_categorical_crossentropy",metrics=['accuracy'])
   globalCallback = PlotLearning()
-  model.fit(tm.traces,hyp,epochs=30,batch_size=12,validation_split=0.05,callbacks=[globalCallback])
-  return globalCallback.getLastAccuracy()
+  model.fit(tm.traces,hyp,epochs=100,batch_size=24,validation_split=0.05,callbacks=[globalCallback])
+  # model.fit(tm.traces,hyp,epochs=10,batch_size=12,validation_split=0.2,callbacks=[globalCallback])
+  (ll,la) = globalCallback.getLastAccuracy()
+  return (ll, la, model)
 
 import matplotlib.pyplot as plt
 
@@ -121,30 +131,30 @@ for roundNum in range(BYTENUM_MIN,BYTENUM_MAX):
   # bguess = np.full(255,1.0,dtype=np.float)
   for byteGuess in range(KEYBYTE_MIN,KEYBYTE_MAX):
     print(" --> Evaluating key: %02x <--" % byteGuess)
-    (lastLoss,lastAcc) = deriveTrainingMetric(tm,leakmodel,roundNum,byteGuess)
+    (lastLoss,lastAcc,_model) = deriveTrainingMetric(tm,leakmodel,roundNum,byteGuess)
     bguess[byteGuess] = lastLoss
     aguess[byteGuess] = lastAcc
     bguess_last[byteGuess] = bguess[byteGuess][-1]
     acc_last[byteGuess] = lastAcc[-1]   # don't need to plot this.
     i = np.argmin(bguess_last[KEYBYTE_MIN:KEYBYTE_MAX])
     i_acc = np.argmax(acc_last[KEYBYTE_MIN:KEYBYTE_MAX])
-    print("Round %d, Chosen key: %02x, Chosen key acc: %02x, Train_MSE: %f" % (roundNum,i + KEYBYTE_MIN,i_acc+KEYBYTE_MIN,bguess_last[i + KEYBYTE_MIN]))
+    print("Round %d, Chosen key: %02x, Chosen key acc: %02x, Best Acc: %f / Lowest MSE: %f" % (roundNum,i + KEYBYTE_MIN,i_acc+KEYBYTE_MIN,acc_last[i_acc + KEYBYTE_MIN],bguess_last[i + KEYBYTE_MIN]))
     outKey[roundNum] = i + KEYBYTE_MIN
-  ax1.set_title("Training Loss vs Time")
+  ax1.set_title("Accuracy vs Time")
   for x in range(KEYBYTE_MIN,KEYBYTE_MAX):
-    if x == i:
-      ax1.plot(bguess[x],color="red")
+    if (x - KEYBYTE_MIN) == i:
+      ax1.plot(aguess[x],color="red")
       # ax2.plot(aguess[x],color="red")
-    elif x == i_acc:
-      ax1.plot(bguess[x],color="blue")
+    elif (x - KEYBYTE_MIN) == i_acc:
+      ax1.plot(aguess[x],color="blue")
       # ax2.plot(aguess[x],color="blue")
     else:
-      ax1.plot(bguess[x],color="grey")
+      ax1.plot(aguess[x],color="grey")
       # ax2.plot(aguess[x],color="grey")
   ax2.set_title("Last Loss (Red) / Last Acc (Blue)  vs Character")
-  ax2.plot(bguess_last,color="red")
+  ax2.plot(bguess_last[KEYBYTE_MIN:KEYBYTE_MAX],color="red")
   ax3 = ax2.twinx()
-  ax3.plot(acc_last,color="blue")
+  ax3.plot(acc_last[KEYBYTE_MIN:KEYBYTE_MAX],color="blue")
   plt.show()   # todo: smarter plotting (to png?)
 
 print("=" * 80)
