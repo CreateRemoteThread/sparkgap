@@ -17,7 +17,6 @@ TRACE = []
 TRACECOUNT = 1500
 WRITEFILE = "emu_normal.hdf"
 
-print("telomere")
 random.seed()
 
 rekey = False
@@ -32,7 +31,12 @@ if len(sys.argv) >= 1:
     elif opt in ("-w","--writefile"):
       WRITEFILE = arg
 
+import binascii
+
 rand_key = np.array([random.randint(0,0xFF) for i in range(0,16)],dtype=np.uint8)
+if rekey is False and WRITEFILE == "emu_normal.hdf":
+  WRITEFILE = "normal_%s.hdf" % binascii.hexlify(rand_key).decode("utf-8")
+  print("Configuring writefile to %s" % WRITEFILE)
 cs = None
 for i in range(0,TRACECOUNT):
   emu = rainbow_arm(sca_mode=True)

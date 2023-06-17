@@ -19,11 +19,11 @@ CFG_ATTACK = None
 
 BYTENUM_MIN = 0
 BYTENUM_MAX = 1
-# KEYBYTE_MIN = 0xb0
-# KEYBYTE_MAX = 0xc0
+KEYBYTE_MIN = 0x63
+KEYBYTE_MAX = 0x69
 
-KEYBYTE_MIN = 0xea
-KEYBYTE_MAX = 0xef
+# KEYBYTE_MIN = 0xea
+# KEYBYTE_MAX = 0xef
 
 if __name__ == "__main__":
   opts, args = getopt.getopt(sys.argv[1:],"f:o:n:a:",["file=","offset=","numsamples=","attack="])

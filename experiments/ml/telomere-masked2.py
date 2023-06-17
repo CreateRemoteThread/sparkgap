@@ -12,10 +12,11 @@ from rainbow.utils import hw
 import sparkgap.filemanager
 import numpy as np
 import gc
+import binascii
 
 TRACE = []
 TRACECOUNT = 1500
-WRITEFILE = "emu_normal.hdf"
+WRITEFILE = "emu_masked.hdf"
 
 random.seed()
 
@@ -32,6 +33,10 @@ if len(sys.argv) >= 1:
       WRITEFILE = arg
 
 rand_key = np.array([random.randint(0,0xFF) for i in range(0,16)],dtype=np.uint8)
+rand_mask = np.array([random.randint(0,0xFF) for i in range(0,16)],dtype=np.uint8)
+if rekey is False and WRITEFILE == "emu_masked.hdf":
+  WRITEFILE = "%s_masked_%s.hdf" % (binascii.hexlify(rand_key).decode("utf-8"),binascii.hexlify(rand_mask).decode("utf-8"))
+  print("Resetting writefile to %s" % WRITEFILE)
 cs = None
 for i in range(0,TRACECOUNT):
   emu = rainbow_arm(sca_mode=True)
@@ -41,6 +46,10 @@ for i in range(0,TRACECOUNT):
   emu[0x20000000 + 4] = bytes(rand_text[4:8])
   emu[0x20000000 + 8] = bytes(rand_text[8:12])
   emu[0x20000000 + 12] = bytes(rand_text[12:16])
+  emu[0x20000040] = bytes(rand_mask[0:4])
+  emu[0x20000040 + 4] = bytes(rand_mask[4:8])
+  emu[0x20000040 + 8] = bytes(rand_mask[8:12])
+  emu[0x20000040 + 12] = bytes(rand_mask[12:16])
   if rekey:
     (pt,keybyte) = cherrypicker.getRandomPair()
     rand_key = np.array([random.randint(0,0xFF) for i in range(0,16)],dtype=np.uint8)
@@ -52,9 +61,7 @@ for i in range(0,TRACECOUNT):
   emu[0x20000010 + 4] = bytes(rand_key[4:8])
   emu[0x20000010 + 8] = bytes(rand_key[8:12])
   emu[0x20000010 + 12] = bytes(rand_key[12:16])
-  print("stop1")
   emu.start(emu.functions["doAES"] | 1,0x08000262)
-  print("stop2")
   new_trace = np.fromiter(map(hw,emu.sca_values_trace),dtype=np.float32)
   if cs is None: 
     print("Creating CaptureSet")
