@@ -21,9 +21,9 @@ KEY_ADDR = 0x92dc
 DATA_ADDR = 0x92d4
 
 for i in range(0,50):
-  # print("Emulating run %d..." % i)
   emu = rainbow_arm(trace_config=TraceConfig(register=HammingWeight()))
   emu.load(sys.argv[1])
+  emu.setup()
   rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
   emu[DATA_ADDR] = bytes(rand_input[0:4])
   emu[DATA_ADDR + 4] = bytes(rand_input[4:8])
