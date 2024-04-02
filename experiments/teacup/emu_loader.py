@@ -17,8 +17,11 @@ if len(sys.argv) != 2:
 
 cs = None
 
-KEY_ADDR = 0x92dc
-DATA_ADDR = 0x92d4
+KEY_ADDR = 0x18904
+DATA_ADDR = 0x188fc
+OUT_ADDR = 0x18d60
+
+DOXTEA_END = 0x84c4
 
 for i in range(0,50):
   emu = rainbow_arm(trace_config=TraceConfig(register=HammingWeight()))
@@ -27,9 +30,9 @@ for i in range(0,50):
   rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
   emu[DATA_ADDR] = bytes(rand_input[0:4])
   emu[DATA_ADDR + 4] = bytes(rand_input[4:8])
-  emu.start(emu.functions["doXTEA"] , 0x82a8)
+  emu.start(emu.functions["doXTEA"] , DOXTEA_END)
   new_trace = np.fromiter(map(lambda event: event["register"], emu.trace),dtype=np.float32)
-  rand_output = emu[0x92ec:0x92ec+8]
+  rand_output = emu[OUT_ADDR:OUT_ADDR+8]
   if cs is None:
     cs = sparkgap.filemanager.CaptureSet(tracecount=50,samplecount=len(new_trace),in_len=8,out_len=8)
     cs.addTrace(new_trace,rand_input,rand_output)
