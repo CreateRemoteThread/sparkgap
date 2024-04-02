@@ -14,13 +14,16 @@ import binascii
 
 CONFIG_INFILE  = None
 CONFIG_OUTFILE = None
+CONFIG_REKEY = False
 
-opts, rems = getopt.getopt(sys.argv[1:],"f:w:",["--file=","--writefile="])
+opts, rems = getopt.getopt(sys.argv[1:],"f:w:k",["--file=","--writefile=","--rekey"])
 for arg,val in opts:
   if arg in ("-w","--writefile"):
     CONFIG_OUTFILE = val
   elif arg in ("-f","--file"):
     CONFIG_INFILE = val
+  elif arg in ("-k","--rekey"):
+    CONFIG_REKEY = True
 
 if CONFIG_INFILE is None or CONFIG_OUTFILE is None:
   print("You must populate both -f and -w")
@@ -34,11 +37,22 @@ OUT_ADDR = 0x18cb0
 
 DODES_END = 0x8974
 
-for i in range(0,50):
-  print("Beginning attempt")
+rand_key = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
+key_str = " ".join(["%02x" % x for x in rand_key])
+
+if CONFIG_REKEY is False:
+  print("Key is %s" % key_str)
+
+for i in range(0,25):
   emu = rainbow_arm(trace_config=TraceConfig(register=HammingWeight()))
   emu.load(CONFIG_INFILE)
   emu.setup()
+  if CONFIG_REKEY is True:
+    rand_key = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
+    key_str = " ".join(["%02x" % x for x in rand_key])
+    print("Key is %s" % key_str)
+  emu[KEY_ADDR] = bytes(rand_key[0:4])
+  emu[KEY_ADDR+4] = bytes(rand_key[4:8])
   rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
   emu[DATA_ADDR] = bytes(rand_input[0:4])
   emu[DATA_ADDR + 4] = bytes(rand_input[4:8])
@@ -55,3 +69,6 @@ for i in range(0,50):
   gc.collect()
 
 cs.save(CONFIG_OUTFILE)
+
+if CONFIG_REKEY is False:
+  print("Reminder: key is %s" % key_str)

@@ -5,6 +5,7 @@ lib/sparkgap.egg-info/
 
 # go away preprocessor files
 *.hdf
+**/*.hdf
 *.cmd
 
 # Byte-compiled / optimized / DLL files
