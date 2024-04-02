@@ -28,20 +28,21 @@ if CONFIG_INFILE is None or CONFIG_OUTFILE is None:
 
 cs = None
 
-KEY_ADDR = 0x18904
-DATA_ADDR = 0x188fc
-OUT_ADDR = 0x18d64
+KEY_ADDR = 0x18cb8
+DATA_ADDR = 0x18cc0
+OUT_ADDR = 0x18cb0
 
-DOXTEA_END = 0x84c4
+DODES_END = 0x8974
 
 for i in range(0,50):
+  print("Beginning attempt")
   emu = rainbow_arm(trace_config=TraceConfig(register=HammingWeight()))
   emu.load(CONFIG_INFILE)
   emu.setup()
   rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
   emu[DATA_ADDR] = bytes(rand_input[0:4])
   emu[DATA_ADDR + 4] = bytes(rand_input[4:8])
-  emu.start(emu.functions["doXTEA"] , DOXTEA_END)
+  emu.start(emu.functions["doDESEncrypt"] , DODES_END)
   new_trace = np.fromiter(map(lambda event: event["register"], emu.trace),dtype=np.float32)
   rand_output = emu[OUT_ADDR:OUT_ADDR+8]
   if cs is None:

@@ -22,7 +22,16 @@ class CaptureSet:
       print("CaptureSet: migrating data, not creating trace sets")
 
   def addTrace(self,trace,data_in,data_out):
-    self.traces[self.writeHead:] = trace
+    try:
+      self.traces[self.writeHead:] = trace
+    except ValueError:
+      if len(trace) > self.traces.shape[1]:
+        len_diff = len(trace) - self.traces.shape[1]
+        print("Resizing array by %d" % len_diff)
+        self.traces = np.pad(self.traces,((0,0),(0,len_diff)),"constant",constant_values=0) 
+        self.traces[self.writeHead:] = trace
+      else:
+        raise ValueError("Unknown ValueError exception, debugme (filemanager.py)")
     self.data_in[self.writeHead:] = data_in
     self.data_out[self.writeHead:] = data_out
     self.writeHead += 1
