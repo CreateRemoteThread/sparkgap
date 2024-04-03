@@ -15,12 +15,14 @@ import binascii
 CONFIG_INFILE  = None
 CONFIG_OUTFILE = None
 
-opts, rems = getopt.getopt(sys.argv[1:],"f:w:",["--file=","--writefile="])
+opts, rems = getopt.getopt(sys.argv[1:],"f:w:c:",["--file=","--writefile=","--count="])
 for arg,val in opts:
   if arg in ("-w","--writefile"):
     CONFIG_OUTFILE = val
   elif arg in ("-f","--file"):
     CONFIG_INFILE = val
+  elif arg in ("-c","--count"):
+    CONFIG_COUNT = val
 
 if CONFIG_INFILE is None or CONFIG_OUTFILE is None:
   print("You must populate both -f and -w")
@@ -33,6 +35,10 @@ DATA_ADDR = 0x188fc
 OUT_ADDR = 0x18d64
 
 DOXTEA_END = 0x84c4
+
+rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
+emu[KEY_ADDR] = bytes(rand_input[0:4])
+emu[KEY_ADDR+4] = bytes(rand_input[4:8])
 
 for i in range(0,50):
   emu = rainbow_arm(trace_config=TraceConfig(register=HammingWeight()))

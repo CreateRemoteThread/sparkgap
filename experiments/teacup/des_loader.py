@@ -15,8 +15,9 @@ import binascii
 CONFIG_INFILE  = None
 CONFIG_OUTFILE = None
 CONFIG_REKEY = False
+CONFIG_COUNT = 250
 
-opts, rems = getopt.getopt(sys.argv[1:],"f:w:k",["--file=","--writefile=","--rekey"])
+opts, rems = getopt.getopt(sys.argv[1:],"f:w:kc:",["--file=","--writefile=","--rekey","--count="])
 for arg,val in opts:
   if arg in ("-w","--writefile"):
     CONFIG_OUTFILE = val
@@ -24,6 +25,8 @@ for arg,val in opts:
     CONFIG_INFILE = val
   elif arg in ("-k","--rekey"):
     CONFIG_REKEY = True
+  elif arg in ("-c","--count"):
+    CONFIG_COUNT = int(val)
 
 if CONFIG_INFILE is None or CONFIG_OUTFILE is None:
   print("You must populate both -f and -w")
@@ -43,7 +46,7 @@ key_str = " ".join(["%02x" % x for x in rand_key])
 if CONFIG_REKEY is False:
   print("Key is %s" % key_str)
 
-for i in range(0,25):
+for i in range(0,CONFIG_COUNT):
   emu = rainbow_arm(trace_config=TraceConfig(register=HammingWeight()))
   emu.load(CONFIG_INFILE)
   emu.setup()
@@ -64,7 +67,7 @@ for i in range(0,25):
     cs.addTrace(new_trace,rand_input,rand_output)
   else:
     cs.addTrace(new_trace,rand_input,rand_output)
-  print("Run %d, %s -> %s" % (i,binascii.hexlify(rand_input),binascii.hexlify(rand_output)))
+  print("Run %d/%d, %s -> %s" % (i,CONFIG_COUNT,binascii.hexlify(rand_input),binascii.hexlify(rand_output)))
   del(emu)
   gc.collect()
 
