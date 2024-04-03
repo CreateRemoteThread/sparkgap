@@ -4,34 +4,51 @@
 
 import sys
 import random
-import sparkgap.attacks.sparkgap.keeloq as keeloq
+
+HW8Bit = [0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 1, 2, 2, 3, 2, 3, 3,
+          4, 2, 3, 3, 4, 3, 4, 4, 5, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4,
+          4, 5, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 1, 2, 2, 3, 2,
+          3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5,
+          4, 5, 5, 6, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4,
+          5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3,
+          3, 4, 3, 4, 4, 5, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 2,
+          3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4, 5, 4, 5, 5, 6,
+          4, 5, 5, 6, 5, 6, 6, 7, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5,
+          6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 3, 4, 4, 5, 4, 5,
+          5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6,
+          7, 7, 8]
+
+def keeloqGetHW(var):
+    hw = 0
+    while var > 0:
+        hw = hw + HW8Bit[var % 256]
+        var = var >> 8
+    return hw
+
+def keeloqGetHD(var1, var2):
+    return keeloqGetHW(var1 ^ var2)
+
+def keeloqNLF(a, b, c, d, e):
+    return (d + e + a*c + a*e + b*c + b*e + c*d + d*e + a*d*e + a*c*e + a*b*d + a*b*c) % 2;
+
+def keeloqDecryptCalcLSB(data, keybit):
+    nlf = keeloqNLF((data>>30)%2, (data>>25)%2, (data>>19)%2, (data>>8)%2, (data>>0)%2)
+    lsb = (keybit ^ (data>>31) ^ (data>>15) ^ nlf) % 2
+    return lsb
+
+def keeloqDecryptKeybit(data, keybit):
+    return ((data & 0x7FFFFFFF)<<1) ^ keeloqDecryptCalcLSB(data, keybit)
+
+def keeloqDecryptKeybitHD(data, keybit):
+    decrypt = keeloqDecryptKeybit(data, keybit)
+    return decrypt, keeloqGetHD(data, decrypt)
+
 
 def getHammingWeight(x):
   return bin(x).count("1")
 
 print("Initializing HW LUT")
 HW_LUT = [getHammingWeight(x) for x in range(0,256)]
-
-# print("Performing decryption test")
-# decr = keeloq.keeloqDecryptKeybit(0x11223344,1)
-# print(bin(decr))
-# decr = keeloq.keeloqDecryptKeybit(decr,1)
-# print(bin(decr))
-# decr = keeloq.keeloqDecryptKeybit(decr,1)
-# print(bin(decr))
-# decr = keeloq.keeloqDecryptKeybit(decr,1)
-# print(bin(decr))
-
-# print("Perfroming decryption with alternate Key2")
-# decr = keeloq.keeloqDecryptKeybit(0x11223344,1)
-# print(bin(decr))
-# decr = keeloq.keeloqDecryptKeybit(decr,0)
-# print(bin(decr))
-# decr = keeloq.keeloqDecryptKeybit(decr,1)
-# print(bin(decr))
-# decr = keeloq.keeloqDecryptKeybit(decr,1)
-# print(bin(decr))
-# sys.exit(0)
 
 def unpackKeeloq(plaintext):
   out = ""

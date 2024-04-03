@@ -3,6 +3,7 @@
 Sparkgap is a set of scripts and a python library to assist in hardware control and execution of side channel and fault injection attacks. It includes the following components:
 
 - lib/: the sparkgap library
+- emu/: targets and loaders for software (rainbow) emulated attacks
 - analysis tools:
   - cpa.py: executes standard correlation power analysis
   - dpa.py: executes standard differential power analysis

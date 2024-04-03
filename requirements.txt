@@ -8,3 +8,4 @@ python-vxi11
 pylink-square
 h5py
 scikit-learn
+pycryptodome
