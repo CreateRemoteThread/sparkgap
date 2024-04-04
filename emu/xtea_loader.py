@@ -14,6 +14,7 @@ import binascii
 
 CONFIG_INFILE  = None
 CONFIG_OUTFILE = None
+CONFIG_COUNT = 250
 
 opts, rems = getopt.getopt(sys.argv[1:],"f:w:c:",["--file=","--writefile=","--count="])
 for arg,val in opts:
@@ -40,7 +41,7 @@ rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint
 emu[KEY_ADDR] = bytes(rand_input[0:4])
 emu[KEY_ADDR+4] = bytes(rand_input[4:8])
 
-for i in range(0,50):
+for i in range(0,CONFIG_COUNT):
   emu = rainbow_arm(trace_config=TraceConfig(register=HammingWeight()))
   emu.load(CONFIG_INFILE)
   emu.setup()
@@ -51,7 +52,7 @@ for i in range(0,50):
   new_trace = np.fromiter(map(lambda event: event["register"], emu.trace),dtype=np.float32)
   rand_output = emu[OUT_ADDR:OUT_ADDR+8]
   if cs is None:
-    cs = sparkgap.filemanager.CaptureSet(tracecount=50,samplecount=len(new_trace),in_len=8,out_len=8)
+    cs = sparkgap.filemanager.CaptureSet(tracecount=CONFIG_COUNT,samplecount=len(new_trace),in_len=8,out_len=8)
     cs.addTrace(new_trace,rand_input,rand_output)
   else:
     cs.addTrace(new_trace,rand_input,rand_output)

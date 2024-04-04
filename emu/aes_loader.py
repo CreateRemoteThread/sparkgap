@@ -34,13 +34,13 @@ if CONFIG_INFILE is None or CONFIG_OUTFILE is None:
 
 cs = None
 
-KEY_ADDR = 0x18cb8
-DATA_ADDR = 0x18cc0
-OUT_ADDR = 0x18cb0
+KEY_ADDR = 0x19e64
+DATA_ADDR = 0x19e74
+OUT_ADDR = 0x19e84
 
-DODES_END = 0x8974
+DOAES_END = 0x9c18
 
-rand_key = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
+rand_key = np.array([random.randint(0,0xFF) for i in range(0,16)],dtype=np.uint8)
 key_str = " ".join(["%02x" % x for x in rand_key])
 
 if CONFIG_REKEY is False:
@@ -51,19 +51,23 @@ for i in range(0,CONFIG_COUNT):
   emu.load(CONFIG_INFILE)
   emu.setup()
   if CONFIG_REKEY is True:
-    rand_key = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
+    rand_key = np.array([random.randint(0,0xFF) for i in range(0,16)],dtype=np.uint8)
     key_str = " ".join(["%02x" % x for x in rand_key])
     print("Key is %s" % key_str)
   emu[KEY_ADDR] = bytes(rand_key[0:4])
   emu[KEY_ADDR+4] = bytes(rand_key[4:8])
-  rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
+  emu[KEY_ADDR+8] = bytes(rand_key[8:12])
+  emu[KEY_ADDR+12] = bytes(rand_key[12:16])
+  rand_input = np.array([random.randint(0,0xFF) for i in range(0,16)],dtype=np.uint8)
   emu[DATA_ADDR] = bytes(rand_input[0:4])
   emu[DATA_ADDR + 4] = bytes(rand_input[4:8])
-  emu.start(emu.functions["doDESEncrypt"] , DODES_END)
+  emu[DATA_ADDR + 8] = bytes(rand_input[8:12])
+  emu[DATA_ADDR + 12] = bytes(rand_input[12:16])
+  emu.start(emu.functions["doAESEncrypt"] , DOAES_END)
   new_trace = np.fromiter(map(lambda event: event["register"], emu.trace),dtype=np.float32)
-  rand_output = emu[OUT_ADDR:OUT_ADDR+8]
+  rand_output = emu[OUT_ADDR:OUT_ADDR+16]
   if cs is None:
-    cs = sparkgap.filemanager.CaptureSet(tracecount=CONFIG_COUNT,samplecount=len(new_trace),in_len=8,out_len=8)
+    cs = sparkgap.filemanager.CaptureSet(tracecount=CONFIG_COUNT,samplecount=len(new_trace),in_len=16,out_len=16)
     cs.addTrace(new_trace,rand_input,rand_output)
   else:
     cs.addTrace(new_trace,rand_input,rand_output)

@@ -112,9 +112,11 @@ def getMinimalSAD(trace1,trace2,varMgr):
 def doCORR(tm_in,varMgr):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
+  lenPT = len(tm_in.data_in[0])
+  lenCT = len(tm_in.data_out[0])
   traces = zeros((numTraces,sampleCnt),float32)
-  data = zeros((numTraces,16),uint8)
-  data_out = zeros((numTraces,16),uint8)
+  data = zeros((numTraces,lenPT),uint8)
+  data_out = zeros((numTraces,lenCT),uint8)
   CONFIG_REFTRACE = varMgr.getVariable("ref")
   CONFIG_LOWPASS = varMgr.getOptionalVariable("lowpass",None)
   CONFIG_MCF_CUTOFF = varMgr.getVariable("corr_cutoff")
@@ -174,9 +176,11 @@ def doEarthquake(tm_in,varMgr):
 def doSAD(tm_in,varMgr):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
+  lenPT = len(tm_in.data_in[0])
+  lenCT = len(tm_in.data_out[0])
   traces = zeros((numTraces,sampleCnt),float32)
-  data = zeros((numTraces,16),uint8)
-  data_out = zeros((numTraces,16),uint8)
+  data = zeros((numTraces,lenPT),uint8)
+  data_out = zeros((numTraces,lenCT),uint8)
   CONFIG_REFTRACE = varMgr.getVariable("ref")
   CONFIG_LOWPASS = varMgr.getOptionalVariable("lowpass",None)
   CONFIG_SAD_CUTOFF = varMgr.getVariable("sad_cutoff")
