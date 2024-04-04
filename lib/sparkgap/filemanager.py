@@ -27,10 +27,17 @@ class CaptureSet:
     except ValueError:
       if len(trace) > self.traces.shape[1]:
         len_diff = len(trace) - self.traces.shape[1]
-        print("Resizing array by %d" % len_diff)
+        print("Expanding trace array by %d" % len_diff)
         self.traces = np.pad(self.traces,((0,0),(0,len_diff)),"constant",constant_values=0) 
         self.traces[self.writeHead:] = trace
+      elif len(trace) < self.traces.shape[1]:
+        len_diff = self.traces.shape[1] - len(trace)
+        print("Padding single trace by %d" % len_diff)
+        trace = np.append(trace,np.zeros(len_diff,np.float32))
+        self.traces[self.writeHead:] = trace
       else:
+        print(len(trace))
+        print(self.traces.shape)
         raise ValueError("Unknown ValueError exception, debugme (filemanager.py)")
     self.data_in[self.writeHead:] = data_in
     self.data_out[self.writeHead:] = data_out
