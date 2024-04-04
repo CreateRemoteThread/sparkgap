@@ -38,9 +38,12 @@ KEY_ADDR = 0x18cb8
 DATA_ADDR = 0x18cc0
 OUT_ADDR = 0x18cb0
 
-DODES_END = 0x8974
+# DODES_END = 0x8974   # WHOLE
+DODES_END = 0x8668   # FIRSTROUND
 
-rand_key = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
+
+# rand_key = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
+rand_key = np.array([0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88])
 key_str = " ".join(["%02x" % x for x in rand_key])
 
 if CONFIG_REKEY is False:

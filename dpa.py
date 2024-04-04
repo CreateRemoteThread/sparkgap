@@ -12,7 +12,7 @@ import sparkgap.filemanager
 import sparkgap.attack
 
 TRACE_OFFSET = 0
-TRACE_LENGTH = 17000
+TRACE_LENGTH = None
 TRACE_MAX = 0
 
 CONFIG_PLOT = True
@@ -116,12 +116,17 @@ if __name__ == "__main__":
     elif opt == "--txt":
       CONFIG_PLOT = False
   print("TRACE_OFFSET = %d" % TRACE_OFFSET)
-  print("TRACE_LENGTH = %d" % TRACE_LENGTH)
+  if TRACE_LENGTH is None:
+    print("Delayed loading TRACE_LENGTH")
+  else:
+    print("TRACE_LENGTH = %d" % TRACE_LENGTH)
   if fn is None:
     print("You must specify a file with -f")
     sys.exit(0)
   print("Stage 1: Loading plaintexts...")
   tm = sparkgap.filemanager.TraceManager(fn)
+  TRACE_LENGTH = len(tm.traces[0]) - TRACE_OFFSET
+  print("TRACE_LENGTH = %d" % TRACE_LENGTH)
   print("Deriving key... wish me luck!")
   if CONFIG_PLOT:
     resultViz = sparkgap.resultviz.VisualizerApp()
