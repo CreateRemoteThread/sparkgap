@@ -23,7 +23,7 @@ for arg,val in opts:
   elif arg in ("-f","--file"):
     CONFIG_INFILE = val
   elif arg in ("-c","--count"):
-    CONFIG_COUNT = val
+    CONFIG_COUNT = int(val)
 
 if CONFIG_INFILE is None or CONFIG_OUTFILE is None:
   print("You must populate both -f and -w")
@@ -38,13 +38,16 @@ OUT_ADDR = 0x18d64
 DOXTEA_END = 0x84c4
 
 rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
-emu[KEY_ADDR] = bytes(rand_input[0:4])
-emu[KEY_ADDR+4] = bytes(rand_input[4:8])
+key_str = " ".join(["%02x" % p for p in rand_input])
+
+print("Key is %s" % key_str)
 
 for i in range(0,CONFIG_COUNT):
   emu = rainbow_arm(trace_config=TraceConfig(register=HammingWeight()))
   emu.load(CONFIG_INFILE)
   emu.setup()
+  emu[KEY_ADDR] = bytes(rand_input[0:4])
+  emu[KEY_ADDR+4] = bytes(rand_input[4:8])
   rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
   emu[DATA_ADDR] = bytes(rand_input[0:4])
   emu[DATA_ADDR + 4] = bytes(rand_input[4:8])
@@ -61,3 +64,4 @@ for i in range(0,CONFIG_COUNT):
   gc.collect()
 
 cs.save(CONFIG_OUTFILE)
+print("Reminder: Key is %s" % key_str)
