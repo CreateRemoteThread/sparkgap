@@ -70,7 +70,7 @@ def inv_permute(table,blk,default_char=2):
   return pt
 
 def mapToInteger(in_s,bits=6):
- x in_r = in_s[::-1]
+  in_r = in_s[::-1]
   out = 0
   for ix in range(0,bits):
     i = ix

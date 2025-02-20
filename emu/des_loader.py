@@ -35,11 +35,11 @@ if CONFIG_INFILE is None or CONFIG_OUTFILE is None:
 cs = None
 
 KEY_ADDR = 0x18ce8
-DATA_ADDR = 0x18cd0
+DATA_ADDR = 0x18cd8
 OUT_ADDR = 0x18ce0
 
+DODES_START = 0x8954
 DODES_END = 0x8974   # WHOLE
-# DODES_END = 0x8668   # FIRSTROUND
 
 rand_key = np.array([0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88])
 key_str = " ".join(["%02x" % x for x in rand_key])
@@ -55,9 +55,10 @@ for i in range(0,CONFIG_COUNT):
     rand_key = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
     key_str = " ".join(["%02x" % x for x in rand_key])
     print("Key is %s" % key_str)
-  out_data = emu[DATA_ADDR:DATA_ADDR+8]
-  print("%s" % binascii.hexlify(out_data))
-  emu.start(0x8954 , DODES_END)
+  rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
+  emu[DATA_ADDR] = bytes(rand_input[0:4])
+  emu[DATA_ADDR+4] = bytes(rand_input[4:8])
+  emu.start(DODES_START , DODES_END)
   new_trace = np.fromiter(map(lambda event: event["register"], emu.trace),dtype=np.float32)
   out_output = emu[OUT_ADDR:OUT_ADDR+8]
   if cs is None:
