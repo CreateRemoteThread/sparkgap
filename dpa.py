@@ -140,7 +140,8 @@ if __name__ == "__main__":
     out += "%02x " % int(r[i])
   print("Done: %s" % out)
   out = ""
-  out = ""
+  if hasattr(leakmodel,"postprocess"):
+    leakmodel.postprocess(r)
   if CONFIG_PLOT:
     resultViz.render()
     resultViz.mainloop()

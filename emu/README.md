@@ -1,5 +1,5 @@
-# teacup
+# emu
 
-Camellia sinensis is a species of evergreen shrub or small tree in the flowering plant family Theaceae. Its leaves and leaf buds are used to produce the popular beverage tea. Common names include tea plant, tea shrub, and tea tree (unrelated to Melaleuca alternifolia, the source of tea tree oil, or the genus Leptospermum commonly called tea tree).
+This folder contains experiments for software-emulated side channel, using Ledger-Donjon's Rainbow framework. The example executable is DES. You can compile this with:
 
-arm-none-eabi-gcc -nostdlib -o hello.elf hello.c
+arm-none-eabi-gcc -nostdlib -o des.elf des.c

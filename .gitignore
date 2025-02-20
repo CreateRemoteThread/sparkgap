@@ -3,6 +3,10 @@ lib/dist/
 lib/build/
 lib/sparkgap.egg-info/
 
+# fuck right off emu elf files
+emu/*.elf
+emu/*.hdf
+
 # go away preprocessor files
 *.hdf
 **/*.hdf

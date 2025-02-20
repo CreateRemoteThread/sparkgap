@@ -34,15 +34,13 @@ if CONFIG_INFILE is None or CONFIG_OUTFILE is None:
 
 cs = None
 
-KEY_ADDR = 0x18cb8
-DATA_ADDR = 0x18cc0
-OUT_ADDR = 0x18cb0
+KEY_ADDR = 0x18ce8
+DATA_ADDR = 0x18cd0
+OUT_ADDR = 0x18ce0
 
-# DODES_END = 0x8974   # WHOLE
-DODES_END = 0x8668   # FIRSTROUND
+DODES_END = 0x8974   # WHOLE
+# DODES_END = 0x8668   # FIRSTROUND
 
-
-# rand_key = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
 rand_key = np.array([0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88])
 key_str = " ".join(["%02x" % x for x in rand_key])
 
@@ -57,24 +55,22 @@ for i in range(0,CONFIG_COUNT):
     rand_key = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
     key_str = " ".join(["%02x" % x for x in rand_key])
     print("Key is %s" % key_str)
-  emu[KEY_ADDR] = bytes(rand_key[0:4])
-  emu[KEY_ADDR+4] = bytes(rand_key[4:8])
-  rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
-  emu[DATA_ADDR] = bytes(rand_input[0:4])
-  emu[DATA_ADDR + 4] = bytes(rand_input[4:8])
-  emu.start(emu.functions["doDESEncrypt"] , DODES_END)
+  out_data = emu[DATA_ADDR:DATA_ADDR+8]
+  print("%s" % binascii.hexlify(out_data))
+  emu.start(0x8954 , DODES_END)
   new_trace = np.fromiter(map(lambda event: event["register"], emu.trace),dtype=np.float32)
-  rand_output = emu[OUT_ADDR:OUT_ADDR+8]
+  out_output = emu[OUT_ADDR:OUT_ADDR+8]
   if cs is None:
     cs = sparkgap.filemanager.CaptureSet(tracecount=CONFIG_COUNT,samplecount=len(new_trace),in_len=8,out_len=8)
-    cs.addTrace(new_trace,rand_input,rand_output)
+    cs.addTrace(new_trace,rand_input,out_output)
   else:
-    cs.addTrace(new_trace,rand_input,rand_output)
-  print("Run %d/%d, %s -> %s" % (i,CONFIG_COUNT,binascii.hexlify(rand_input),binascii.hexlify(rand_output)))
+    cs.addTrace(new_trace,rand_input,out_output)
+  print("Run %d/%d, %s -> %s" % (i,CONFIG_COUNT,binascii.hexlify(rand_input),binascii.hexlify(out_output)))
   del(emu)
   gc.collect()
 
-cs.save(CONFIG_OUTFILE)
+if CONFIG_OUTFILE != "q":
+  cs.save(CONFIG_OUTFILE)
 
 if CONFIG_REKEY is False:
   print("Reminder: key is %s" % key_str)

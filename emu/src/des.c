@@ -1,3 +1,5 @@
+// #include <stdio.h>
+
 /* des.c */
 /*
     This file is part of the ARM-Crypto-Lib.
@@ -398,19 +400,26 @@ void tdes_dec(void *out, void *in, const uint8_t *key){
 
 /******************************************************************************/
 
-uint8_t  in[8] = {0,0,0,0,0,0,0,0};
-uint8_t out[8] = {1,1,1,1,1,1,1,1};
-uint8_t key[8] = {2,2,2,2,2,2,2,2};
+uint8_t  in[8] = {0xaa,0xbb,0xcc,0xdd,0xaa,0xbb,0xcc,0xdd};
+uint8_t out[8] = {0x41,0x41,0x41,0x41,0x42,0x42,0x42,0x42};
+// uint8_t out[8] = {0x00,0x00,0x00,0x00,0x22,0x22,0x22,0x22};
+uint8_t key[8] = {0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88};
 
 void doDESEncrypt()
 {
-  des_enc(out,in,key);
+  des_enc(&out,&in,&key);
+  return;
 }
 
 int main(int argc, char **argv)
 {
-  doDESEncrypt();
-  while(1)
+  des_enc(&out,&in,&key);
+  /*
+  int i = 0;
+  for(i = 0;i < 8;i++)
   {
+    printf("%02x ",out[i]);
   }
+  printf("\n");
+  */
 }

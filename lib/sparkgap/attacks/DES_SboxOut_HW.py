@@ -70,7 +70,7 @@ def inv_permute(table,blk,default_char=2):
   return pt
 
 def mapToInteger(in_s,bits=6):
-  in_r = in_s[::-1]
+ x in_r = in_s[::-1]
   out = 0
   for ix in range(0,bits):
     i = ix
@@ -95,7 +95,6 @@ def bytesToBitstring(in_str):
 
 def bitstringToBytes(in_str):
   return [int(mapToInteger(in_str[i:i + 8],8)) for i in range(0, len(in_str), 8)]
-
 
 class desSplit:
   def __init__(self,pt):
@@ -243,3 +242,10 @@ class AttackModel:
 
   def distinguisher(self,tnum,bnum,kguess):
     return self.genIValRaw(tnum,bnum,kguess) % 2 == 0
+
+  def postprocess(self,key):
+    out = ""
+    for i in range(0,self.keyLength):
+      out += "%02x " % int(key[i])
+    print("Hello from postprocess - %s" % out)
+    return

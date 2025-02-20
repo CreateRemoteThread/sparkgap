@@ -37,7 +37,7 @@ OUT_ADDR = 0x18d64
 
 DOXTEA_END = 0x84c4
 
-rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
+rand_input = np.array([random.randint(0,0xFF) for i in range(0,16)],dtype=np.uint8)
 key_str = " ".join(["%02x" % p for p in rand_input])
 
 print("Key is %s" % key_str)
@@ -48,6 +48,8 @@ for i in range(0,CONFIG_COUNT):
   emu.setup()
   emu[KEY_ADDR] = bytes(rand_input[0:4])
   emu[KEY_ADDR+4] = bytes(rand_input[4:8])
+  emu[KEY_ADDR+8] = bytes(rand_input[8:12])
+  emu[KEY_ADDR+12] = bytes(rand_input[12:16])
   rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
   emu[DATA_ADDR] = bytes(rand_input[0:4])
   emu[DATA_ADDR + 4] = bytes(rand_input[4:8])
