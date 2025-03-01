@@ -1,9 +1,23 @@
 #!/usr/bin/env python3
 
+import binascii
 import sys
 import getopt
 import numpy as np
 import math
+import sparkgap.filemanager
+from Crypto.Cipher import DES
+
+def mapToInteger(in_s,bits=6):
+  in_r = in_s[::-1]
+  out = 0
+  for ix in range(0,bits):
+    i = ix
+    if (in_r[i] != 2) and (in_r[i] != 3):
+      out += math.pow(2,i) * in_r[i] 
+    else:
+      pass
+  return out
 
 PC1TAB = [56, 48, 40, 32, 24, 16,  8, 0, 57, 49, 41, 33, 25, 17, 9,  1, 58, 50, 42, 34, 26, 18, 10,  2, 59, 51, 43, 35, 62, 54, 46, 38, 30, 22, 14, 6, 61, 53, 45, 37, 29, 21, 13,  5, 60, 52, 44, 36, 28, 20, 12,  4, 27, 19, 11, 3]
 PC2TAB = [13, 16, 10, 23,  0,  4, 2, 27, 14,  5, 20,  9, 22, 18, 11,  3, 25,  7, 15,  6, 26, 19, 12,  1, 40, 51, 30, 36, 46, 54, 29, 39, 50, 44, 32, 47, 43, 48, 38, 55, 33, 52, 45, 41, 49, 35, 28, 31]
@@ -45,18 +59,45 @@ SBOX = [
   0x21, 0xE7, 0x4A, 0x8D, 0xFC, 0x90, 0x35, 0x6B
 ]
 
+def inv_permute(table,blk,default_char=2):
+  pt = [default_char] * (max(table) + 1)
+  for index in range(0,len(blk)):
+    if pt[table[index]] == 2 or pt[table[index]] == 3:
+      pt[table[index]] = int(blk[index])
+    else:
+      if pt[table[index]] != int(blk[index]):
+        print("fail - mismatch in inv_permute") 
+        sys.exit(0) 
+  return pt
+
+def bytesToBitstring(in_str):
+  out = []
+  for b in in_str:
+    out += [ord(x) - ord('0') for x in bin(b)[2:].rjust(8,"0")]
+  return out
+
+def stringify(hex_in):
+  return bytes(hex_in)
+  # return bytes("".join([chr(hexbyte) for hexbyte in hex_in]))
+
+def bitstringToBytes(in_str):
+  return [int(mapToInteger(in_str[i:i + 8],8)) for i in range(0, len(in_str), 8)]
+
+
 CONFIG_KEY     = None
 CONFIG_KNOWNPT = None
 CONFIG_KNOWNCT = None
+CONFIG_TRACEFILE = None
 
 def usage():
   print("./des_key_recombiner.py -k [hexkey] -p [plaintext] -c [ciphertext]")
+  print("./des_key_recombiner.py -k [hexkey] -f [tracefile]")
 
 if len(sys.argv) == 1:
   usage()
   sys.exit(0)
 
-args, rem = getopt.getopt(sys.argv[1:],"k:p:c:",["--key=","--plaintext=","--ciphertext="])
+args, rem = getopt.getopt(sys.argv[1:],"k:p:c:f:",["--key=","--plaintext=","--ciphertext=","--file="])
 for arg,val in args:
   if arg in ["-k","--key"]:
     CONFIG_KEY = binascii.unhexlify(val)
@@ -64,9 +105,14 @@ for arg,val in args:
     CONFIG_KNOWNPT = binascii.unhexlify(val)
   elif arg in ["-c","--ciphertext"]:
     CONFIG_KNOWNCT = binascii.unhexlify(val)
+  elif arg in ["-f","--file"]:
+    CONFIG_TRACEFILE = val
 
-if (CONFIG_KEY is None) or (CONFIG_KNOWNPT is None) or (CONFIG_KNOWNCT is None):
-  print("You must supply -k (hexkey), -p (hexplain) and -c (hexcipher)")
+if CONFIG_KEY is None:
+  print("You must supply -k (hexkey)")
+
+if ((CONFIG_KNOWNPT is None) or (CONFIG_KNOWNCT is None)) and (CONFIG_TRACEFILE is None):
+  print("You must either supply -p (pthex) and -c (cthex) or -f (tracefile)")
   sys.exit(0)
 
 class desRecombine:
@@ -124,12 +170,18 @@ class desRecombine:
           try_key[tposn] = self.inv_pc1[tposn]
       # print try_key
       try_hexlified = bitstringToBytes(try_key)
-      try_hexstr = "".join([chr(xt) for xt in try_hexlified])
-      # print binascii.hexlify(try_hexstr)
-      d = DES.new(try_hexstr,DES.MODE_ECB)
+      d = DES.new(bytes(try_hexlified),DES.MODE_ECB)
       if d.encrypt(stringify(knownPlain)) == stringify(knownCipher):
         print("GOTCHA: %s" % binascii.hexlify(try_hexstr))
-      # else:
-      #   print binascii.hexlify(d.encrypt(stringify(knownPlain)))
+        sys.exit(0)
+    print(":( valid key not found :(")
 
-desRecombine
+if CONFIG_TRACEFILE is None:
+  dr = desRecombine(CONFIG_KEY)
+  dr.bruteKey(CONFIG_KNOWNPT, CONFIG_KNOWNCT)
+else:
+  dr = desRecombine(CONFIG_KEY)
+  tm = sparkgap.filemanager.TraceManager(CONFIG_TRACEFILE)
+  di = tm.getSingleData(0)
+  do = tm.getSingleDataOut(0)
+  dr.bruteKey(di,do)
