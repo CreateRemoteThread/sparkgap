@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import sparkgap.filemanager
 import getopt
 import copy
+import os
 from numpy import *
 
 def doCompareTraces_SINGLE(tn1):
@@ -123,8 +124,9 @@ def doCompareTraces(tn1,tn2):
   fig,(a1,a2,a3) = plt.subplots(3,1)
   fig.canvas.mpl_connect("button_press_event",onclick)
   a1.set_title("Averaged Traces")
-  a1.plot(trace_avg1)
-  a1.plot(trace_avg2)
+  a1.plot(trace_avg1, label=os.path.basename(tn1))
+  a1.plot(trace_avg2, label=os.path.basename(tn2))
+  a1.legend()
   a2.set_title("Difference of Means")
   a2.plot(abs(trace_avg1 - trace_avg2))
   a3.set_title("Avg Standard Deviation (Noise)")
