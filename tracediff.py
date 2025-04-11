@@ -99,12 +99,12 @@ def onclick(event):
       lastX += OFFSET
       print("MARK: %d" % lastX)
     else:
-      localX = int(event.xdata)
+      localX = int(event.xdata) + OFFSET
       fromX = min(lastX,localX)
       toX = max(lastX,localX)
       dist = toX - fromX
-      fromX += OFFSET
-      toX += OFFSET
+      # fromX += OFFSET
+      # toX += OFFSET
       print("FROM %d TO %d DIST %d" % (fromX,toX,dist))
       lastX = localX
 
