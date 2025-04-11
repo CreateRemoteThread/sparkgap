@@ -56,6 +56,7 @@ def doCompareTraces_SINGLE(tn1):
 TRACE_FILES = []
 CONFIG_OFFSET = None
 CONFIG_SAMPLES = None
+CONFIG_SAMPSZ = None
 
 import random
 # group 1 is random, group2  is fixed.
@@ -108,10 +109,13 @@ def onclick(event):
       lastX = localX
 
 def doCompareTraces(tn1,tn2):
-  global CONFIG_OFFSET,CONFIG_SAMPLES
+  global CONFIG_OFFSET,CONFIG_SAMPLES,CONFIG_SAMPSZ
   tm_in1 = sparkgap.filemanager.TraceManager(tn1)
-  trace_avg1 = tm_in1.getMeant()
   tm_in2 = sparkgap.filemanager.TraceManager(tn2)
+  if CONFIG_SAMPSZ is not None:
+    tm_in1.randomSelect(CONFIG_SAMPSZ)
+    tm_in2.randomSelect(CONFIG_SAMPSZ)
+  trace_avg1 = tm_in1.getMeant()
   trace_avg2 = tm_in2.getMeant()
   if len(trace_avg1) != len(trace_avg2):
     print("The traces do not have equal lengths, I can't use this")
@@ -132,16 +136,23 @@ def doCompareTraces(tn1,tn2):
   a3.set_title("Avg Standard Deviation (Noise)")
   # (nn0,nn1,points) = doTLVA(tm_in1,tm_in2)
   group1_traces = []
+  group2_traces = []
   for f in range(0,tm_in1.getTraceCount()):
     group1_traces.append(tm_in1.getSingleTrace(f)[CONFIG_OFFSET:CONFIG_OFFSET+CONFIG_SAMPLES])
-  a3.plot(np.std(group1_traces,axis=0,keepdims=True)[0])
+  for f in range(0,tm_in2.getTraceCount()):
+    group2_traces.append(tm_in2.getSingleTrace(f)[CONFIG_OFFSET:CONFIG_OFFSET+CONFIG_SAMPLES])
+  a3.plot(np.std(group1_traces,axis=0,keepdims=True)[0],label=os.path.basename(tn1))
+  a3.plot(np.std(group2_traces,axis=0,keepdims=True)[0], label = os.path.basename(tn2))
+  a3.legend()
   plt.show()
   
 if __name__ == "__main__":
-  opts,remainder = getopt.getopt(sys.argv[1:],"f:o:n:",["file=","offset=","samples="])
+  opts,remainder = getopt.getopt(sys.argv[1:],"f:o:n:",["file=","offset=","samples=","samplesize="])
   for opt, arg in opts:
     if opt in ("-f","--file"):
       TRACE_FILES.append(arg)
+    elif opt == "--samplesize":
+      CONFIG_SAMPSZ = int(arg)
     elif opt in ("-o","--offset"):
       CONFIG_OFFSET = int(arg)
     elif opt in ("-n","--samples"):

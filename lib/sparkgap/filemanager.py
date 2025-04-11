@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 
-# v2: hdf5
-
 import scipy.io
 import h5py
 import numpy
 import numpy as np
 import os
 import sys
-# import matplotlib.pyplot as plt
+import random
 
 class CaptureSet:
   def __init__(self,tracecount=15000,samplecount=100000,in_len=16,out_len=16,migrateData=False):
@@ -96,8 +94,6 @@ class TraceManager:
   def getMeant(self):
     print("TraceManager2: getMeant called")
     m = numpy.mean(self.traces,axis=0)    
-    # plt.plot(m)
-    # plt.show()
     return m
 
   def loadCiphertexts(self):
@@ -136,6 +132,12 @@ class TraceManager:
     del self.traces
     self.traces = self.tracesNew
 
+  def randomSelect(self,samplesz):
+    print("TraceManager2: Redrawing magic circle")
+    print(np.random.choice(self.traces.shape[0], size = samplesz, replace=False))
+    self.traces = self.traces[sorted(np.random.choice(self.traces.shape[0], size = samplesz, replace=False))]
+    self.traceCount = len(self.traces)
+
   def __init__(self,filename):
     print("TraceManager2: Initializing with filename %s" % filename)
     self.fn = filename
@@ -165,15 +167,4 @@ def save(fn,traces=None,data=None,data_out=None,freq=0,additionalParams={}):
   # tn.f.create_dataset("data_out",data=data_out)
 
 if __name__ == "__main__":
-  if len(sys.argv) != 2:
-    print("This is not meant to be called directly :)")
-  tm = TraceManager(sys.argv[1])
-  f1 = open("inputs.txt","w")
-  f2 = open("outputs.txt","w")
-  for i in range(0,len(tm.data_in)):
-    d1 = tm.data_in[i]
-    f1.write("".join(["%02x" % x for x in d1]) + "\n")
-    d2 = tm.data_out[i]
-    f2.write("".join(["%02x" % x for x in d2]) + "\n")
-  f1.close()
-  f2.close()
+  print("This file should not be called directly :)")
