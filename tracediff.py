@@ -147,12 +147,13 @@ def doCompareTraces(tn1,tn2):
   plt.show()
   
 if __name__ == "__main__":
-  opts,remainder = getopt.getopt(sys.argv[1:],"f:o:n:",["file=","offset=","samples=","samplesize="])
+  opts,remainder = getopt.getopt(sys.argv[1:],"f:o:n:",["file=","offset=","samples=","resample="])
   for opt, arg in opts:
     if opt in ("-f","--file"):
       TRACE_FILES.append(arg)
-    elif opt == "--samplesize":
+    elif opt == "--resample":
       CONFIG_SAMPSZ = int(arg)
+      print("TraceDiff: Selecting %d random samples from each file" % CONFIG_SAMPSZ)
     elif opt in ("-o","--offset"):
       CONFIG_OFFSET = int(arg)
     elif opt in ("-n","--samples"):
