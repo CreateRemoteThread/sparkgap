@@ -4,6 +4,7 @@
 
 import sys
 import subprocess
+import numpy
 
 class CaptureInterface():
   def __init__(self):
@@ -25,9 +26,12 @@ class CaptureInterface():
       print("Error: subprocess timed out")
       return [0]
     self.hackrf_proc = None
-    print(stdout)
-    print(stderr)
-    return [0]
+    if b"exit" not in stderr:
+      print("Error: no exit detected")
+      return [0]
+    # print(stdout)
+    # print(stderr)
+    return numpy.fromstring(stdout, dtype=numpy.uint8)
 
   # hackrf_transfer -H -d <serial number> -a 0 -l 32 -g 32 -r rx1.cs8
   def arm(self):

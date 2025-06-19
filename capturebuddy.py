@@ -65,9 +65,6 @@ def runCaptureTask():
     LEIA_Hack = True
     hack_captureSet = sparkgap.filemanager.CaptureSet(tracecount=config["tracecount"],samplecount=config["samplecount"])
   captureSet = sparkgap.filemanager.CaptureSet(tracecount=config["tracecount"],samplecount=config["samplecount"])
-  # traces = np.zeros((config["tracecount"],config["samplecount"]),np.float32)
-  # data = np.zeros((config["tracecount"],config["len_in"]),np.uint8)         # RAND
-  # data_out = np.zeros((config["tracecount"],config["len_out"]),np.uint8)     # AUTN
   for i in range(0,config["tracecount"]):
     print("=" * 80)
     print("[%s] Running job: %d/%d. %d missed" % (datetime.datetime.now(),i,config["tracecount"],missedCount))
