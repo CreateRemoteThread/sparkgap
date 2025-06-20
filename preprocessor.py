@@ -9,6 +9,7 @@ import readline
 import sparkgap.filemanager
 import sparkgap.slipnslide
 import sparkgap.preprocessor
+import sparkgap.preprocessor.sdr
 import sparkgap.preprocessor.filtering
 import sparkgap.preprocessor.alignment
 import sparkgap.preprocessor.keeloq
@@ -75,6 +76,7 @@ dispatchLookup["bandpass"] = ("Band pass filter",sparkgap.preprocessor.filtering
 dispatchLookup["lowpass"] = ("Low pass filter",sparkgap.preprocessor.filtering.doLowpass)
 dispatchLookup["keeloq"] = ("Flip Keeloq IO Special",sparkgap.preprocessor.keeloq.doFlipKeeloqIO)
 dispatchLookup["slicer"] = ("Signal slicer",sparkgap.preprocessor.slicer.doSlicer)
+dispatchLookup["c2f"] = ("Complex to Float Conversion",sparkgap.preprocessor.sdr.complex2Float)
 
 def dispatchAlign(tm_in):
   CONFIG_STRATEGY = varMgr.getVariable("strategy").lower()
