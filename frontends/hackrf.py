@@ -36,7 +36,7 @@ class CaptureInterface():
   # hackrf_transfer -H -d <serial number> -a 0 -l 32 -g 32 -r rx1.cs8
   def arm(self):
     try:
-      self.hackrf_proc = subprocess.Popen(["hackrf_transfer","-H","-a","0","-l","32","-g","32","-n","10000","-r","-"],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=False)
+      self.hackrf_proc = subprocess.Popen(["hackrf_transfer","-H","-f","8100000","-s","4000000","-a","0","-l","32","-g","32","-n","10000","-r","-"],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=False)
     except:
       print("hackrf: could not open process")
       sys.exit(0)
