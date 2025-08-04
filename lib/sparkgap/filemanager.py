@@ -12,16 +12,20 @@ class CaptureSet:
   def __init__(self,tracecount=15000,samplecount=100000,in_len=16,out_len=16,migrateData=False):
     self.writeHead = 0
     self.tracecount = tracecount
+    print("CaptureSet: debug, creating new captureset")
+    self.samplecount=samplecount
+    self.traces = None
     if migrateData is False:
-      self.traces = np.zeros((tracecount,samplecount),np.float32)
+      print("CaptureSet: sdr fix, self.traces is 0")
+      # self.traces = np.zeros((tracecount,samplecount),np.float32)
       self.data_in = np.zeros((tracecount,in_len),np.uint8)
       self.data_out = np.zeros((tracecount,out_len),np.uint8)
     else:
       print("CaptureSet: migrating data, not creating trace sets")
 
   def addTrace(self,trace,data_in,data_out):
-    if trace.dtype != self.traces.dtype:
-      self.traces = np.zeros(
+    if self.traces is None:
+      self.traces = np.zeros((self.tracecount,self.samplecount),dtype=trace.dtype) 
     try:
       self.traces[self.writeHead:] = trace
     except ValueError:

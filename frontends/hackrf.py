@@ -32,9 +32,9 @@ class CaptureInterface():
     if b"exit" not in stderr:
       print("Error: no exit detected")
       return [0]
-    # print(stdout)
-    # print(stderr)
-    return numpy.fromstring(stdout, dtype=numpy.int8)
+    ns = numpy.fromstring(stdout, dtype=numpy.int8)
+    paired = ns.reshape(-1,2)
+    return paired[:,0] + 1j * paired[:,1]
 
   # hackrf_transfer -H -d <serial number> -a 0 -l 32 -g 32 -r rx1.cs8
   def arm(self):
