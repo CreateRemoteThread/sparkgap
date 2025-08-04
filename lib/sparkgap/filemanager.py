@@ -75,6 +75,12 @@ class TraceManager:
     if self.f is not None:
       self.f.close()
 
+  def getDtype(self):
+    if len(self.traces) == 0:
+      print("fatal: getDtype on empty trace array. dafuq?")
+      return None
+    return self.traces[0].dtype
+
   def slice(self,offset,numsamples):
     print("TraceManager: vertical slicing keeping %d:%d")
     if numsamples <= 0:

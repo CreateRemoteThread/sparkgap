@@ -9,13 +9,16 @@ import numpy
 class CaptureInterface():
   def __init__(self):
     self.config = {}
-    self.config["samplecount"] = 5000
-    self.config["freq"] = 16e6
-    self.config["bw"] = 1e6
     print("HackRF ext.trig. frontend ready")
 
   def init(self):
     print("hackrf frontend init()")
+    if "samplecount" not in self.config.keys():
+      self.config["samplecount"] = 50000
+    if "frequency" not in self.config.keys():
+      self.config["frequency"] = 8000000
+    if "samplerate" not in self.config.keys():
+      self.config["samplerate"] = 2000000
     self.hackrf_proc = None
 
   def capture(self):
@@ -31,14 +34,17 @@ class CaptureInterface():
       return [0]
     # print(stdout)
     # print(stderr)
-    return numpy.fromstring(stdout, dtype=numpy.uint8)
+    return numpy.fromstring(stdout, dtype=numpy.int8)
 
   # hackrf_transfer -H -d <serial number> -a 0 -l 32 -g 32 -r rx1.cs8
   def arm(self):
+    print(self.config)
     try:
-      self.hackrf_proc = subprocess.Popen(["hackrf_transfer","-H","-f","8100000","-s","4000000","-a","0","-l","32","-g","32","-n","10000","-r","-"],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=False)
-    except:
+      self.hackrf_proc = subprocess.Popen(["hackrf_transfer","-H","-f","%d" % self.config["frequency"],"-s","%d" % self.config["samplerate"],"-a","1","-l","32","-g","32","-n","%d" % self.config["samplecount"],"-r","-"],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=False)
+    except Exception as e:
+      print(self.config["frequency"])
       print("hackrf: could not open process")
+      print(e)
       sys.exit(0)
     print("hackrf: started process")
   

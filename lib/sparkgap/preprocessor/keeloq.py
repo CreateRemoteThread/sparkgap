@@ -18,7 +18,7 @@ def packKeeloq(bitstring):
 def doFlipKeeloqIO(tm_in,varMgr):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
-  traces = zeros((numTraces,sampleCnt),float32)
+  traces = zeros((numTraces,sampleCnt),tm_in.getDtype())
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   savedDataIndex = 0

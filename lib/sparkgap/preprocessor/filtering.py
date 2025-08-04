@@ -37,7 +37,8 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
 def doLowpass(tm_in,varMgr):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
-  traces = zeros((numTraces,sampleCnt),float32)
+  dt = tm_in.getSingleTrace(0).dtype
+  traces = zeros((numTraces,sampleCnt),dt)
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   savedDataIndex = 0
@@ -57,7 +58,7 @@ def doLowpass(tm_in,varMgr):
 def doBandpass(tm_in,varMgr):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
-  traces = zeros((numTraces,sampleCnt),float32)
+  traces = zeros((numTraces,sampleCnt),tm_in.getDtype())
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   savedDataIndex = 0
@@ -91,7 +92,7 @@ def doSingleCWTDenoise(x,wavelet="db4",level=1):
 def doCWTDenoise(tm_in,varMgr):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
-  traces = zeros((numTraces,sampleCnt),float32)
+  traces = zeros((numTraces,sampleCnt),tm_in.getDtype())
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   savedDataIndex = 0

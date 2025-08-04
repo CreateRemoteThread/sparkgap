@@ -15,7 +15,7 @@ def doSlicer(tm_in,varMgr):
   maxSlicesForwards = varMgr.getVariable("slices_forwards")
   newSampleCount = (maxSlicesBackwards + maxSlicesForwards) * (3 + CONFIG_REF_LENGTH)
   numTraces = tm_in.traceCount
-  traces = zeros((numTraces,newSampleCount),float32)
+  traces = zeros((numTraces,newSampleCount),tm_in.getDtype())
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   numTraces = tm_in.traceCount

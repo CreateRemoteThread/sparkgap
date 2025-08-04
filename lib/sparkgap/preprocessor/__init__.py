@@ -8,7 +8,7 @@ def TwoPointCompress(tm_in,varMgr):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
   cdist = varMgr.getVariable("compress_dist")
-  traces = zeros((numTraces,sampleCnt - cdist),float32)
+  traces = zeros((numTraces,sampleCnt - cdist),tm_in.getDtype())
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   print("="*64)
@@ -27,7 +27,7 @@ def VAlign(tm_in,varMgr):
   sampleCnt = tm_in.numPoints
   window_offset = varMgr.getOptionalVariable("window_offset",0)
   window_length = varMgr.getOptionalVariable("window_length",sampleCnt)
-  traces = zeros((numTraces,sampleCnt),float32)
+  traces = zeros((numTraces,sampleCnt),tm_in.getDtype())
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
   refct = varMgr.getVariable("ref")
