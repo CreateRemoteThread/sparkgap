@@ -20,6 +20,8 @@ class CaptureSet:
       print("CaptureSet: migrating data, not creating trace sets")
 
   def addTrace(self,trace,data_in,data_out):
+    if trace.dtype != self.traces.dtype:
+      self.traces = np.zeros(
     try:
       self.traces[self.writeHead:] = trace
     except ValueError:
@@ -62,6 +64,7 @@ class TraceSet:
   def __init__(self,key):
     print("TraceSet: Initialized blank TraceSet with key %s" % key)
     self.key = key
+    self.dtype = None
     self.traces_fn = None
     self.traces = None
     self.data_fn = None
@@ -79,7 +82,9 @@ class TraceManager:
     if len(self.traces) == 0:
       print("fatal: getDtype on empty trace array. dafuq?")
       return None
-    return self.traces[0].dtype
+    if self.dtype is None:
+      self.dtype = self.traces[0].dtype
+    return self.dtype
 
   def slice(self,offset,numsamples):
     print("TraceManager: vertical slicing keeping %d:%d")
@@ -89,7 +94,7 @@ class TraceManager:
     if (offset <= 0) or (offset + numsamples >= self.numPoints):
       print("TraceManager: offset + numsamples must be less than %d" % self.numPoints)
       return
-    newtraces = np.zeros((self.numTraces,numsamples),np.float32)
+    newtraces = np.zeros((self.numTraces,numsamples),self.getDtype())
     for i in range(0,len(self.traces)):
       newtraces[i] = self.traces[i][offset:offset+numsamples]
     self.traces = newtraces
@@ -130,7 +135,7 @@ class TraceManager:
 
   def cutTraces(self,start,end):
     print("TraceManager2: Cutting traces from %d to %d" % (start,end))    
-    self.tracesNew = np.zeros((self.traceCount,end - start),np.float32)
+    self.tracesNew = np.zeros((self.traceCount,end - start),self.getDtype())
     for i in range(0,self.traceCount):
       # print(len(self.traces[i]))
       self.tracesNew[i] = self.traces[i,start:end]
@@ -147,6 +152,7 @@ class TraceManager:
   def __init__(self,filename):
     print("TraceManager2: Initializing with filename %s" % filename)
     self.fn = filename
+    self.dtype = None
     self.numPoints = None
     self.traceCount = None
     if os.path.isfile(filename) is False:
