@@ -155,6 +155,8 @@ def do_tlva(fn,leakmodel,round,CONFIG_BYTE,CONFIG_KEYGUESS):
   if len(tlva_fixed_traces) == 0:
     print("Padding fixed traces...")
     tlva_fixed_traces = np.array([[np.nan for _ in range(fn.numPoints)]])
+  tlva_fixed_traces = np.asarray(tlva_fixed_traces,dtype=np.float32)
+  tlva_random_traces = np.asarray(tlva_random_traces,dtype=np.float32)
   with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     ttrace = scipy.stats.ttest_ind(tlva_random_traces,tlva_fixed_traces,axis=0,equal_var=False)
