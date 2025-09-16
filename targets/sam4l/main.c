@@ -32,6 +32,8 @@
 #define CONF_UART USART0
 #include <asf.h>
 #include <stdio.h>
+#include "hal_serial.h"
+#include "aes.h"
 
 usart_serial_options_t  uart_serial_options = {
 	.baudrate = 115200,
@@ -65,12 +67,16 @@ int main (void)
 	ioport_set_pin_dir(pin_led,IOPORT_DIR_OUTPUT);
 	ioport_set_pin_level(pin_led,true);
 	
-	usart_serial_putchar(CONF_UART,'1');
+	char cmd[64];
+	hal_puts("hello\r\n");
 	while(1)
 	{
-		// usart_serial_putchar(CONF_UART,'r');
-		usart_serial_read_packet(CONF_UART,&c,1);
-		usart_serial_putchar(CONF_UART,c);
+		// usart_serial_getchar(CONF_UART,&c);
+		hal_getline(cmd);
+		uint8_t local = hal_hex2bin("ab");
+		hal_bin2hex(local);
+		hal_putchar('\r');
+		hal_putchar('\n');
 	}
 }
 
