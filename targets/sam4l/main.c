@@ -1,32 +1,5 @@
 /**
- * \file
- *
- * \brief Empty user application template
- *
- */
-
-/**
- * \mainpage User Application template doxygen documentation
- *
- * \par Empty user application template
- *
- * Bare minimum empty user application template
- *
- * \par Content
- *
- * -# Include the ASF header files (through asf.h)
- * -# "Insert system clock initialization code here" comment
- * -# Minimal main function that starts with a call to board_init()
- * -# "Insert application code here" comment
- *
- */
-
-/*
- * Include header files for all drivers that have been imported from
- * Atmel Software Framework (ASF).
- */
-/*
- * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
+	sam4l aes sample (with hardware countermeasure)
  */
 
 #define CONF_UART USART0
@@ -34,6 +7,14 @@
 #include <stdio.h>
 #include "hal_serial.h"
 #include "aes.h"
+
+char aes_data[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+char aes_key[16] = {0x12,0x34,0x56,0x78,0x9a,0xbc,0xde,0xf0,0x12,0x34,0x56,0x78,0x9a,0xbc,0xde,0xf0};
+char aes_out[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+char cmd[64];
+
+// AES_init_ctx(&ctx, aes_key);
 
 usart_serial_options_t  uart_serial_options = {
 	.baudrate = 115200,
@@ -50,10 +31,15 @@ do {\
 
 int main (void)
 {
+
 	sysclk_init();
 	ioport_init();
 	board_init();
 	char c;
+	
+		struct AES_ctx ctx;
+	
+	GpioPort *base = arch_ioport_port_to_base(IOPORT_GPIOA);
 	
 	ioport_pin_t pin_tx = IOPORT_CREATE_PIN(IOPORT_GPIOA,12);
 	ioport_pin_t pin_rx = IOPORT_CREATE_PIN(IOPORT_GPIOA,11);
@@ -65,18 +51,54 @@ int main (void)
 	usart_serial_init(CONF_UART,&uart_serial_options);
 	
 	ioport_set_pin_dir(pin_led,IOPORT_DIR_OUTPUT);
-	ioport_set_pin_level(pin_led,true);
-	
-	char cmd[64];
+	/*
+	base->GPIO_OVRS = 1 << 4;
+	base->GPIO_OVRC = 1 << 4;
+	*/
+
+	int i = 0;
 	hal_puts("hello\r\n");
 	while(1)
 	{
-		// usart_serial_getchar(CONF_UART,&c);
+		for(i = 0;i < 64;i++)
+		{
+			cmd[i] = '\x00';
+		}
 		hal_getline(cmd);
-		uint8_t local = hal_hex2bin("ab");
-		hal_bin2hex(local);
-		hal_putchar('\r');
-		hal_putchar('\n');
+		if(cmd[0] == 'e')
+		{
+			// encrypt
+			for(i = 0;i < 16;i++)
+			{
+				aes_data[i] = hal_hex2bin((char *)(cmd + 1 + i * 2));
+			}
+			AES_init_ctx(&ctx, aes_key);
+			base->GPIO_OVRS = 1 << 4;
+			AES_ECB_encrypt(&ctx, aes_data);
+			base->GPIO_OVRC = 1 << 4;
+			for(i = 0;i < 16;i++)
+			{
+				hal_bin2hex(aes_data[i]);
+			}
+			hal_puts("\r\n");
+		}
+		else if(cmd[0] == 'k')
+		{
+			// rekey
+			for(i = 0;i < 16;i++)
+			{
+				aes_key[i] = hal_hex2bin((char *)(cmd + 1 + i * 2));
+			}
+			for(i = 0;i < 16;i++)
+			{
+				hal_bin2hex(aes_key[i]);
+			}
+			hal_puts("\r\n");
+		}
+		else
+		{
+			hal_puts("err: unknown command\r\n");
+		}
 	}
 }
 
