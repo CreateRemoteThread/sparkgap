@@ -56,6 +56,8 @@ for i in range(0,CONFIG_COUNT):
     key_str = " ".join(["%02x" % x for x in rand_key])
     print("Key is %s" % key_str)
   rand_input = np.array([random.randint(0,0xFF) for i in range(0,8)],dtype=np.uint8)
+  emu[KEY_ADDR] = bytes(rand_key[0:4])
+  emu[KEY_ADDR+4] = bytes(rand_key[4:8])
   emu[DATA_ADDR] = bytes(rand_input[0:4])
   emu[DATA_ADDR+4] = bytes(rand_input[4:8])
   emu.start(DODES_START , DODES_END)

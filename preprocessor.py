@@ -76,7 +76,8 @@ dispatchLookup["bandpass"] = ("Band pass filter",sparkgap.preprocessor.filtering
 dispatchLookup["lowpass"] = ("Low pass filter",sparkgap.preprocessor.filtering.doLowpass)
 dispatchLookup["keeloq"] = ("Flip Keeloq IO Special",sparkgap.preprocessor.keeloq.doFlipKeeloqIO)
 dispatchLookup["slicer"] = ("Signal slicer",sparkgap.preprocessor.slicer.doSlicer)
-dispatchLookup["c2f"] = ("Complex to Float Conversion",sparkgap.preprocessor.sdr.complex2Float)
+dispatchLookup["c2f"] = ("HackRF Complex to Float Conversion",sparkgap.preprocessor.sdr.complex2Float)
+# dispatchLookup["c2f_average"] = ("HackRF Complex to Float Conversion - Averaging",sparkgap.preprocessor.sdr.c2f_average)
 
 def dispatchAlign(tm_in):
   CONFIG_STRATEGY = varMgr.getVariable("strategy").lower()

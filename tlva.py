@@ -191,8 +191,8 @@ OptionManager = {}
 SpecialDistinguisherList = {}
 SpecialDistinguisherList["EVEN"] = (distinguisher_even,"Even and odd, first byte of plaintext")
 SpecialDistinguisherList["LSB2"] = (distinguisher_lsb2,"LSB2 even or odd, first byte of plaintext")
-SpecialDistinguisherList["HW"] = (distinguisher_hw,"HW >= 4, first byte of plaintext")
-SpecialDistinguisherList["HW32"] = (distinguisher_hw32,"HW[0:4] >= 16, hamming weight 32-bit (first dword)")
+SpecialDistinguisherList["PT"] = (distinguisher_hw,"HW >= 4, first byte of plaintext")
+# SpecialDistinguisherList["PT32"] = (distinguisher_hw32,"HW[0:4] >= 16, hamming weight 32-bit (first dword)")
 SpecialDistinguisherList["CTHW"] = (distinguisher_cthw,"HW >= 4, first byte of ciphertext")
 SpecialDistinguisherList["HW64"] = (distinguisher_hw64,"HW[0:8] >= 32, hamming weight 64-bit")
 SpecialDistinguisherList["FIXED"] = (distinguisher_fixed,"Most common PT and all other PT's")

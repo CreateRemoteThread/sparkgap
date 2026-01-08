@@ -245,7 +245,9 @@ class AttackModel:
 
   def postprocess(self,key):
     out = ""
+    print(len(key))
     for i in range(0,self.keyLength):
       out += "%02x " % int(key[i])
     print("Hello from postprocess - %s" % out)
+    
     return

@@ -156,6 +156,7 @@ class desRecombine:
 
   # input in bytestring format
   def bruteKey(self,knownPlain,knownCipher):
+    print("Hello from brute")
     for i in range(0,256):
       # print "TRYING %d" % i
       test_template = [ord(x) - ord('0') for x in bin(i)[2:].rjust(8,"0")]
@@ -176,12 +177,12 @@ class desRecombine:
         sys.exit(0)
     print(":( valid key not found :(")
 
-if CONFIG_TRACEFILE is None:
-  dr = desRecombine(CONFIG_KEY)
-  dr.bruteKey(CONFIG_KNOWNPT, CONFIG_KNOWNCT)
-else:
-  dr = desRecombine(CONFIG_KEY)
-  tm = sparkgap.filemanager.TraceManager(CONFIG_TRACEFILE)
-  di = tm.getSingleData(0)
-  do = tm.getSingleDataOut(0)
-  dr.bruteKey(di,do)
+# if CONFIG_TRACEFILE is not None:
+  # dr = desRecombine(CONFIG_KEY)
+  # dr.bruteKey(CONFIG_KNOWNPT, CONFIG_KNOWNCT)
+# else:
+dr = desRecombine(CONFIG_KEY)
+tm = sparkgap.filemanager.TraceManager(CONFIG_TRACEFILE)
+di = tm.getSingleData(0)
+do = tm.getSingleDataOut(0)
+print(dr.bruteKey(di,do))

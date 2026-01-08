@@ -16,8 +16,8 @@ def complex2Float(tm_in,varMgr):
   for i in range(0,numTraces):
     print("Deinterleaving trace %d..." % i)
     x = tm_in.getSingleTrace(i)
-    traces_i[savedDataIndex,0:len(x) // 2 - 1] = [x[i * 2] for i in range(len(x) // 2 - 1)]
-    traces_q[savedDataIndex,0:len(x) // 2 - 1] = [x[i * 2 + 1] for i in range(len(x) // 2 - 1)]
+    traces_i[savedDataIndex,0:(len(x) // 2) - 1] = [x[i * 2] for i in range((len(x) // 2) - 1)]
+    traces_q[savedDataIndex,0:(len(x) // 2) - 1] = [x[(i * 2) + 1] for i in range((len(x) // 2) - 1)]
     data[savedDataIndex,:] = tm_in.getSingleData(i)
     data_out[savedDataIndex,:] = tm_in.getSingleDataOut(i)
     savedDataIndex += 1
