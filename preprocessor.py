@@ -109,7 +109,7 @@ def doSingleCommand(cmd,tm_in_raw):
     if needsCommit:
       print("Commit your changes first. No operation performed")
     else:
-      print("Saving as ChipWhisperer format...")
+      print("Attempting save as old chipwhisperer format...")
       tm_in.save_cw()
     return None
   elif tokens[0] in ["rem","#",";","//"]:
@@ -126,12 +126,14 @@ def doSingleCommand(cmd,tm_in_raw):
       s = sparkgap.filemanager.CaptureSet(migrateData  = True)
       s.tracecount = len(tm_in.traces)
       s.writeHead = s.tracecount
-      print("Converted %d traces" % s.tracecount)
+      print("commit: Converted %d traces" % s.tracecount)
       s.traces   = tm_in.traces
       s.data_in  = tm_in.data_in
       s.data_out = tm_in.data_out
+      if hasattr(tm_in,"config_data"):
+        print("commit: Found config_data, carrying over!")
+        s.config_data = tm_in.config_data
       s.save(CONFIG_WRITEFILE)
-      # sparkgap.filemanager.save(CONFIG_WRITEFILE,traces=tm_in.traces,data=tm_in.data_in,data_out=tm_in.data_out) 
       needsCommit = False
     else:
       print("No changes need committing")
