@@ -47,6 +47,33 @@ class CaptureSet:
     self.data_out[self.writeHead:] = data_out
     self.writeHead += 1
 
+  def setConfig(self,cfgname,cfgval):
+    print("CaptureSet: setting config value")
+    if hasattr(self,"config_data"):
+      self.config_data.append( "%s:%s" % (cfgname,cfgval)  )
+      return True
+    else:
+      self.config_data = ["%s:%s" % (cfgname,cfgval)]
+      return False
+
+  def getConfig(self,cfgname):
+    print("CaptureSet: getting config value")
+    if hasattr(self,"config_data"):
+      for x in self.config_data:
+        try:
+          (saved_cfgname,saved_cfgval) = x.split(":")
+        except:
+          print("CaptureSet: incorrect config data, '%s' is not 'cfg:val'" % x)
+          return None
+        if cfgname == saved_cfgname:
+          print("CaptureSet: got config name '%s'" % cfgname)
+          return saved_cfgval
+      print("CaptureSet: missing config name '%s'" % cfgname)
+      return None
+    else:
+      print("CaptureSet: no config data available")
+      return None 
+
   def save(self,filename=None,writeHeadFix=True):
     if self.writeHead < self.tracecount - 1:
       print("CaptureSet: expecting %d traces, got %d traces, fixing" % (self.tracecount,self.writeHead + 1))
@@ -171,8 +198,6 @@ class TraceManager:
       if "config_data" in self.f.keys():
         print("TraceManager2: got config data, loading")
         self.config_data = self.f["config_data"]
-      else:
-        self.config_data = None
     traceCount = len(self.traces)
     numPoints = len(self.traces[0])
     print("TraceManager2: %d traces with %d points each loaded." % (traceCount,numPoints))

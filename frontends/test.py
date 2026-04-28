@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+import numpy as np
 
 class CaptureInterface():
   def __init__(self):
@@ -13,7 +14,8 @@ class CaptureInterface():
 
   def capture(self):
     print("Acquisition frontend capture, returning [0]")
-    return [0]
+    samplecount = self.config["samplecount"]
+    return np.random.rand(samplecount).astype(np.float16)
 
   def arm(self):
     print("Acquisition frontend armed")

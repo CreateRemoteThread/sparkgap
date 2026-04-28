@@ -93,11 +93,17 @@ def runCaptureTask():
   vars = {}
   if config["writefile"] is None:
     print("Writefile is unconfigured, not saving results...")
-  elif config["writefile"] == "/tmp":
-    tempfile = "/tmp/%s" % uuid.uuid4()
-    captureSet.save(tempfile)
-    # sparkgap.filemanager.save(tempfile,traces=traces,data=data,data_out=data_out)
-    print("Saved to %s" % tempfile)
+  # elif config["writefile"] == "/tmp": # what the absolute fuck?
+  #   tempfile = "/tmp/%s" % uuid.uuid4()
+  #   for c in config.keys():
+  #     if c.startswith("cfg:") and len(c) > 4:
+  #       varname = c[4:]
+  #       varval  = config[c]
+  #       print("CaptureBuddy: saving config item '%s'" % varname)  
+  #       captureSet.setConfig(varname,varval)
+  #   captureSet.save(tempfile)
+  #   # sparkgap.filemanager.save(tempfile,traces=traces,data=data,data_out=data_out)
+  #   print("Saved to %s" % tempfile)
   else:
     if LEIA_Hack:
       wHead = hack_captureSet.writeHead
@@ -110,6 +116,12 @@ def runCaptureTask():
     save_traces = captureSet.traces[0:wHead]
     save_data_in = captureSet.data_in[0:wHead]
     save_data_out = captureSet.data_out[0:wHead]
+    for c in config.keys():
+      if c.startswith("cfg:") and len(c) > 4:
+        varname = c[4:]
+        varval  = config[c]
+        print("CaptureBuddy: saving config item '%s'" % varname)  
+        captureSet.setConfig(varname,varval)
     captureSet.save(config["writefile"]) # ,traces=save_traces,data=save_data_in,data_out=save_data_out)
     
 trig = None
