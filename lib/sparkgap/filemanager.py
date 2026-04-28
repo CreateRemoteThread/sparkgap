@@ -62,19 +62,19 @@ class CaptureSet:
     tn = TraceManager(filename)
     tn.f.create_dataset("traces",data=self.traces)
     tn.f.create_dataset("data_in",data=self.data_in)
-    tn.f.create_dataset("data_out",data=self.data_out)  
+    tn.f.create_dataset("data_out",data=self.data_out)
+    if hasattr(self,"config_data"):
+      print("CaptureSet: saving with extra config data")
+      tn.f.create_dataset("config_data",data=self.config_data)
 
-class TraceSet:
-  def __init__(self,key):
-    print("TraceSet: Initialized blank TraceSet with key %s" % key)
-    self.key = key
-    self.dtype = None
-    self.traces_fn = None
-    self.traces = None
-    self.data_fn = None
-    self.data = None
-    self.data_out_fn = None
-    self.data_out = None
+# class TraceSet:
+#   def __init__(self,key):
+#     print("TraceSet: Initialized blank TraceSet with key %s" % key)
+#     self.key = key
+#     self.dtype = None
+#     self.traces = None
+#     self.data = None
+#     self.data_out = None
 
 class TraceManager:
   def cleanup(self):
@@ -168,6 +168,11 @@ class TraceManager:
       self.traces = self.f["traces"]
       self.data_in = self.f["data_in"]
       self.data_out = self.f["data_out"]
+      if "config_data" in self.f.keys():
+        print("TraceManager2: got config data, loading")
+        self.config_data = self.f["config_data"]
+      else:
+        self.config_data = None
     traceCount = len(self.traces)
     numPoints = len(self.traces[0])
     print("TraceManager2: %d traces with %d points each loaded." % (traceCount,numPoints))
