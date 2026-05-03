@@ -14,6 +14,7 @@ import sparkgap.preprocessor.filtering
 import sparkgap.preprocessor.alignment
 import sparkgap.preprocessor.keeloq
 import sparkgap.preprocessor.slicer
+import sparkgap.preprocessor.util
 import numpy as np
 import random
 
@@ -55,13 +56,22 @@ class VariableManager:
   def setVariable(self,var,arg):
     self.config[var] = arg
 
-  def getVariable(self,var,optval=None):
+  def hasVariable(self,varName):
+    if varName in self.config.keys():
+      return True
+    else:
+      return False
+  
+  def getVariable(self,var,optval=None,prompt=False):
     if var in self.config.keys():
       return self.config[var]
     elif optval is not None:
       return optval
     else:
-      raise MissingConfigException(var)
+      if prompt is True:
+        return input("varMgr.getVariable: '%s' > " % var).rstrip()
+      else:
+        raise MissingConfigException(var)
 
   def getOptionalVariable(self,var,opt):
     if var in self.config.keys():
@@ -77,7 +87,8 @@ dispatchLookup = {}
 dispatchLookup["sad"] = ("Align by sum of absolute differences",sparkgap.preprocessor.alignment.doSAD)
 dispatchLookup["earthquake"] = ("Horizontal misalign",sparkgap.preprocessor.alignment.doEarthquake)
 dispatchLookup["corr"] = ("Align by Pearson correlation",sparkgap.preprocessor.alignment.doCORR)
-dispatchLookup["valign"] = ("Vertical align",sparkgap.preprocessor.VAlign)
+dispatchLookup["valign"] = ("Vertical align to single ref trace. Use window_offset to skip start bytes",sparkgap.preprocessor.VAlign)
+dispatchLookup["glue"] = ("Glue file1 and file2 together (option prompts)",sparkgap.preprocessor.util.doGlue)
 dispatchLookup["two_point_compress"] = ("Difference-of-Two-Points Compress (needs compress_dist)",sparkgap.preprocessor.TwoPointCompress)
 dispatchLookup["wavelet"] = ("Wavelet transform denoise",sparkgap.preprocessor.filtering.doCWTDenoise)
 dispatchLookup["bandpass"] = ("Band pass filter",sparkgap.preprocessor.filtering.doBandpass)
