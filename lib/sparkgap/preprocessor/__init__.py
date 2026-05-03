@@ -26,7 +26,7 @@ def VAlign(tm_in,varMgr):
   numTraces = tm_in.traceCount
   sampleCnt = tm_in.numPoints
   window_offset = varMgr.getOptionalVariable("window_offset",0)
-  window_length = varMgr.getOptionalVariable("window_length",sampleCnt)
+  window_length = varMgr.getOptionalVariable("window_length",sampleCnt - window_offset)
   traces = zeros((numTraces,sampleCnt),tm_in.getDtype())
   data = zeros((numTraces,16),uint8)
   data_out = zeros((numTraces,16),uint8)
