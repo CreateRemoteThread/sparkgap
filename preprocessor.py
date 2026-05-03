@@ -37,6 +37,9 @@ class TraceManagerStub:
 
 CFG_OPTIONAL_WARNINGS = []
 
+class MissingConfigException(Exception):
+  pass
+
 class VariableManager:
   def __init__(self):
     self.config = {}
@@ -52,8 +55,13 @@ class VariableManager:
   def setVariable(self,var,arg):
     self.config[var] = arg
 
-  def getVariable(self,var):
-    return self.config[var]
+  def getVariable(self,var,optval=None):
+    if var in self.config.keys():
+      return self.config[var]
+    elif optval is not None:
+      return optval
+    else:
+      raise MissingConfigException(var)
 
   def getOptionalVariable(self,var,opt):
     if var in self.config.keys():
@@ -94,7 +102,6 @@ needsCommit = False
 
 def doSingleCommand(cmd,tm_in_raw):
   global needsCommit
-  CONFIG_WRITEFILE = varMgr.getVariable("writefile")
   tm_in = tm_in_raw
   tokens = cmd.split(" ")
   if tokens[0] == "set" and len(tokens) >= 2:
@@ -133,7 +140,7 @@ def doSingleCommand(cmd,tm_in_raw):
       if hasattr(tm_in,"config_data"):
         print("commit: Found config_data, carrying over!")
         s.config_data = tm_in.config_data
-      s.save(CONFIG_WRITEFILE)
+      s.save(varMgr.getVariable("writefile"))
       needsCommit = False
     else:
       print("No changes need committing")
@@ -162,13 +169,19 @@ def doCommands(CONFIG_READFILE,CONFIG_CMDFILE):
     f = open(CONFIG_CMDFILE)
     cmds = [d.rstrip() for d in f.readlines()]
     for i in range(0,len(cmds)):
-      p = doSingleCommand(cmds[i],tm_in)
+      try:
+        p = doSingleCommand(cmds[i],tm_in)
+      except MissingConfigException as e:
+        print("doCommands: missing config %s" % e)
       if p is not None:
         print("doCommands loop: Replacing tm_in")
         tm_in = p
   while True:
     cmd = input(" > ").lstrip().rstrip()
-    p = doSingleCommand(cmd,tm_in)
+    try:
+      p = doSingleCommand(cmd,tm_in)
+    except MissingConfigException as e:
+      print("doCommands: missing config %s" % e)
     if p is not None:
       print("doCommands loop: Replacing tm_in")
       tm_in = p
