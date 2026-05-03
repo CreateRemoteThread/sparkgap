@@ -180,7 +180,12 @@ class TraceManager:
     self.traces = self.traces[sorted(np.random.choice(self.traces.shape[0], size = samplesz, replace=False))]
     self.traceCount = len(self.traces)
 
-  def __init__(self,filename):
+  def __init__(self,filename_raw):
+    if "~" in filename_raw:
+      print("TraceManager2: attempting duct tape fix for user path")
+      filename = os.path.expanduser(filename_raw)
+    else:
+      filename = filename_raw
     print("TraceManager2: Initializing with filename %s" % filename)
     self.fn = filename
     self.dtype = None
