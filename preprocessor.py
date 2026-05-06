@@ -139,6 +139,19 @@ def doSingleCommand(cmd,tm_in_raw):
     tm_in_new = TraceManagerStub(traces,data_in,data_out)
     print("tm_in should be replaced")
     return tm_in_new
+  elif tokens[0] in ["p","peek"] and len(tokens) == 2:
+    print("peek")
+    trcRef =  int(tokens[1])
+    if trcRef < 0 or trcRef > tm_in.numTraces:
+      print("peek: cannot fetch trace %d" % trcRef)
+    else:
+      traceData = tm_in.getSingleTrace(trcRef)
+      data_in = tm_in.getSingleData(trcRef)
+      data_out = tm_in.getSingleDataOut(trcRef)
+      print("trace: " + " ".join(["%f" % x for x in traceData[0:10]]))
+      print("data_in: " + " ".join(["%02x" % x for x in data_in]))
+      print("data_out: " + " ".join(["%02x" % x for x in data_out]))
+    return None
   elif tokens[0] in ["c","commit"]:
     if needsCommit:
       s = sparkgap.filemanager.CaptureSet(migrateData  = True)
